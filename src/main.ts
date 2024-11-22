@@ -1,24 +1,96 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+import "./style.css";
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+type Posicion = readonly [number, number];
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+class Entidad {
+    private _nombre: string;
+    private _atributos: string[];
+    private _posicion: Posicion;
+
+    constructor(nombre: string, atributos: string[], posicion: Posicion) {
+        this._nombre = nombre;
+        this._posicion = posicion;
+        this._atributos = atributos;
+    }
+
+    cambiarNombre(nuevoNombre: string) {
+        this._nombre = nuevoNombre;
+    }
+
+    agregarAtributo(nuevoAtributo: string) {
+        this._atributos.push(nuevoAtributo);
+        return this._atributos.length - 1;
+    }
+
+    renombrarAtributo(idAtributo: number, nuevoNombre: string) {
+        this._atributos[idAtributo] = nuevoNombre;
+    }
+
+    atributos() {
+        return this._atributos;
+    }
+
+    nombre() {
+        return this._nombre;
+    }
+
+    posicion() {
+        return this._posicion;
+    }
+
+    nombreAtributo(idAtributo: number) {
+        return this._atributos[idAtributo];
+    }
+}
+
+function vistaRepresentandoAtributo(entidad: Entidad, idAtributo: number) {
+    const atributoNuevo = document.createElement("div");
+    atributoNuevo.className = "atributo";
+    const campoNombre = document.createElement("input");
+    campoNombre.value = entidad.nombreAtributo(idAtributo);
+    campoNombre.addEventListener("input", () => {
+        entidad.renombrarAtributo(idAtributo, campoNombre.value);
+    });
+    atributoNuevo.append(campoNombre);
+    return atributoNuevo;
+}
+
+function vistaRepresentandoEntidad(entidad: Entidad) {
+    const nuevaEntidad = document.createElement("div");
+    nuevaEntidad.className = "entidad";
+    nuevaEntidad.style.left = `${entidad.posicion()[0]}px`;
+    nuevaEntidad.style.top = `${entidad.posicion()[1]}px`;
+    const campoNombre = document.createElement("input");
+    campoNombre.value = entidad.nombre();
+    campoNombre.addEventListener("input", () => {
+        entidad.cambiarNombre(campoNombre.value);
+    });
+    const contenedorAtributos = document.createElement("div");
+    const botonAgregarPropiedad = document.createElement("button");
+    botonAgregarPropiedad.textContent = "+";
+    botonAgregarPropiedad.addEventListener("click", () => {
+        const idAtributo = entidad.agregarAtributo("");
+        contenedorAtributos.append(vistaRepresentandoAtributo(entidad, idAtributo));
+    });
+
+    entidad.atributos().forEach((_, indice) => {
+        contenedorAtributos.append(vistaRepresentandoAtributo(entidad, indice));
+    })
+    nuevaEntidad.append(campoNombre, botonAgregarPropiedad, contenedorAtributos);
+    return nuevaEntidad;
+}
+
+document.body.addEventListener("dblclick", evento => {
+    if (evento.target !== document.body) return;
+
+    const posicion = [evento.offsetX, evento.offsetY] as const;
+    const entidad = new Entidad("", [], posicion);
+
+    document.body.append(vistaRepresentandoEntidad(entidad));
+
+    console.log(entidad);
+});
+
+const entidad = new Entidad("Mi Entidad", ["a", "b"], [10, 10]);
+
+document.body.append(vistaRepresentandoEntidad(entidad));
