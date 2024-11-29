@@ -11,10 +11,24 @@ body {
   padding: 1em;
   background: white;
   position: absolute;
+  &:hover {
+    button {
+      display: inline;
+    }
+  }
+
+  button {
+    display: none;
+    position: absolute;
+    right: 1em;
+  }
 
   input {
+    &:hover {
+      border-bottom: 1px solid gray;
+    }
     border: none;
-    border-bottom: 1px solid gray;
+    text-align: center;
   }
 
   & > div:last-child {
@@ -43,3 +57,16 @@ body {
   }
 
 }
+
+.arrastrable {
+  cursor: grab;
+
+  &.agarrando {
+    cursor: grabbing;
+  }
+}
+
+.moviendose, .moviendose .atributo {
+  box-shadow: 5px 5px 0 0 rgba(0, 0, 0, 0.5);
+}
+
