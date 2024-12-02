@@ -1,4 +1,4 @@
-import {point, Posicion} from "./Posicion.ts";
+import {point, Posicion} from "./posicion.ts";
 
 
 export function hacerArrastrable(

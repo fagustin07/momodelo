@@ -1,7 +1,7 @@
 import "./style.css";
-import {Entidad} from "./Entidad.ts";
+import {Entidad} from "./entidad.ts";
 import {hacerArrastrable} from "./arrastrable.ts";
-import {point} from "./Posicion.ts";
+import {point} from "./posicion.ts";
 
 function vistaRepresentandoAtributo(entidad: Entidad, idAtributo: number) {
     const atributoNuevo = document.createElement("div");

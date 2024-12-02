@@ -1,4 +1,4 @@
-import {Posicion} from "./Posicion.ts";
+import {Posicion} from "./posicion.ts";
 
 export class Entidad {
     private _nombre: string;
