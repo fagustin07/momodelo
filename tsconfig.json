@@ -15,12 +15,10 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
     "types": ["@vitest/browser/providers/webdriverio"]
   },
-  "include": ["src"]
+  "include": ["src", "test"]
 }
