@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { Entidad } from "../src/entidad";
-import { point } from "../src/posicion";
+import { Entidad } from "../../src/entidad";
+import { point } from "../../src/posicion";
 
 describe("Entidad", () => {
     let entidad: Entidad;
