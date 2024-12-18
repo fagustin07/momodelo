@@ -1,4 +1,4 @@
-import {point, Posicion} from "./posicion.ts";
+import {coordenada, Posicion} from "./posicion.ts";
 
 
 export function hacerArrastrable(
@@ -56,5 +56,5 @@ export function hacerArrastrable(
 
 
 export function posicionDelClienteDe(event: MouseEvent): Posicion {
-    return point(event.clientX, event.clientY);
+    return coordenada(event.clientX, event.clientY);
 }

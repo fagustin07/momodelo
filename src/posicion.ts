@@ -9,20 +9,20 @@ export class Posicion {
     }
 
     plus(otraPosicion: Posicion) {
-        return point(
+        return coordenada(
             otraPosicion.x + this.x,
             otraPosicion.y + this.y,
         );
     }
 
     minus(otraPosicion: Posicion) {
-        return point(
+        return coordenada(
             this.x - otraPosicion.x,
             this.y - otraPosicion.y,
         );
     }
 }
 
-export function point(x: number, y: number) {
+export function coordenada(x: number, y: number) {
     return new Posicion(x, y);
 }
