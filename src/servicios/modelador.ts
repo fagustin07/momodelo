@@ -1,8 +1,10 @@
 import {Atributo} from "../modelo/atributo";
 import {Entidad} from "../modelo/entidad";
 import {Relacion} from "../modelo/relacion";
+import {IdAtributo, MER, SolicitudCrearRelacion} from "../../types";
 
-class Modelador implements MER {
+
+export class Modelador implements MER {
     entidades: Entidad[] = [];
     relaciones: Relacion[] = [];
     private _maxID: number = 1;
@@ -19,8 +21,14 @@ class Modelador implements MER {
         throw new Error("Sin implementar");
     }
 
-    renombrarAtributo(nuevoNombre: string, idAtributo: string): Atributo {
-        throw new Error("Sin implementar");
+    renombrarAtributo(nuevoNombre: string, [entidad, indiceAtributo]: IdAtributo): Atributo {
+        entidad.renombrarAtributo(
+            indiceAtributo,
+            nuevoNombre
+        );
+
+        // FIXME: Ojo, devolver el atributo nuevo!
+        return undefined as unknown as Atributo;
     }
 
     eliminarAtributo(idAtributo: string): void {

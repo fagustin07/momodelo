@@ -2,20 +2,20 @@ import {Entidad} from "./modelo/entidad.ts";
 import {hacerArrastrable} from "./arrastrable.ts";
 import {coordenada} from "./posicion.ts";
 import {VistaAtributo} from "./vista/vistaAtributo.ts";
+import {Modelador} from "./servicios/modelador.ts";
 
 function posicionarElemento(elementoDOMEntidad: HTMLDivElement, entidad: Entidad) {
     elementoDOMEntidad.style.translate = `${entidad.posicion().x}px ${entidad.posicion().y}px`;
 }
 
-function agregarAtributoEn(contenedorAtributos: HTMLDivElement, entidad: Entidad, idAtributo: number) {
-    const elementoAtributo = new VistaAtributo(entidad, idAtributo).representarse();
+function agregarAtributoEn(contenedorAtributos: HTMLDivElement, entidad: Entidad, idAtributo: number, modelador: Modelador) {
+    const elementoAtributo = new VistaAtributo(entidad, idAtributo, modelador).representarse();
     contenedorAtributos.append(elementoAtributo);
     // TODO: Mejorar
     elementoAtributo.querySelector("input")!.focus();
 }
 
-function vistaRepresentandoEntidad(entidad: Entidad, entidadesEnModelo: Entidad[]) {
-
+function vistaRepresentandoEntidad(entidad: Entidad, entidadesEnModelo: Entidad[], modelador: Modelador) {
     const elementoDOMEntidad = document.createElement("div");
     elementoDOMEntidad.className = "entidad";
     posicionarElemento(elementoDOMEntidad, entidad);
@@ -32,11 +32,11 @@ function vistaRepresentandoEntidad(entidad: Entidad, entidadesEnModelo: Entidad[
     botonAgregarAtributo.title = "Agregar atributo";
     botonAgregarAtributo.addEventListener("click", () => {
         const idAtributo = entidad.agregarAtributo("");
-        agregarAtributoEn(contenedorAtributos, entidad, idAtributo);
+        agregarAtributoEn(contenedorAtributos, entidad, idAtributo, modelador);
     });
 
     entidad.atributos().forEach((_, indice) => {
-        agregarAtributoEn(contenedorAtributos, entidad, indice);
+        agregarAtributoEn(contenedorAtributos, entidad, indice, modelador);
     })
     elementoDOMEntidad.append(campoNombre, botonAgregarAtributo, contenedorAtributos);
 
@@ -68,6 +68,8 @@ function vistaRepresentandoEntidad(entidad: Entidad, entidadesEnModelo: Entidad[
 }
 
 export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[]) {
+    const modelador = new Modelador();
+
     // VISTA MODELO
     elementoRaiz.addEventListener("dblclick", evento => {
         if (evento.target !== elementoRaiz) return;
@@ -76,12 +78,12 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[]) {
         const entidad = new Entidad("", [], posicion);
         entidadesEnModelo.push(entidad);
 
-        elementoRaiz.append(vistaRepresentandoEntidad(entidad, entidadesEnModelo));
+        elementoRaiz.append(vistaRepresentandoEntidad(entidad, entidadesEnModelo, modelador));
 
         console.log(entidad);
     });
 
     entidadesEnModelo.forEach(entidad => {
-        elementoRaiz.append(vistaRepresentandoEntidad(entidad, entidadesEnModelo));
+        elementoRaiz.append(vistaRepresentandoEntidad(entidad, entidadesEnModelo, modelador));
     });
 }
