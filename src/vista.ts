@@ -9,10 +9,8 @@ function posicionarElemento(elementoDOMEntidad: HTMLDivElement, entidad: Entidad
 }
 
 function agregarAtributoEn(contenedorAtributos: HTMLDivElement, entidad: Entidad, idAtributo: number, modelador: Modelador) {
-    const elementoAtributo = new VistaAtributo(entidad, idAtributo, modelador).representarse();
-    contenedorAtributos.append(elementoAtributo);
-    // TODO: Mejorar
-    elementoAtributo.querySelector("input")!.focus();
+    const vistaAtributo = new VistaAtributo(entidad, idAtributo, modelador);
+    vistaAtributo.representarseEn(contenedorAtributos);
 }
 
 function vistaRepresentandoEntidad(entidad: Entidad, entidadesEnModelo: Entidad[], modelador: Modelador) {

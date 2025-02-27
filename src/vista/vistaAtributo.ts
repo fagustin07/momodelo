@@ -17,10 +17,6 @@ export class VistaAtributo {
         this._elementoDom = this._crearElementoDom();
     }
 
-    representarse() {
-        return this._elementoDom;
-    }
-
     private _crearElementoDom() {
         return createElement("div", {
             className: "atributo",
@@ -52,5 +48,10 @@ export class VistaAtributo {
         this._elementoDom.remove();
         this._entidad.atributos().splice(this._indiceAtributo, 1);
         console.log(`Atributo eliminado`);
+    }
+
+    representarseEn(contenedor: HTMLElement) {
+        contenedor.append(this._elementoDom);
+        this._campoNombre.focus();
     }
 }
