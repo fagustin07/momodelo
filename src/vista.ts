@@ -1,34 +1,17 @@
 import {Entidad} from "./modelo/entidad.ts";
 import {hacerArrastrable} from "./arrastrable.ts";
 import {coordenada} from "./posicion.ts";
+import {VistaAtributo} from "./vista/vistaAtributo.ts";
 
 function posicionarElemento(elementoDOMEntidad: HTMLDivElement, entidad: Entidad) {
     elementoDOMEntidad.style.translate = `${entidad.posicion().x}px ${entidad.posicion().y}px`;
 }
 
 function agregarAtributoEn(contenedorAtributos: HTMLDivElement, entidad: Entidad, idAtributo: number) {
-    const atributoNuevo = document.createElement("div");
-    atributoNuevo.className = "atributo";
-    const campoNombre = document.createElement("input");
-    campoNombre.value = entidad.nombreAtributo(idAtributo);
-    campoNombre.title = "Nombre de atributo";
-    // VISTA MODELO
-    campoNombre.addEventListener("input", () => {
-        entidad.renombrarAtributo(idAtributo, campoNombre.value);
-    });
-    atributoNuevo.append(campoNombre);
-
-    // VISTA MODELO
-    atributoNuevo.addEventListener("click", (evento) => {
-        if (evento.ctrlKey && evento.shiftKey) {
-            evento.stopPropagation();
-            atributoNuevo.remove();
-            entidad.atributos().splice(idAtributo, 1);
-            console.log(`Atributo eliminado`);
-        }
-    });
-    contenedorAtributos.append(atributoNuevo);
-    campoNombre.focus();
+    const elementoAtributo = new VistaAtributo(entidad, idAtributo).representarse();
+    contenedorAtributos.append(elementoAtributo);
+    // TODO: Mejorar
+    elementoAtributo.querySelector("input")!.focus();
 }
 
 function vistaRepresentandoEntidad(entidad: Entidad, entidadesEnModelo: Entidad[]) {
