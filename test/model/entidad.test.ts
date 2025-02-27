@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { Entidad } from "../../src/entidad";
+import { Entidad } from "../../src/modelo/entidad";
 import { coordenada } from "../../src/posicion";
 
 describe("Entidad", () => {

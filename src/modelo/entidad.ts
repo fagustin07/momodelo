@@ -1,11 +1,11 @@
-import {Posicion} from "./posicion.ts";
+import { Posicion } from "../posicion";
 
 export class Entidad {
     private _nombre: string;
     private _atributos: string[];
     private _posicion: Posicion;
 
-    constructor(nombre: string, atributos: string[], posicion: Posicion) {
+    constructor(nombre: string = 'ENTIDAD', atributos: string[], posicion: Posicion) {
         this._nombre = nombre;
         this._posicion = posicion;
         this._atributos = atributos;
@@ -44,3 +44,4 @@ export class Entidad {
         this._posicion = this._posicion.plus(delta);
     }
 }
+

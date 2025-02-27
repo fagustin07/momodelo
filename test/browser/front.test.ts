@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, it} from "vitest";
 import {fireEvent, within} from "@testing-library/dom";
 import {init} from "../../src/vista";
-import {Entidad} from "../../src/entidad";
+import {Entidad} from "../../src/modelo/entidad";
 import {coordenada} from "../../src/posicion";
 import "../../src/style.css";
 

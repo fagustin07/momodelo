@@ -1,4 +1,4 @@
-import {Entidad} from "./entidad.ts";
+import {Entidad} from "./modelo/entidad.ts";
 import {hacerArrastrable} from "./arrastrable.ts";
 import {coordenada} from "./posicion.ts";
 
@@ -6,17 +6,19 @@ function posicionarElemento(elementoDOMEntidad: HTMLDivElement, entidad: Entidad
     elementoDOMEntidad.style.translate = `${entidad.posicion().x}px ${entidad.posicion().y}px`;
 }
 
-function agrearAtributoEn(contenedorAtributos: HTMLDivElement, entidad: Entidad, idAtributo: number) {
+function agregarAtributoEn(contenedorAtributos: HTMLDivElement, entidad: Entidad, idAtributo: number) {
     const atributoNuevo = document.createElement("div");
     atributoNuevo.className = "atributo";
     const campoNombre = document.createElement("input");
     campoNombre.value = entidad.nombreAtributo(idAtributo);
     campoNombre.title = "Nombre de atributo";
+    // VISTA MODELO
     campoNombre.addEventListener("input", () => {
         entidad.renombrarAtributo(idAtributo, campoNombre.value);
     });
     atributoNuevo.append(campoNombre);
 
+    // VISTA MODELO
     atributoNuevo.addEventListener("click", (evento) => {
         if (evento.ctrlKey && evento.shiftKey) {
             evento.stopPropagation();
@@ -37,6 +39,7 @@ function vistaRepresentandoEntidad(entidad: Entidad, entidadesEnModelo: Entidad[
     const campoNombre = document.createElement("input");
     campoNombre.title = "nombre Entidad";
     campoNombre.value = entidad.nombre();
+    // VISTA MODELO
     campoNombre.addEventListener("input", () => {
         entidad.cambiarNombre(campoNombre.value);
     });
@@ -46,11 +49,11 @@ function vistaRepresentandoEntidad(entidad: Entidad, entidadesEnModelo: Entidad[
     botonAgregarAtributo.title = "Agregar atributo";
     botonAgregarAtributo.addEventListener("click", () => {
         const idAtributo = entidad.agregarAtributo("");
-        agrearAtributoEn(contenedorAtributos, entidad, idAtributo);
+        agregarAtributoEn(contenedorAtributos, entidad, idAtributo);
     });
 
     entidad.atributos().forEach((_, indice) => {
-        agrearAtributoEn(contenedorAtributos, entidad, indice);
+        agregarAtributoEn(contenedorAtributos, entidad, indice);
     })
     elementoDOMEntidad.append(campoNombre, botonAgregarAtributo, contenedorAtributos);
 
@@ -68,9 +71,11 @@ function vistaRepresentandoEntidad(entidad: Entidad, entidadesEnModelo: Entidad[
     });
     requestAnimationFrame(() => campoNombre.focus());
 
+    // VISTA MODELO
     elementoDOMEntidad.addEventListener("click", (evento) => {
         if (evento.ctrlKey && evento.shiftKey) {
             elementoDOMEntidad.remove(); // Eliminar del DOM
+            // VISTA MODELO
             entidadesEnModelo.splice(entidadesEnModelo.indexOf(entidad));
             console.log(`Entidad eliminada: ${entidad.nombre()}`);
         }
@@ -80,6 +85,7 @@ function vistaRepresentandoEntidad(entidad: Entidad, entidadesEnModelo: Entidad[
 }
 
 export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[]) {
+    // VISTA MODELO
     elementoRaiz.addEventListener("dblclick", evento => {
         if (evento.target !== elementoRaiz) return;
 

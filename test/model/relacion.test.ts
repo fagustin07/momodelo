@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { Entidad } from "../../src/entidad.ts";
-import { Maxima, Minima, Relacion, Rol } from "../../src/relacion.ts";
+import { Entidad } from "../../src/modelo/entidad.ts";
+import { Maxima, Minima, Relacion, Rol } from "../../src/modelo/relacion.ts";
 import { coordenada } from "../../src/posicion.ts";
 
 describe("[MER] Relación", () => {

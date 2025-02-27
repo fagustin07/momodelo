@@ -27,7 +27,7 @@ export class Relacion {
         this._nombre = nombre;
         this._entidadOrigen = entidadOrigen;
         this._entidadDestino = entidadDestino;
-        this._cardinalidades = new Map([
+        this._cardinalidades = new Map([ // OBJETO CARDINALIDAD
             [Rol.ORIGEN, [Minima.CERO, Maxima.N]],
             [Rol.DESTINO, [Minima.CERO, Maxima.UNO]],
         ]);
