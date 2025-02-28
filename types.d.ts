@@ -1,5 +1,6 @@
 import {Atributo} from "./src/modelo/atributo.ts";
 import {Entidad} from "./src/modelo/entidad.ts";
+import {Relacion} from "./src/modelo/relacion.ts";
 
 declare interface SolicitudCrearRelacion {
     idEntidadOrigen: string;
@@ -9,20 +10,16 @@ declare interface SolicitudCrearRelacion {
     maximaOrigen: Maxima; // OBJETO CARDINALIDAD.
     maximaDestino: Maxima;
 }
-
-declare type IdAtributo = [Entidad, number];
-
-// Retornar el metamodelo o la vista... lo veremos con desarrollo.
 declare interface MER {
     entidades: Entidad[];
     relaciones: Relacion[];
-    // cada objeto tiene su propia identidad.
-    agregarAtributo: (nombreDeAtributoNuevo: string, idEntidadExistente: string, esMultivaluado: boolean) => Atributo;
-    hacerAtributoCompuesto: (nombreDeAtributoNuevo: string, idAtributoExistente: string) => Atributo;
+    agregarAtributo: (nombreDeAtributoNuevo: string, entidadExistente: Entidad, esMultivaluado: boolean) => Atributo;
+    hacerAtributoCompuesto: (nombreDeAtributoNuevo: string, _atributoExistente: Atributo) => Atributo;
     renombrarAtributo: (nuevoNombre: string, atributoExistente: Atributo, entidad: Entidad) => Atributo;
-    eliminarAtributo: (idAtributoExistente: string) => void;
+    eliminarAtributo: (atributo: Atributo, entidad: Entidad) => void;
 
     conectarEntidades: (nombreDeRelacion:string, solicitud: SolicitudCrearRelacion) => Relacion;
-    renombrarRelacion: (nuevoNombre: string, idRelacion: string) => Relacion;
-    eliminarRelacion: (idRelacion: string) => void;
+    renombrarRelacion: (nuevoNombre: string, relacion: Relacion) => Relacion;
+    agregarAtributoARelacion: (nombreAtributo: string, relacionExistente: Relacion, esMultivaluado: boolean) => Relacion;
+    eliminarRelacion: (relacion: Relacion) => void;
 }

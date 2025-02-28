@@ -7,37 +7,33 @@ import {MER, SolicitudCrearRelacion} from "../../types";
 export class Modelador implements MER {
     entidades: Entidad[] = [];
     relaciones: Relacion[] = [];
-    private _maxID: number = 1;
-
-    private _proximoID(): number {
-        return this._maxID++;
-    };
-
-    agregarAtributo(nombre: string, idEntidad: string, esMultivaluado: boolean): Atributo {
-        throw new Error("Sin implementar");
-    }
-
-    hacerAtributoCompuesto(nombre: string, idAtributo: string): Atributo {
-        throw new Error("Sin implementar");
-    }
-
     renombrarAtributo(nuevoNombre: string, atributoExistente: Atributo, entidad: Entidad): Atributo {
         return entidad.renombrarAtributo(atributoExistente, nuevoNombre);
     }
 
-    eliminarAtributo(idAtributo: string): void {
+    conectarEntidades(_nombre: string, _solicitud: SolicitudCrearRelacion): Relacion {
         throw new Error("Sin implementar");
     }
 
-    conectarEntidades(nombre: string, solicitud: SolicitudCrearRelacion): Relacion {
+    agregarAtributo(_nombreDeAtributoNuevo: string, _entidadExistente: Entidad, _esMultivaluado: boolean): Atributo {
         throw new Error("Sin implementar");
     }
 
-    renombrarRelacion(nuevoNombre: string, idRelacion: string): Relacion {
+    agregarAtributoARelacion(_nombreAtributo: string, _relacionExistente: Relacion, _esMultivaluado: boolean): Relacion {
         throw new Error("Sin implementar");
     }
 
-    eliminarRelacion(idRelacion: string): void {
+    eliminarAtributo(_atributo: Atributo, _entidad: Entidad): void {
+    }
+
+    eliminarRelacion(_relacion: Relacion): void {
+    }
+
+    hacerAtributoCompuesto(_nombreDeAtributoNuevo: string, _atributoExistente: Atributo): Atributo {
+        throw new Error("Sin implementar");
+    }
+
+    renombrarRelacion(_nuevoNombre: string, _relacion: Relacion): Relacion {
         throw new Error("Sin implementar");
     }
 

@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { Entidad } from "../../src/modelo/entidad";
 import { coordenada } from "../../src/posicion";
-import {Atributo} from "../../src/modelo/atributo.ts";
 
 describe("Entidad", () => {
     let entidad: Entidad;

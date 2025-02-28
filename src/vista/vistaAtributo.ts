@@ -1,7 +1,6 @@
 import {Entidad} from "../modelo/entidad.ts";
 import {createElement} from "./dom/createElement.ts";
 import {Modelador} from "../servicios/modelador.ts";
-import {IdAtributo} from "../../types";
 import {Atributo} from "../modelo/atributo.ts";
 
 export class VistaAtributo {
@@ -48,7 +47,6 @@ export class VistaAtributo {
         // todo: mover al modelador
         this._elementoDom.remove();
         this._entidad.eliminarAtributo(this._atributo);
-        console.log(`Atributo eliminado`);
     }
 
     representarseEn(contenedor: HTMLElement) {

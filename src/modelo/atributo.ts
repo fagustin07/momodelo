@@ -5,10 +5,6 @@ export class Atributo {
         this._nombre = nombre;
     }
 
-    cambiarNombre(nuevoNombre: string) {
-        return new Atributo(nuevoNombre);
-    }
-
     nombre() {
         return this._nombre;
     }
