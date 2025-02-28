@@ -1,4 +1,5 @@
 import {Atributo} from "./src/modelo/atributo.ts";
+import {Entidad} from "./src/modelo/entidad.ts";
 
 declare interface SolicitudCrearRelacion {
     idEntidadOrigen: string;
@@ -18,7 +19,7 @@ declare interface MER {
     // cada objeto tiene su propia identidad.
     agregarAtributo: (nombreDeAtributoNuevo: string, idEntidadExistente: string, esMultivaluado: boolean) => Atributo;
     hacerAtributoCompuesto: (nombreDeAtributoNuevo: string, idAtributoExistente: string) => Atributo;
-    renombrarAtributo: (nuevoNombre: string, idAtributoExistente: IdAtributo) => Atributo;
+    renombrarAtributo: (nuevoNombre: string, atributoExistente: Atributo, entidad: Entidad) => Atributo;
     eliminarAtributo: (idAtributoExistente: string) => void;
 
     conectarEntidades: (nombreDeRelacion:string, solicitud: SolicitudCrearRelacion) => Relacion;

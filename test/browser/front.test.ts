@@ -31,6 +31,10 @@ function agregarAtributoEn(elementoEntidad: HTMLElement, nombreAtributoNuevo: st
     fireEvent.input(campoAtributo, {target: {value: nombreAtributoNuevo}});
 }
 
+function nombresDeLosAtributosDe(elementoEntidad: HTMLElement): HTMLInputElement[] {
+    return within(elementoEntidad).getAllByTitle<HTMLInputElement>("Nombre de atributo");
+}
+
 describe("[MER] Vista Modelo tests", () => {
     let entidad: Entidad;
     let elementoRaiz: HTMLElement;
@@ -93,7 +97,10 @@ describe("[MER] Vista Modelo tests", () => {
 
         agregarAtributoEn(elementoEntidad, "nombre");
 
-        expect(entidad.atributos()).toEqual(["nombre"]);
+        const nombreAtributosDOM = nombresDeLosAtributosDe(elementoEntidad)
+            .map(nombreAtributoInput => nombreAtributoInput.value);
+
+        expect(nombreAtributosDOM).toEqual(["nombre"]);
     });
 
     it("Cuando se agrega un atributo, se enfoca el campo para nombrarlo", () => {

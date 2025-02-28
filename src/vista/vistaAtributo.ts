@@ -2,17 +2,18 @@ import {Entidad} from "../modelo/entidad.ts";
 import {createElement} from "./dom/createElement.ts";
 import {Modelador} from "../servicios/modelador.ts";
 import {IdAtributo} from "../../types";
+import {Atributo} from "../modelo/atributo.ts";
 
 export class VistaAtributo {
+    private _atributo: Atributo;
     private _entidad: Entidad;
-    private _indiceAtributo: number;
     private _elementoDom: HTMLElement;
     private _campoNombre!: HTMLInputElement;
     private _modelador: Modelador;
 
-    constructor(entidad: Entidad, idAtributo: number, modelador: Modelador) {
-        this._entidad = entidad;
-        this._indiceAtributo = idAtributo;
+    constructor(atributo: Atributo, modelador: Modelador, entidadTemp: Entidad) {
+        this._atributo = atributo;
+        this._entidad = entidadTemp;
         this._modelador = modelador;
         this._elementoDom = this._crearElementoDom();
     }
@@ -28,25 +29,25 @@ export class VistaAtributo {
             }
         }, [
             this._campoNombre = createElement("input", {
-                value: this._entidad.nombreAtributo(this._indiceAtributo),
+                value: this._atributo.nombre(),
                 title: "Nombre de atributo",
-                oninput: () => this._modelador
-                    .renombrarAtributo(this._valorCampoNombre(), this._idAtributo())
+                oninput: () => this._cambiarNombreEnModelo()
             })
         ]);
+    }
+
+    private _cambiarNombreEnModelo() {
+        this._atributo = this._modelador.renombrarAtributo(this._valorCampoNombre(), this._atributo, this._entidad);
     }
 
     private _valorCampoNombre() {
         return this._campoNombre.value;
     }
 
-    private _idAtributo(): IdAtributo {
-        return [this._entidad, this._indiceAtributo];
-    }
-
     private _eliminarAtributo() {
+        // todo: mover al modelador
         this._elementoDom.remove();
-        this._entidad.atributos().splice(this._indiceAtributo, 1);
+        this._entidad.eliminarAtributo(this._atributo);
         console.log(`Atributo eliminado`);
     }
 

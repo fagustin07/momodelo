@@ -3,13 +3,14 @@ import {hacerArrastrable} from "./arrastrable.ts";
 import {coordenada} from "./posicion.ts";
 import {VistaAtributo} from "./vista/vistaAtributo.ts";
 import {Modelador} from "./servicios/modelador.ts";
+import {Atributo} from "./modelo/atributo.ts";
 
 function posicionarElemento(elementoDOMEntidad: HTMLDivElement, entidad: Entidad) {
     elementoDOMEntidad.style.translate = `${entidad.posicion().x}px ${entidad.posicion().y}px`;
 }
 
-function agregarAtributoEn(contenedorAtributos: HTMLDivElement, entidad: Entidad, idAtributo: number, modelador: Modelador) {
-    const vistaAtributo = new VistaAtributo(entidad, idAtributo, modelador);
+function agregarAtributoEn(contenedorAtributos: HTMLDivElement, atributo: Atributo, entidad: Entidad, modelador: Modelador) {
+    const vistaAtributo = new VistaAtributo(atributo, modelador, entidad);
     vistaAtributo.representarseEn(contenedorAtributos);
 }
 
@@ -29,13 +30,13 @@ function vistaRepresentandoEntidad(entidad: Entidad, entidadesEnModelo: Entidad[
     botonAgregarAtributo.textContent = "+";
     botonAgregarAtributo.title = "Agregar atributo";
     botonAgregarAtributo.addEventListener("click", () => {
-        const idAtributo = entidad.agregarAtributo("");
-        agregarAtributoEn(contenedorAtributos, entidad, idAtributo, modelador);
+        const atributoNuevo = entidad.agregarAtributo("");
+        agregarAtributoEn(contenedorAtributos, atributoNuevo, entidad, modelador);
     });
 
-    entidad.atributos().forEach((_, indice) => {
-        agregarAtributoEn(contenedorAtributos, entidad, indice, modelador);
-    })
+    entidad.atributos().forEach((atributo) => {
+        agregarAtributoEn(contenedorAtributos, atributo, entidad, modelador);
+    });
     elementoDOMEntidad.append(campoNombre, botonAgregarAtributo, contenedorAtributos);
 
     hacerArrastrable(elementoDOMEntidad, {

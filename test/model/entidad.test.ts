@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { Entidad } from "../../src/modelo/entidad";
 import { coordenada } from "../../src/posicion";
+import {Atributo} from "../../src/modelo/atributo.ts";
 
 describe("Entidad", () => {
     let entidad: Entidad;
@@ -21,18 +22,18 @@ describe("Entidad", () => {
     });
 
     it("Dado una entidad inicializada, cuando se agrega un atributo, entonces debería tener el nuevo atributo en la lista", () => {
-        entidad.agregarAtributo("Nombre");
+        const atributo = entidad.agregarAtributo("Nombre");
 
-        expect(entidad.atributos()).toEqual(["Nombre"]);
+        expect(entidad.atributos()).toEqual([atributo]);
     });
 
     it("Dado una entidad con un atributo, cuando se renombra el atributo, entonces debería reflejar el nuevo nombre", () => {
-        entidad.agregarAtributo("Nombre");
+        const atributoARenombrar = entidad.agregarAtributo("Nombre");
         const atributoPrevioARenombre = entidad.atributos()[0];
 
-        entidad.renombrarAtributo(0, "Apellido");
+        const atributoRenombrado = entidad.renombrarAtributo(atributoPrevioARenombre, "Apellido");
 
-        expect(atributoPrevioARenombre).toEqual("Nombre");
-        expect(entidad.atributos()).toEqual(["Apellido"]);
+        expect(atributoPrevioARenombre).toEqual(atributoARenombrar);
+        expect(entidad.atributos()).toEqual([atributoRenombrado]);
     });
 });
