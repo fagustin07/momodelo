@@ -17,6 +17,11 @@ export class VistaAtributo {
         this._elementoDom = this._crearElementoDom();
     }
 
+    representarseEn(contenedor: HTMLElement) {
+        contenedor.append(this._elementoDom);
+        this._campoNombre.focus();
+    }
+
     private _crearElementoDom() {
         return createElement("div", {
             className: "atributo",
@@ -44,13 +49,7 @@ export class VistaAtributo {
     }
 
     private _eliminarAtributo() {
-        // todo: mover al modelador
         this._elementoDom.remove();
-        this._entidad.eliminarAtributo(this._atributo);
-    }
-
-    representarseEn(contenedor: HTMLElement) {
-        contenedor.append(this._elementoDom);
-        this._campoNombre.focus();
+        this._modelador.eliminarAtributo(this._atributo, this._entidad);
     }
 }

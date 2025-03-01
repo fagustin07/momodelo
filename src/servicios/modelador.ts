@@ -1,12 +1,21 @@
 import {Atributo} from "../modelo/atributo";
 import {Entidad} from "../modelo/entidad";
 import {Relacion} from "../modelo/relacion";
-import {MER, SolicitudCrearRelacion} from "../../types";
+import {Modelable, SolicitudCrearRelacion} from "../../types";
 
-
-export class Modelador implements MER {
-    entidades: Entidad[] = [];
+export class Modelador implements Modelable {
+    entidades: Entidad[];
     relaciones: Relacion[] = [];
+
+    constructor(entidadesExistentes: Entidad[]) {
+        this.entidades = entidadesExistentes;
+    }
+
+    eliminarEntidad(entidad:Entidad) {
+        this.entidades = this.entidades.filter(entidadActual => entidadActual !== entidad);
+        console.log(`Entidad eliminada: ${entidad.nombre()}`);
+    }
+
     renombrarAtributo(nuevoNombre: string, atributoExistente: Atributo, entidad: Entidad): Atributo {
         return entidad.renombrarAtributo(atributoExistente, nuevoNombre);
     }
@@ -23,10 +32,12 @@ export class Modelador implements MER {
         throw new Error("Sin implementar");
     }
 
-    eliminarAtributo(_atributo: Atributo, _entidad: Entidad): void {
+    eliminarAtributo(atributo: Atributo, entidad: Entidad): void {
+        entidad.eliminarAtributo(atributo);
     }
 
     eliminarRelacion(_relacion: Relacion): void {
+        throw new Error("Sin implementar");
     }
 
     hacerAtributoCompuesto(_nombreDeAtributoNuevo: string, _atributoExistente: Atributo): Atributo {
