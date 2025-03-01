@@ -1,5 +1,4 @@
 import {Entidad} from "./modelo/entidad.ts";
-import {hacerArrastrable} from "./arrastrable.ts";
 import {coordenada} from "./posicion.ts";
 import {VistaAtributo} from "./vista/vistaAtributo.ts";
 import {Modelador} from "./servicios/modelador.ts";

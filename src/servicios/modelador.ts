@@ -12,8 +12,7 @@ export class Modelador implements Modelable {
     }
 
     eliminarEntidad(entidad:Entidad) {
-        this.entidades = this.entidades.filter(entidadActual => entidadActual !== entidad);
-        console.log(`Entidad eliminada: ${entidad.nombre()}`);
+        this.entidades.splice(this.entidades.indexOf(entidad));
     }
 
     renombrarAtributo(nuevoNombre: string, atributoExistente: Atributo, entidad: Entidad): Atributo {
