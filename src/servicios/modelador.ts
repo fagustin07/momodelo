@@ -1,9 +1,9 @@
 import {Atributo} from "../modelo/atributo";
 import {Entidad} from "../modelo/entidad";
 import {Relacion} from "../modelo/relacion";
-import {Modelable, SolicitudCrearRelacion} from "../../types";
+import {ConstructorDeMER, SolicitudCrearRelacion} from "../../types";
 
-export class Modelador implements Modelable {
+export class Modelador implements ConstructorDeMER {
     entidades: Entidad[];
     relaciones: Relacion[] = [];
 

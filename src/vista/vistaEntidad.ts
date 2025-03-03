@@ -20,6 +20,7 @@ export class VistaEntidad {
     representarseEn(contenedor: HTMLElement) {
         contenedor.append(this._elementoDom);
         this._campoNombre.focus();
+        this._campoNombre.select();
     }
 
     private _crearElementoDom() {

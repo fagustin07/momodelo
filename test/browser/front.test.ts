@@ -1,5 +1,6 @@
 import {beforeEach, describe, expect, it} from "vitest";
 import {fireEvent, within} from "@testing-library/dom";
+import userEvent from "@testing-library/user-event";
 import {init} from "../../src/vista";
 import {Entidad} from "../../src/modelo/entidad";
 import {coordenada} from "../../src/posicion";
@@ -79,6 +80,28 @@ describe("[MER] Vista Modelo tests", () => {
 
         expect(campoNombre.value).toBe("Capitán");
     });
+
+    it("Cuando se crea una entidad, se puede escribir el nombre en ella inmediatamente", async () => {
+        fireEvent.dblClick(elementoRaiz, { clientX: 100, clientY: 100 });
+        const elementoEntidad = getElementoEntidades()[1];
+
+        const campoAtributo = within(elementoEntidad).getByTitle<HTMLButtonElement>("nombre Entidad");
+        expect(document.activeElement).toEqual(campoAtributo);
+    });
+
+
+    it.skip("Cuando se crea una entidad, se puede escribir el nombre en ella inmediatamente y reemplaza el texto por defecto", async () => {
+        fireEvent.dblClick(elementoRaiz, { clientX: 100, clientY: 100 });
+
+        const campoNombre = document.activeElement as HTMLInputElement;
+
+
+        // TODO: testear el tipeo que reemplaza el nombre por defecto.
+        await userEvent.type(campoNombre, "Capitán");
+
+        expect(campoNombre.value).toBe("Capitán");
+    });
+
 
     it("Se puede eliminar entidades del MER", () => {
         const elementoEntidades = getElementoEntidades();

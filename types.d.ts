@@ -10,7 +10,7 @@ declare interface SolicitudCrearRelacion {
     maximaOrigen: Maxima; // OBJETO CARDINALIDAD.
     maximaDestino: Maxima;
 }
-declare interface Modelable {
+declare interface ConstructorDeMER {
     entidades: Entidad[];
     relaciones: Relacion[];
     agregarAtributo: (nombreDeAtributoNuevo: string, entidadExistente: Entidad, esMultivaluado: boolean) => Atributo;
