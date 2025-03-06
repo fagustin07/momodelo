@@ -67,7 +67,7 @@ describe("[MER] Vista Modelo tests", () => {
     });
 
     it("Cuando se escribe un nombre en la entidad creada, el modelo se actualiza correctamente", async () => {
-        fireEvent.dblClick(elementoRaiz, { clientX: 100, clientY: 100 });
+        fireEvent.dblClick(elementoRaiz, {clientX: 100, clientY: 100});
 
         const elementoEntidades = getElementoEntidades();
         expect(elementoEntidades.length).toBe(2);
@@ -75,29 +75,27 @@ describe("[MER] Vista Modelo tests", () => {
         const nuevaEntidad = elementoEntidades[1];
         const campoNombre = campoNombreDe(nuevaEntidad);
 
-        fireEvent.input(campoNombre, { target: { value: "Capitán" } });
+        fireEvent.input(campoNombre, {target: {value: "Capitán"}});
 
 
         expect(campoNombre.value).toBe("Capitán");
     });
 
     it("Cuando se crea una entidad, se puede escribir el nombre en ella inmediatamente", async () => {
-        fireEvent.dblClick(elementoRaiz, { clientX: 100, clientY: 100 });
+        fireEvent.dblClick(elementoRaiz, {clientX: 100, clientY: 100});
         const elementoEntidad = getElementoEntidades()[1];
 
         const campoAtributo = within(elementoEntidad).getByTitle<HTMLButtonElement>("nombre Entidad");
         expect(document.activeElement).toEqual(campoAtributo);
     });
 
-
-    it.skip("Cuando se crea una entidad, se puede escribir el nombre en ella inmediatamente y reemplaza el texto por defecto", async () => {
-        fireEvent.dblClick(elementoRaiz, { clientX: 100, clientY: 100 });
-
+    it("Cuando se crea una entidad, se puede escribir el nombre en ella inmediatamente y reemplaza el texto por defecto", async () => {
+        fireEvent.dblClick(elementoRaiz, {clientX: 100, clientY: 100});
         const campoNombre = document.activeElement as HTMLInputElement;
 
-
-        // TODO: testear el tipeo que reemplaza el nombre por defecto.
-        await userEvent.type(campoNombre, "Capitán");
+        await userEvent.type(campoNombre, "Capitán", {
+            skipClick: true
+        });
 
         expect(campoNombre.value).toBe("Capitán");
     });
