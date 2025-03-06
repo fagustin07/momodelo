@@ -10,9 +10,9 @@ export class VistaAtributo {
     private _campoNombre!: HTMLInputElement;
     private _modelador: Modelador;
 
-    constructor(atributo: Atributo, modelador: Modelador, entidadTemp: Entidad) {
+    constructor(atributo: Atributo, modelador: Modelador, entidad: Entidad) {
         this._atributo = atributo;
-        this._entidad = entidadTemp;
+        this._entidad = entidad;
         this._modelador = modelador;
         this._elementoDom = this._crearElementoDom();
     }
