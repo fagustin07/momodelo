@@ -2,12 +2,7 @@ import {Entidad} from "../modelo/entidad.ts";
 import {Atributo} from "../modelo/atributo.ts";
 import {SolicitudCrearRelacion} from "../../types";
 import {VistaRelacion} from "../vista/vistaRelacion.ts";
-
-export type Relacion = {
-    nombre: string;
-    entidad1: Entidad;
-    entidad2: Entidad;
-};
+import {Relacion} from "../modelo/relacion.ts";
 
 export class Modelador {
     entidades: Entidad[];
@@ -63,18 +58,19 @@ export class Modelador {
         throw new Error("Sin implementar");
     }
 
-    renombrarRelacion(_nuevoNombre: string, _relacion: Relacion): Relacion {
-        throw new Error("Sin implementar");
+    renombrarRelacion(nuevoNombre: string, relacion: Relacion): Relacion {
+        return relacion.cambiarNombre(nuevoNombre)
     }
 
     crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad) {
         const nuevaVista = new VistaRelacion(entidadOrigen, entidadDestino, this);
+        nuevaVista.representarse();
         this._relacionesVisuales.push(nuevaVista);
     }
 
     actualizarRelacionesVisuales() {
         this._relacionesVisuales.forEach(rel => {
-            rel.actualizarPosicion();
+            rel.reposicionarRelacion();
         });
     }
 
@@ -85,7 +81,7 @@ export class Modelador {
     private _checkDeseleccionDe(entidad: Entidad) {
         if (this._entidadSeleccionada === entidad) { // TODO: TEST
             this.deseleccionarEntidad();
-            // borrar del DOM y guardado las relaciones de la entidad?
         }
     }
+
 }

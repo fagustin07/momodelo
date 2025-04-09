@@ -1,124 +1,93 @@
 import {Entidad} from "../modelo/entidad";
-import {Modelador} from "../servicios/modelador.ts";
+import {Modelador} from "../servicios/modelador";
+import {Relacion} from "../modelo/relacion";
+import {coordenada} from "../posicion";
 
 export class VistaRelacion {
-    private _entidad1: Entidad;
-    private _entidad2: Entidad;
-    private _rombo: SVGPolygonElement;
-    private _linea1: SVGLineElement;
-    private _linea2: SVGLineElement;
-    private _input: HTMLInputElement;
-    private _nombre: string;
+    private readonly _entidadOrigen: Entidad;
+    private readonly _entidadDestino: Entidad;
+    private readonly _modelador: Modelador;
+    private _relacion: Relacion;
+
+    private _rombo!: SVGPolygonElement;
+    private _lineaOrigen!: SVGLineElement;
+    private _lineaDestino!: SVGLineElement;
+    private _input!: HTMLInputElement;
 
     constructor(entidad1: Entidad, entidad2: Entidad, modelador: Modelador) {
-        this._entidad1 = entidad1;
-        this._entidad2 = entidad2;
-        this._nombre = "RELACION";
+        this._entidadOrigen = entidad1;
+        this._entidadDestino = entidad2;
+        this._modelador = modelador;
 
+        const centro = this._calcularCentro();
+        this._relacion = new Relacion("RELACION", entidad1, entidad2, coordenada(centro.x, centro.y));
+        this._modelador.relaciones.push(this._relacion);
 
-        const svg = document.querySelector("svg")!;
-
-        const centro = (e: Entidad) => ({
-            x: e.posicion().x + 75,
-            y: e.posicion().y + 25
-        });
-
-        const c1 = centro(entidad1);
-        const c2 = centro(entidad2);
-
-        const medio = {
-            x: (c1.x + c2.x) / 2,
-            y: (c1.y + c2.y) / 2
-        };
-
-        const ancho = 200, alto = 100;
-
-        const rombo = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-        const puntos = [
-            `${medio.x},${medio.y - alto / 2}`,
-            `${medio.x + ancho / 2},${medio.y}`,
-            `${medio.x},${medio.y + alto / 2}`,
-            `${medio.x - ancho / 2},${medio.y}`
-        ].join(" ");
-
-        rombo.setAttribute("points", puntos);
-        rombo.setAttribute("fill", "white");
-        rombo.setAttribute("stroke", "black");
-        rombo.setAttribute("stroke-width", "2");
-
-        svg.appendChild(rombo);
-
-        const linea1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        linea1.setAttribute("x1", `${c1.x}`);
-        linea1.setAttribute("y1", `${c1.y}`);
-        linea1.setAttribute("x2", `${medio.x}`);
-        linea1.setAttribute("y2", `${medio.y}`);
-        linea1.setAttribute("stroke", "black");
-        linea1.setAttribute("stroke-width", "2");
-
-        const linea2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        linea2.setAttribute("x1", `${c2.x}`);
-        linea2.setAttribute("y1", `${c2.y}`);
-        linea2.setAttribute("x2", `${medio.x}`);
-        linea2.setAttribute("y2", `${medio.y}`);
-        linea2.setAttribute("stroke", "black");
-        linea2.setAttribute("stroke-width", "2");
-
-        svg.appendChild(linea1);
-        svg.appendChild(linea2);
-
-        const input = document.createElement("input");
-        input.value = "RELACION";
-        input.title = "Nombre de la relación";
-        input.style.position = "absolute";
-        input.style.left = `${medio.x}px`;
-        input.style.top = `${medio.y}px`;
-        input.style.transform = "translate(-50%, -50%)";
-        input.style.width = "60px";
-
-        input.addEventListener("blur", () => {
-            const nombre = input.value.trim() || "RELACION";
-            modelador.relaciones.push({nombre, entidad1, entidad2});
-            console.log("Relación guardada:", nombre);
-        });
-
-        document.body.appendChild(input);
-
-        input.focus();
-        input.select();
-        this._input = input;
-
-        this._linea1 = linea1;
-        this._linea2 = linea2;
-        this._rombo = rombo;
+        this._crearElementoDom();
+        this.reposicionarRelacion();
     }
 
-    representarse(svg: SVGSVGElement, htmlContainer: HTMLElement) {
-        svg.appendChild(this._linea1);
-        svg.appendChild(this._linea2);
+    private _crearElementoDom() {
+        const svg = document.querySelector("svg")!;
+
+        this._rombo = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        this._rombo.setAttribute("fill", "white");
+        this._rombo.setAttribute("stroke", "black");
+        this._rombo.setAttribute("stroke-width", "2");
+
+        this._lineaOrigen = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        this._lineaOrigen.setAttribute("stroke", "black");
+        this._lineaOrigen.setAttribute("stroke-width", "2");
+
+        this._lineaDestino = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        this._lineaDestino.setAttribute("stroke", "black");
+        this._lineaDestino.setAttribute("stroke-width", "2");
+
+        this._input = document.createElement("input");
+        this._input.value = this._relacion.nombre();
+        this._input.title = "Nombre de la relación";
+        this._input.style.position = "absolute";
+        this._input.style.width = "80px";
+        this._input.style.border = "none";
+        this._input.style.textAlign = "center";
+        this._input.style.background = "transparent";
+        this._input.style.transform = "translate(-50%, -50%)";
+
+        this._input.addEventListener("input", () => {
+            const nombre = this._input.value.trim() || "RELACION";
+            this._relacion = this._modelador.renombrarRelacion(nombre, this._relacion);
+        });
+    }
+
+    representarse() {
+        const svg = document.querySelector("svg")!;
+        svg.appendChild(this._lineaOrigen);
+        svg.appendChild(this._lineaDestino);
         svg.appendChild(this._rombo);
-        htmlContainer.appendChild(this._input);
-        this.actualizarPosicion();
+        document.body.appendChild(this._input);
+
         this._input.focus();
         this._input.select();
     }
 
-    actualizarPosicion() {
-        const centro = (e: Entidad) => ({
-            x: e.posicion().x + 75,
-            y: e.posicion().y + 25
-        });
+    reposicionarRelacion() {
+        const c1 = this._centroDeEntidad(this._entidadOrigen);
+        const c2 = this._centroDeEntidad(this._entidadDestino);
+        const medio = this._calcularCentro();
 
-        const c1 = centro(this._entidad1);
-        const c2 = centro(this._entidad2);
-        const medio = {
-            x: (c1.x + c2.x) / 2,
-            y: (c1.y + c2.y) / 2
-        };
+        this._relacion.moverseHacia(coordenada(medio.x, medio.y));
+
+        this._lineaOrigen.setAttribute("x1", `${c1.x}`);
+        this._lineaOrigen.setAttribute("y1", `${c1.y}`);
+        this._lineaOrigen.setAttribute("x2", `${medio.x}`);
+        this._lineaOrigen.setAttribute("y2", `${medio.y}`);
+
+        this._lineaDestino.setAttribute("x1", `${c2.x}`);
+        this._lineaDestino.setAttribute("y1", `${c2.y}`);
+        this._lineaDestino.setAttribute("x2", `${medio.x}`);
+        this._lineaDestino.setAttribute("y2", `${medio.y}`);
 
         const ancho = 200, alto = 100;
-
-        // actualizar rombo
         const puntos = [
             `${medio.x},${medio.y - alto / 2}`,
             `${medio.x + ancho / 2},${medio.y}`,
@@ -127,28 +96,20 @@ export class VistaRelacion {
         ].join(" ");
         this._rombo.setAttribute("points", puntos);
 
-        // actualizar líneas
-        this._linea1.setAttribute("x1", `${c1.x}`);
-        this._linea1.setAttribute("y1", `${c1.y}`);
-        this._linea1.setAttribute("x2", `${medio.x}`);
-        this._linea1.setAttribute("y2", `${medio.y}`);
-
-        this._linea2.setAttribute("x1", `${c2.x}`);
-        this._linea2.setAttribute("y1", `${c2.y}`);
-        this._linea2.setAttribute("x2", `${medio.x}`);
-        this._linea2.setAttribute("y2", `${medio.y}`);
-
-        // actualizar input
         this._input.style.left = `${medio.x}px`;
         this._input.style.top = `${medio.y}px`;
-        this._input.style.transform = "translate(-50%, -50%)";
     }
 
-    nombre() {
-        return this._nombre;
+    private _centroDeEntidad(entidad: Entidad) {
+        return entidad.posicion().plus(coordenada(75, 25));
     }
 
-    entidades() {
-        return [this._entidad1, this._entidad2];
+    private _calcularCentro() {
+        const c1 = this._centroDeEntidad(this._entidadOrigen);
+        const c2 = this._centroDeEntidad(this._entidadDestino);
+        return {
+            x: (c1.x + c2.x) / 2,
+            y: (c1.y + c2.y) / 2
+        };
     }
 }

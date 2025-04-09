@@ -19,7 +19,7 @@ export class Relacion {
     }
 
     cambiarNombre(nuevoNombre: string) {
-        this._nombre = nuevoNombre;
+        return new Relacion(nuevoNombre, this._entidadOrigen, this._entidadDestino, this._posicion);
     }
 
     posicion() {
