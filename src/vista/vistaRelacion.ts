@@ -1,4 +1,5 @@
 import {Entidad} from "../modelo/entidad";
+import {Modelador} from "../servicios/modelador.ts";
 
 export class VistaRelacion {
     private _entidad1: Entidad;
@@ -9,39 +10,87 @@ export class VistaRelacion {
     private _input: HTMLInputElement;
     private _nombre: string;
 
-    constructor(entidad1: Entidad, entidad2: Entidad, nombreInicial: string = "RELACION") {
+    constructor(entidad1: Entidad, entidad2: Entidad, modelador: Modelador) {
         this._entidad1 = entidad1;
         this._entidad2 = entidad2;
-        this._nombre = nombreInicial;
+        this._nombre = "RELACION";
 
-        // Crear elementos
-        this._linea1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        this._linea2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        this._rombo = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-        this._input = document.createElement("input");
 
-        // Estilo del rombo
-        this._rombo.setAttribute("fill", "white");
-        this._rombo.setAttribute("stroke", "black");
-        this._rombo.setAttribute("stroke-width", "2");
+        const svg = document.querySelector("svg")!;
 
-        [this._linea1, this._linea2].forEach(linea => {
-            linea.setAttribute("stroke", "black");
-            linea.setAttribute("stroke-width", "2");
+        const centro = (e: Entidad) => ({
+            x: e.posicion().x + 75,
+            y: e.posicion().y + 25
         });
 
-        // Estilo del input
-        this._input.value = nombreInicial;
-        this._input.title = "Nombre de la relación";
-        this._input.style.position = "absolute";
-        this._input.style.width = "100px";
-        this._input.style.textAlign = "center";
-        this._input.style.fontSize = "14px";
-        this._input.style.zIndex = "10";
+        const c1 = centro(entidad1);
+        const c2 = centro(entidad2);
 
-        this._input.addEventListener("input", () => {
-            this._nombre = this._input.value.trim() || "RELACION";
+        const medio = {
+            x: (c1.x + c2.x) / 2,
+            y: (c1.y + c2.y) / 2
+        };
+
+        const ancho = 200, alto = 100;
+
+        const rombo = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        const puntos = [
+            `${medio.x},${medio.y - alto / 2}`,
+            `${medio.x + ancho / 2},${medio.y}`,
+            `${medio.x},${medio.y + alto / 2}`,
+            `${medio.x - ancho / 2},${medio.y}`
+        ].join(" ");
+
+        rombo.setAttribute("points", puntos);
+        rombo.setAttribute("fill", "white");
+        rombo.setAttribute("stroke", "black");
+        rombo.setAttribute("stroke-width", "2");
+
+        svg.appendChild(rombo);
+
+        const linea1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        linea1.setAttribute("x1", `${c1.x}`);
+        linea1.setAttribute("y1", `${c1.y}`);
+        linea1.setAttribute("x2", `${medio.x}`);
+        linea1.setAttribute("y2", `${medio.y}`);
+        linea1.setAttribute("stroke", "black");
+        linea1.setAttribute("stroke-width", "2");
+
+        const linea2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        linea2.setAttribute("x1", `${c2.x}`);
+        linea2.setAttribute("y1", `${c2.y}`);
+        linea2.setAttribute("x2", `${medio.x}`);
+        linea2.setAttribute("y2", `${medio.y}`);
+        linea2.setAttribute("stroke", "black");
+        linea2.setAttribute("stroke-width", "2");
+
+        svg.appendChild(linea1);
+        svg.appendChild(linea2);
+
+        const input = document.createElement("input");
+        input.value = "RELACION";
+        input.title = "Nombre de la relación";
+        input.style.position = "absolute";
+        input.style.left = `${medio.x}px`;
+        input.style.top = `${medio.y}px`;
+        input.style.transform = "translate(-50%, -50%)";
+        input.style.width = "60px";
+
+        input.addEventListener("blur", () => {
+            const nombre = input.value.trim() || "RELACION";
+            modelador.relaciones.push({nombre, entidad1, entidad2});
+            console.log("Relación guardada:", nombre);
         });
+
+        document.body.appendChild(input);
+
+        input.focus();
+        input.select();
+        this._input = input;
+
+        this._linea1 = linea1;
+        this._linea2 = linea2;
+        this._rombo = rombo;
     }
 
     representarse(svg: SVGSVGElement, htmlContainer: HTMLElement) {
