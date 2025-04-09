@@ -28,8 +28,6 @@ export class VistaRelacion {
     }
 
     private _crearElementoDom() {
-        const svg = document.querySelector("svg")!;
-
         this._rombo = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
         this._rombo.setAttribute("fill", "white");
         this._rombo.setAttribute("stroke", "black");
