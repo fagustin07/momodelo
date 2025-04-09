@@ -1,55 +1,40 @@
-import { Entidad } from "./entidad";
-
-export enum Rol {
-    ORIGEN = "ORIGEN",
-    DESTINO = "DESTINO"
-}
-
-export enum Minima {
-    CERO = 0,
-    UNO = 1
-}
-
-export enum Maxima {
-    UNO = 1,
-    N = "N"
-}
-
-export type Participacion = readonly [Minima, Maxima];
+import {Entidad} from "./entidad";
+import {Posicion} from "../posicion";
 
 export class Relacion {
     private _nombre: string;
-    private _entidadOrigen: Entidad;
-    private _entidadDestino: Entidad;
-    private _cardinalidades: Map<Rol, Participacion>;
+    private readonly _entidadOrigen: Entidad;
+    private readonly _entidadDestino: Entidad;
+    private _posicion: Posicion;
 
-    constructor(nombre: string, entidadOrigen: Entidad, entidadDestino: Entidad) {
+    constructor(nombre: string, entidad1: Entidad, entidad2: Entidad, posicion: Posicion) {
         this._nombre = nombre;
-        this._entidadOrigen = entidadOrigen;
-        this._entidadDestino = entidadDestino;
-        this._cardinalidades = new Map([ // OBJETO CARDINALIDAD
-            [Rol.ORIGEN, [Minima.CERO, Maxima.N]],
-            [Rol.DESTINO, [Minima.CERO, Maxima.UNO]],
-        ]);
+        this._entidadOrigen = entidad1;
+        this._entidadDestino = entidad2;
+        this._posicion = posicion;
     }
 
-    nombre(): string {
+    nombre() {
         return this._nombre;
     }
 
-    setNombre(nombre: string): void {
-        this._nombre = nombre;
+    cambiarNombre(nuevoNombre: string) {
+        this._nombre = nuevoNombre;
     }
 
-    entidades(): [Entidad, Entidad] {
+    posicion() {
+        return this._posicion;
+    }
+
+    moverseHacia(delta: Posicion) {
+        this._posicion = this._posicion.plus(delta);
+    }
+
+    entidades() {
         return [this._entidadOrigen, this._entidadDestino];
     }
 
-    getCardinalidad(rol: Rol): Participacion {
-        return this._cardinalidades.get(rol) ?? [Minima.CERO, Maxima.UNO];
-    }
-
-    setCardinalidad(rol: Rol, cardinalidad: Participacion): void {
-        this._cardinalidades.set(rol, cardinalidad);
+    contieneA(entidad: Entidad): boolean {
+        return this._entidadOrigen === entidad || this._entidadDestino === entidad;
     }
 }

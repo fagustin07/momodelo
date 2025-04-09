@@ -51,6 +51,8 @@ export class VistaEntidad {
             onclick: (evento) => {
                 if (evento.ctrlKey && evento.shiftKey) {
                     this._eliminarEntidad();
+                } else {
+                    this._modelador.seleccionarEntidad(this._entidad);
                 }
             }
         }, [
@@ -81,7 +83,7 @@ export class VistaEntidad {
             alArrastrar: (_, delta) => {
                 this._entidad.moverseHacia(delta);
                 posicionarElemento(elementoDOMEntidad, this._entidad);
-
+                this._modelador.actualizarRelacionesVisuales();
             },
             alSoltar: () => elementoDOMEntidad.classList.remove("moviendose"),
         });

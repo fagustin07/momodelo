@@ -17,14 +17,12 @@ export class Entidad {
     }
 
     agregarAtributo(nombreDeNuevoAtributo: string) {
-        // todo: listas inmutables
         const nuevoAtributo = new Atributo(nombreDeNuevoAtributo);
         this._atributos.push(nuevoAtributo);
         return nuevoAtributo;
     }
 
     renombrarAtributo(atributo: Atributo, nuevoNombre: string) {
-        // todo: listas inmutables
         this._atributos = this._atributos.filter(atributoListado => atributoListado !== atributo);
         return this.agregarAtributo(nuevoNombre);
     }
@@ -46,12 +44,6 @@ export class Entidad {
     }
 
     eliminarAtributo(atributoAEliminar: Atributo) {
-        // todo: listas inmutables
-        //  return new Entidad(
-        //     this._nombre,
-        //     this._atributos.filter(atributo => atributo !== atributoAEliminar),
-        //     this._posicion
-        // );
         this._atributos = this._atributos.filter(atributo => atributoAEliminar !== atributo);
     }
 }
