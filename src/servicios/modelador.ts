@@ -36,8 +36,11 @@ export class Modelador {
         }
     }
 
-    eliminarEntidad(entidad:Entidad) {
-        this.entidades.splice(this.entidades.indexOf(entidad)); // no funciona ahora
+    eliminarEntidad(entidad: Entidad) {
+        this.entidades.splice(this.entidades.indexOf(entidad));
+        // TODO ¿Cómo manejamos el caso borde de "Borro una entidad con alguna relación/atributo"?
+        //  Tal vez, al detectar que se quiere borrar una entidad con relaciones/atributos, advertir al usuario paso previo
+        this._checkDeseleccionDe(entidad);
     }
 
     renombrarAtributo(nuevoNombre: string, atributoExistente: Atributo, entidad: Entidad): Atributo {
@@ -202,5 +205,16 @@ export class Modelador {
         // actualizar posición del input
         rel.input.style.left = `${medio.x}px`;
         rel.input.style.top = `${medio.y}px`;
+    }
+
+    private deseleccionarEntidad() {
+        this._entidadSeleccionada = null;
+    }
+
+    private _checkDeseleccionDe(entidad: Entidad) {
+        if (this._entidadSeleccionada === entidad) { // TODO: TEST
+            this.deseleccionarEntidad();
+            // borrar del DOM y guardado las relaciones de la entidad?
+        }
     }
 }
