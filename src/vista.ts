@@ -22,7 +22,6 @@ function vistaRepresentandoEntidad(contenedorEntidades: HTMLElement, entidad: En
 export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[]) {
     const modelador = new Modelador(entidadesEnModelo);
 
-    // VISTA MODELO
     elementoRaiz.addEventListener("dblclick", evento => {
         if (evento.target !== elementoRaiz) return;
 
