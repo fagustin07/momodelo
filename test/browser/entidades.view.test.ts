@@ -5,13 +5,14 @@ import {init} from "../../src/vista";
 import {Entidad} from "../../src/modelo/entidad";
 import {coordenada} from "../../src/posicion";
 import "../../src/style.css";
+import {Modelador} from "../../src/servicios/modelador.ts";
 
-function getElementoEntidades() {
+export function getElementoEntidades() {
     return [...document.querySelectorAll<HTMLElement>(".entidad")];
 }
 
 function campoNombreDe(elementoEntidad: HTMLElement) {
-    return within(elementoEntidad).getByTitle<HTMLInputElement>("nombre Entidad");
+    return within(elementoEntidad).getByTitle<HTMLInputElement>("Nombre Entidad");
 }
 
 function cambiarNombreEntidadPor(elementoEntidad: HTMLElement, nuevoValor: string) {
@@ -40,6 +41,7 @@ describe("[MER] Vista Modelo tests", () => {
     let entidad: Entidad;
     let elementoRaiz: HTMLElement;
     let entidadesEnModelo: Entidad[];
+    let modelador: Modelador;
 
     beforeEach(() => {
         document.body.innerHTML = '';
@@ -47,7 +49,7 @@ describe("[MER] Vista Modelo tests", () => {
         document.body.append(elementoRaiz);
         entidad = new Entidad("Pirata", [], coordenada(10, 10));
         entidadesEnModelo = [entidad];
-        init(elementoRaiz, entidadesEnModelo);
+        modelador = init(elementoRaiz, entidadesEnModelo);
     });
 
     it("Dada una inicializacion con una entidad, entonces la misma se encuentra en el DOM", () => {
@@ -63,20 +65,17 @@ describe("[MER] Vista Modelo tests", () => {
 
         cambiarNombreEntidadPor(elementoEntidad, "Marinero");
 
-        expect(entidad.nombre()).toEqual("Marinero");
+        expect(modelador.entidades[0].nombre()).toEqual("Marinero");
     });
 
     it("Cuando se escribe un nombre en la entidad creada, el modelo se actualiza correctamente", async () => {
         fireEvent.dblClick(elementoRaiz, {clientX: 100, clientY: 100});
-
         const elementoEntidades = getElementoEntidades();
         expect(elementoEntidades.length).toBe(2);
-
         const nuevaEntidad = elementoEntidades[1];
         const campoNombre = campoNombreDe(nuevaEntidad);
 
         fireEvent.input(campoNombre, {target: {value: "Capitán"}});
-
 
         expect(campoNombre.value).toBe("Capitán");
     });
@@ -85,7 +84,7 @@ describe("[MER] Vista Modelo tests", () => {
         fireEvent.dblClick(elementoRaiz, {clientX: 100, clientY: 100});
         const elementoEntidad = getElementoEntidades()[1];
 
-        const campoAtributo = within(elementoEntidad).getByTitle<HTMLButtonElement>("nombre Entidad");
+        const campoAtributo = within(elementoEntidad).getByTitle<HTMLButtonElement>("Nombre Entidad");
         expect(document.activeElement).toEqual(campoAtributo);
     });
 
@@ -99,7 +98,6 @@ describe("[MER] Vista Modelo tests", () => {
 
         expect(campoNombre.value).toBe("Capitán");
     });
-
 
     it("Se puede eliminar entidades del MER", () => {
         const elementoEntidades = getElementoEntidades();

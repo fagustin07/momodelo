@@ -15,9 +15,9 @@ describe("Entidad", () => {
     });
 
     it("Dado una entidad inicializada, cuando se cambia el nombre, entonces debería reflejar el nuevo nombre", () => {
-        entidad.cambiarNombre("Marinero");
+        const nuevaEntidad = entidad.cambiarNombre("Marinero");
 
-        expect(entidad.nombre()).toEqual("Marinero");
+        expect(nuevaEntidad.nombre()).toEqual("Marinero");
     });
 
     it("Dado una entidad inicializada, cuando se agrega un atributo, entonces debería tener el nuevo atributo en la lista", () => {

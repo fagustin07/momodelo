@@ -23,11 +23,28 @@ export class Modelador {
         }
     }
 
+    renombrarEntidad(nuevoNombre: string, entidad: Entidad) {
+        const nuevaEntidad = entidad.cambiarNombre(nuevoNombre);
+
+        this.entidades[this.entidades.indexOf(entidad)] = nuevaEntidad;
+
+        this._relacionesVisuales.forEach((vr => {
+            this.relaciones[this.relaciones.indexOf(vr.relacion())] = vr.actualizarReferenciaA(entidad);
+        }))
+
+        return nuevaEntidad;
+    }
+
     eliminarEntidad(entidad: Entidad) {
         this.entidades.splice(this.entidades.indexOf(entidad));
-        // TODO ¿Cómo manejamos el caso borde de "Borro una entidad con alguna relación/atributo"?
-        //  Tal vez, al detectar que se quiere borrar una entidad con relaciones/atributos, advertir al usuario paso previo
         this._checkDeseleccionDe(entidad);
+        const relacionesAEliminar = this.relaciones.filter(relacion => relacion.contieneA(entidad));
+        relacionesAEliminar.forEach((relacionAEliminar) => {
+            this.relaciones.splice(this.relaciones.indexOf(relacionAEliminar));
+            const vistaRelacion = this._relacionesVisuales.find(vr => vr.representaA(relacionAEliminar))!;
+            vistaRelacion.borrarse();
+            this._relacionesVisuales.splice(this._relacionesVisuales.indexOf(vistaRelacion), 1);
+        });
     }
 
     renombrarAtributo(nuevoNombre: string, atributoExistente: Atributo, entidad: Entidad): Atributo {
@@ -50,8 +67,10 @@ export class Modelador {
         entidad.eliminarAtributo(atributo);
     }
 
-    eliminarRelacion(_relacion: Relacion): void {
-        throw new Error("Sin implementar");
+    eliminarRelacion(relacion: Relacion): void {
+        this.relaciones.splice(this.relaciones.indexOf(relacion));
+        const vistaRelacion = this._relacionesVisuales.find(vr => vr.representaA(relacion))
+        this._relacionesVisuales.splice(this._relacionesVisuales.indexOf(vistaRelacion!));
     }
 
     hacerAtributoCompuesto(_nombreDeAtributoNuevo: string, _atributoExistente: Atributo): Atributo {
@@ -59,7 +78,11 @@ export class Modelador {
     }
 
     renombrarRelacion(nuevoNombre: string, relacion: Relacion): Relacion {
-        return relacion.cambiarNombre(nuevoNombre)
+        const nuevaRelacion = relacion.cambiarNombre(nuevoNombre);
+
+        this.relaciones[this.relaciones.indexOf(relacion)] = nuevaRelacion;
+
+        return nuevaRelacion;
     }
 
     crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad) {

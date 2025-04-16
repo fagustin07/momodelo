@@ -13,7 +13,7 @@ export class Entidad {
     }
 
     cambiarNombre(nuevoNombre: string) {
-        this._nombre = nuevoNombre;
+        return new Entidad(nuevoNombre, this._atributos, this._posicion);
     }
 
     agregarAtributo(nombreDeNuevoAtributo: string) {

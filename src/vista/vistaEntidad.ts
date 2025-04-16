@@ -38,10 +38,12 @@ export class VistaEntidad {
 
     private _crearInputCampoNombre() {
         return createElement("input", {
-            title: "nombre Entidad",
+            title: "Nombre Entidad",
             value: this._entidad.nombre(),
-            oninput: () => this._entidad.cambiarNombre(this._campoNombre.value),
-
+            oninput: () => {
+                this._modelador.renombrarEntidad(this._campoNombre.value, this._entidad)
+                this._entidad = this._entidad.cambiarNombre(this._campoNombre.value)
+            },
         }, []);
     }
 
@@ -51,7 +53,7 @@ export class VistaEntidad {
             onclick: (evento) => {
                 if (evento.ctrlKey && evento.shiftKey) {
                     this._eliminarEntidad();
-                } else {
+                } else if (evento.altKey) {
                     this._modelador.seleccionarEntidad(this._entidad);
                 }
             }

@@ -32,18 +32,21 @@ export class VistaRelacion {
         this._rombo.setAttribute("fill", "white");
         this._rombo.setAttribute("stroke", "black");
         this._rombo.setAttribute("stroke-width", "2");
+        this._rombo.setAttribute("pointer-events", "all");
 
         this._lineaOrigen = document.createElementNS("http://www.w3.org/2000/svg", "line");
         this._lineaOrigen.setAttribute("stroke", "black");
         this._lineaOrigen.setAttribute("stroke-width", "2");
+        this._lineaOrigen.setAttribute("pointer-events", "none");
 
         this._lineaDestino = document.createElementNS("http://www.w3.org/2000/svg", "line");
         this._lineaDestino.setAttribute("stroke", "black");
         this._lineaDestino.setAttribute("stroke-width", "2");
+        this._lineaDestino.setAttribute("pointer-events", "none");
 
         this._input = document.createElement("input");
         this._input.value = this._relacion.nombre();
-        this._input.title = "Nombre de la relación";
+        this._input.title = "Nombre Relacion";
         this._input.style.position = "absolute";
         this._input.style.width = "80px";
         this._input.style.border = "none";
@@ -54,6 +57,18 @@ export class VistaRelacion {
         this._input.addEventListener("input", () => {
             const nombre = this._input.value.trim() || "RELACION";
             this._relacion = this._modelador.renombrarRelacion(nombre, this._relacion);
+        });
+
+        this._input.addEventListener("click", (evento) => {
+            if (evento.ctrlKey && evento.shiftKey) {
+                this._eliminarRelacion();
+            }
+        });
+
+        this._rombo.addEventListener("click", (evento) => {
+            if (evento.ctrlKey && evento.shiftKey) {
+                this._eliminarRelacion();
+            }
         });
     }
 
@@ -98,8 +113,38 @@ export class VistaRelacion {
         this._input.style.top = `${medio.y}px`;
     }
 
+    actualizarReferenciaA(entidad: Entidad): Relacion {
+        const relacionAReferenciar = this._relacion.cambiarReferenciaA(entidad);
+        this._relacion = relacionAReferenciar;
+        return relacionAReferenciar;
+    }
+
+    relacion() {
+        return this._relacion;
+    }
+
+    borrarse() {
+        const svg = document.querySelector("svg")!;
+        svg.removeChild(this._lineaOrigen);
+        svg.removeChild(this._lineaDestino);
+        svg.removeChild(this._rombo);
+        document.body.removeChild(this._input);
+    }
+    representaA(relacion: Relacion) {
+        return this._relacion === relacion;
+    }
+
     private _centroDeEntidad(entidad: Entidad) {
         return entidad.posicion().plus(coordenada(75, 25));
+    }
+
+    private _eliminarRelacion() {
+        const svg = document.querySelector("svg")!;
+        svg.removeChild(this._lineaOrigen);
+        svg.removeChild(this._lineaDestino);
+        svg.removeChild(this._rombo);
+        document.body.removeChild(this._input);
+        this._modelador.eliminarRelacion(this._relacion);
     }
 
     private _calcularCentro() {

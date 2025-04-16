@@ -32,10 +32,19 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[]) {
 
         vistaRepresentandoEntidad(elementoRaiz, entidad, modelador);
 
-        console.log(entidad);
     });
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.style.position = "absolute";
+    svg.style.top = "0";
+    svg.style.left = "0";
+    svg.style.width = "100%";
+    svg.style.height = "100%";
+    svg.style.pointerEvents = "none";
+    document.body.appendChild(svg);
 
     modelador.entidades.forEach(entidad => {
         vistaRepresentandoEntidad(elementoRaiz, entidad, modelador);
     });
+    return modelador;
 }

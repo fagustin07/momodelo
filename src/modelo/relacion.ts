@@ -37,4 +37,14 @@ export class Relacion {
     contieneA(entidad: Entidad): boolean {
         return this._entidadOrigen === entidad || this._entidadDestino === entidad;
     }
+
+    cambiarReferenciaA(entidad: Entidad): Relacion {
+        if (this._entidadOrigen === entidad) {
+            return new Relacion(this._nombre, entidad, this._entidadDestino, this._posicion);
+        } else if (this._entidadOrigen === entidad) {
+            return new Relacion(this._nombre, this._entidadOrigen, entidad, this._posicion);
+        } else {
+            return this;
+        }
+    }
 }
