@@ -7,10 +7,10 @@ export class Relacion {
     private readonly _entidadDestino: Entidad;
     private _posicion: Posicion;
 
-    constructor(nombre: string, entidad1: Entidad, entidad2: Entidad, posicion: Posicion) {
+    constructor(nombre: string, entidadOrigen: Entidad, entidadDestino: Entidad, posicion: Posicion) {
         this._nombre = nombre;
-        this._entidadOrigen = entidad1;
-        this._entidadDestino = entidad2;
+        this._entidadOrigen = entidadOrigen;
+        this._entidadDestino = entidadDestino;
         this._posicion = posicion;
     }
 

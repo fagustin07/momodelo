@@ -14,13 +14,13 @@ export class VistaRelacion {
     private _lineaDestino!: SVGLineElement;
     private _input!: HTMLInputElement;
 
-    constructor(entidad1: Entidad, entidad2: Entidad, modelador: Modelador) {
-        this._entidadOrigen = entidad1;
-        this._entidadDestino = entidad2;
+    constructor(entidadOrigen: Entidad, entidadDestino: Entidad, modelador: Modelador) {
+        this._entidadOrigen = entidadOrigen;
+        this._entidadDestino = entidadDestino;
         this._modelador = modelador;
 
         const centro = this._calcularCentro();
-        this._relacion = new Relacion("RELACION", entidad1, entidad2, coordenada(centro.x, centro.y));
+        this._relacion = new Relacion("RELACION", entidadOrigen, entidadDestino, coordenada(centro.x, centro.y));
         this._modelador.relaciones.push(this._relacion);
 
         this._crearElementoDom();

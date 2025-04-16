@@ -1,6 +1,5 @@
 import {Entidad} from "../modelo/entidad.ts";
 import {Atributo} from "../modelo/atributo.ts";
-import {SolicitudCrearRelacion} from "../../types";
 import {VistaRelacion} from "../vista/vistaRelacion.ts";
 import {Relacion} from "../modelo/relacion.ts";
 
@@ -14,6 +13,7 @@ export class Modelador {
         this.entidades = entidades;
     }
 
+    // ENTIDADES
     seleccionarEntidad(entidad: Entidad) {
         if (this._entidadSeleccionada && this._entidadSeleccionada !== entidad) {
             this.crearRelacion(this._entidadSeleccionada, entidad);
@@ -47,24 +47,24 @@ export class Modelador {
         });
     }
 
-    renombrarAtributo(nuevoNombre: string, atributoExistente: Atributo, entidad: Entidad): Atributo {
-        return entidad.renombrarAtributo(atributoExistente, nuevoNombre);
-    }
-
-    conectarEntidades(_nombre: string, _solicitud: SolicitudCrearRelacion): Relacion {
-        throw new Error("Sin implementar");
-    }
-
+    // ATRIBUTOS
     agregarAtributo(_nombreDeAtributoNuevo: string, _entidadExistente: Entidad, _esMultivaluado: boolean): Atributo {
         throw new Error("Sin implementar");
     }
 
-    agregarAtributoARelacion(_nombreAtributo: string, _relacionExistente: Relacion, _esMultivaluado: boolean): Relacion {
-        throw new Error("Sin implementar");
+    renombrarAtributo(nuevoNombre: string, atributoExistente: Atributo, entidad: Entidad): Atributo {
+        return entidad.renombrarAtributo(atributoExistente, nuevoNombre);
     }
 
     eliminarAtributo(atributo: Atributo, entidad: Entidad): void {
         entidad.eliminarAtributo(atributo);
+    }
+
+    // RELACIONES
+    crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad) {
+        const nuevaVista = new VistaRelacion(entidadOrigen, entidadDestino, this);
+        nuevaVista.representarse();
+        this._relacionesVisuales.push(nuevaVista);
     }
 
     eliminarRelacion(relacion: Relacion): void {
@@ -73,22 +73,12 @@ export class Modelador {
         this._relacionesVisuales.splice(this._relacionesVisuales.indexOf(vistaRelacion!));
     }
 
-    hacerAtributoCompuesto(_nombreDeAtributoNuevo: string, _atributoExistente: Atributo): Atributo {
-        throw new Error("Sin implementar");
-    }
-
     renombrarRelacion(nuevoNombre: string, relacion: Relacion): Relacion {
         const nuevaRelacion = relacion.cambiarNombre(nuevoNombre);
 
         this.relaciones[this.relaciones.indexOf(relacion)] = nuevaRelacion;
 
         return nuevaRelacion;
-    }
-
-    crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad) {
-        const nuevaVista = new VistaRelacion(entidadOrigen, entidadDestino, this);
-        nuevaVista.representarse();
-        this._relacionesVisuales.push(nuevaVista);
     }
 
     actualizarRelacionesVisuales() {
