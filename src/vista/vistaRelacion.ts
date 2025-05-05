@@ -22,7 +22,6 @@ export class VistaRelacion {
         const centro = this._calcularCentro();
         this._relacion = new Relacion(nombre, entidadOrigen, entidadDestino, coordenada(centro.x, centro.y));
         this._modelador.relaciones.push(this._relacion);
-
         this._crearElementoDom();
         this.reposicionarRelacion();
     }
@@ -114,12 +113,12 @@ export class VistaRelacion {
     }
 
     borrarse() {
-        const svg = document.querySelector("svg")!;
-        svg.removeChild(this._lineaOrigen);
-        svg.removeChild(this._lineaDestino);
-        svg.removeChild(this._rombo);
-        document.body.removeChild(this._input);
+        this._lineaOrigen.remove();
+        this._lineaDestino.remove();
+        this._rombo.remove();
+        this._input.remove();
     }
+
     representaA(relacion: Relacion) {
         return this._relacion === relacion;
     }
@@ -144,5 +143,9 @@ export class VistaRelacion {
             x: (c1.x + c2.x) / 2,
             y: (c1.y + c2.y) / 2
         };
+    }
+
+    relacionaA(entidad: Entidad) {
+        return this._relacion.contieneA(entidad);
     }
 }

@@ -1,7 +1,9 @@
 import {coordenada, Posicion} from "../posicion";
 import {Atributo} from "./atributo.ts";
+import {generadorDeIDs} from "../servicios/generadorDeIDs.ts";
 
 export class Entidad {
+    private readonly _id: number;
     private _nombre: string;
     private _atributos: Atributo[];
     private _posicion: Posicion;
@@ -10,6 +12,7 @@ export class Entidad {
         this._nombre = nombre;
         this._posicion = posicion;
         this._atributos = atributos;
+        this._id = generadorDeIDs.tomarID();
     }
 
     cambiarNombre(nuevoNombre: string) {
@@ -32,6 +35,10 @@ export class Entidad {
 
     nombre() {
         return this._nombre;
+    }
+
+    id() {
+        return this._id;
     }
 
     posicion() {

@@ -19,8 +19,8 @@ describe("[MER] Relación", () => {
         const entidad2 = new Entidad("Fruta", [], coordenada(100, 100));
         const relacion = new Relacion("Consume", entidad1, entidad2, coordenada(50, 50));
 
-        const nuevaRelacion = relacion.cambiarNombre("Come")
+        relacion.cambiarNombre("Come")
 
-        expect(nuevaRelacion.nombre()).toEqual("Come");
+        expect(relacion.nombre()).toEqual("Come");
     });
 });

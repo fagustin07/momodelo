@@ -38,7 +38,7 @@ describe("[MER] Vista Relaciones", () => {
         humorista = new Entidad("HUMORISTA", [], coordenada(300, 500));
         entidades = [personaje, humorista];
 
-        modelador = init(raiz, entidades);
+        modelador = init(raiz, entidades, []);
     });
 
     it("Dado dos entidades, cuando se seleccionan ambas, entonces se crea una relación entre ellas", async () => {

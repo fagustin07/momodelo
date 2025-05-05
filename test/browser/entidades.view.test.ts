@@ -49,7 +49,7 @@ describe("[MER] Vista Modelo tests", () => {
         document.body.append(elementoRaiz);
         entidad = new Entidad("Pirata", [], coordenada(10, 10));
         entidadesEnModelo = [entidad];
-        modelador = init(elementoRaiz, entidadesEnModelo);
+        modelador = init(elementoRaiz, entidadesEnModelo, []);
     });
 
     it("Dada una inicializacion con una entidad, entonces la misma se encuentra en el DOM", () => {
@@ -108,7 +108,7 @@ describe("[MER] Vista Modelo tests", () => {
         realizarGestoEliminarSobre(elementoEntidad);
 
         expect(getElementoEntidades().length).toBe(0);
-        expect(entidadesEnModelo.length).toBe(0);
+        expect(modelador.entidades.length).toBe(0);
     });
 
     it("Se puede agregar un atributo a una entidad existente", () => {

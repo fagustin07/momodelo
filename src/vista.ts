@@ -4,6 +4,8 @@ import {VistaAtributo} from "./vista/vistaAtributo.ts";
 import {Modelador} from "./servicios/modelador.ts";
 import {Atributo} from "./modelo/atributo.ts";
 import {VistaEntidad} from "./vista/vistaEntidad";
+import {generarTopbar} from "./topbar.ts";
+import {Relacion} from "./modelo/relacion.ts";
 
 export function posicionarElemento(elementoDOMEntidad: HTMLElement, entidad: Entidad) {
     elementoDOMEntidad.style.translate = `${entidad.posicion().x}px ${entidad.posicion().y}px`;
@@ -14,13 +16,16 @@ export function agregarAtributoEn(contenedorAtributos: HTMLElement, atributo: At
     vistaAtributo.representarseEn(contenedorAtributos);
 }
 
-function vistaRepresentandoEntidad(contenedorEntidades: HTMLElement, entidad: Entidad, modelador: Modelador) {
+export function vistaRepresentandoEntidad(contenedorEntidades: HTMLElement, entidad: Entidad, modelador: Modelador) {
     const vistaEntidad = new VistaEntidad(entidad, modelador);
     vistaEntidad.representarseEn(contenedorEntidades);
 }
 
-export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[]) {
+export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], relaciones: Relacion[]) {
     const modelador = new Modelador(entidadesEnModelo);
+    const topbar = generarTopbar(modelador, elementoRaiz);
+
+    elementoRaiz.append(topbar);
 
     elementoRaiz.addEventListener("dblclick", evento => {
         if (evento.target !== elementoRaiz) return;
@@ -45,5 +50,8 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[]) {
     modelador.entidades.forEach(entidad => {
         vistaRepresentandoEntidad(elementoRaiz, entidad, modelador);
     });
+    relaciones.forEach(rel => {
+        modelador.crearRelacion(rel.entidades()[0], rel.entidades()[1], rel.nombre());
+    })
     return modelador;
 }

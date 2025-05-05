@@ -1,10 +1,12 @@
 import {Entidad} from "./entidad";
 import {Posicion} from "../posicion";
+import {generadorDeIDs} from "../servicios/generadorDeIDs.ts";
 
 export class Relacion {
-    private _nombre: string;
+    private readonly _id: number;
     private readonly _entidadOrigen: Entidad;
     private readonly _entidadDestino: Entidad;
+    private _nombre: string;
     private _posicion: Posicion;
 
     constructor(nombre: string, entidadOrigen: Entidad, entidadDestino: Entidad, posicion: Posicion) {
@@ -12,6 +14,7 @@ export class Relacion {
         this._entidadOrigen = entidadOrigen;
         this._entidadDestino = entidadDestino;
         this._posicion = posicion;
+        this._id = generadorDeIDs.tomarID();
     }
 
     nombre() {
@@ -32,6 +35,18 @@ export class Relacion {
 
     entidades() {
         return [this._entidadOrigen, this._entidadDestino];
+    }
+
+    entidadOrigen() {
+        return this._entidadOrigen;
+    }
+
+    entidadDestino() {
+        return this._entidadDestino;
+    }
+
+    id() {
+        return this._id;
     }
 
     contieneA(entidad: Entidad): boolean {

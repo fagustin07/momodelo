@@ -1,12 +1,15 @@
 import {Posicion} from "../posicion";
+import {generadorDeIDs} from "../servicios/generadorDeIDs.ts";
 
 export class Atributo {
+    private readonly _id: number;
     private _nombre: string;
     private _posicion: Posicion;
 
     constructor(nombre: string = 'ATRIBUTO', posicion: Posicion) {
         this._nombre = nombre;
         this._posicion = posicion;
+        this._id = generadorDeIDs.tomarID();
     }
 
     nombre() {
@@ -15,6 +18,10 @@ export class Atributo {
 
     posicion() {
         return this._posicion;
+    }
+
+    id() {
+        return this._id;
     }
 
     moverseHacia(delta: Posicion) {
