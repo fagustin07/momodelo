@@ -19,7 +19,7 @@ export class Relacion {
     }
 
     cambiarNombre(nuevoNombre: string) {
-        return new Relacion(nuevoNombre, this._entidadOrigen, this._entidadDestino, this._posicion);
+        this._nombre = nuevoNombre;
     }
 
     posicion() {
@@ -38,13 +38,4 @@ export class Relacion {
         return this._entidadOrigen === entidad || this._entidadDestino === entidad;
     }
 
-    cambiarReferenciaA(entidad: Entidad): Relacion {
-        if (this._entidadOrigen === entidad) {
-            return new Relacion(this._nombre, entidad, this._entidadDestino, this._posicion);
-        } else if (this._entidadOrigen === entidad) {
-            return new Relacion(this._nombre, this._entidadOrigen, entidad, this._posicion);
-        } else {
-            return this;
-        }
-    }
 }

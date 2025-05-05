@@ -42,7 +42,7 @@ export class VistaAtributo {
     }
 
     private _cambiarNombreEnModelo() {
-        this._atributo = this._modelador.renombrarAtributo(this._valorCampoNombre(), this._atributo, this._entidad);
+        this._modelador.renombrarAtributo(this._valorCampoNombre(), this._atributo, this._entidad);
     }
 
     private _valorCampoNombre() {

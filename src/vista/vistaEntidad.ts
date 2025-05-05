@@ -41,8 +41,7 @@ export class VistaEntidad {
             title: "Nombre Entidad",
             value: this._entidad.nombre(),
             oninput: () => {
-                this._modelador.renombrarEntidad(this._campoNombre.value, this._entidad)
-                this._entidad = this._entidad.cambiarNombre(this._campoNombre.value)
+                this._modelador.renombrarEntidad(this._campoNombre.value, this._entidad);
             },
         }, []);
     }

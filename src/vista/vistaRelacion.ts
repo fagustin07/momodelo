@@ -14,13 +14,13 @@ export class VistaRelacion {
     private _lineaDestino!: SVGLineElement;
     private _input!: HTMLInputElement;
 
-    constructor(entidadOrigen: Entidad, entidadDestino: Entidad, modelador: Modelador) {
+    constructor(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string, modelador: Modelador) {
         this._entidadOrigen = entidadOrigen;
         this._entidadDestino = entidadDestino;
         this._modelador = modelador;
 
         const centro = this._calcularCentro();
-        this._relacion = new Relacion("RELACION", entidadOrigen, entidadDestino, coordenada(centro.x, centro.y));
+        this._relacion = new Relacion(nombre, entidadOrigen, entidadDestino, coordenada(centro.x, centro.y));
         this._modelador.relaciones.push(this._relacion);
 
         this._crearElementoDom();
@@ -56,7 +56,7 @@ export class VistaRelacion {
 
         this._input.addEventListener("input", () => {
             const nombre = this._input.value.trim() || "RELACION";
-            this._relacion = this._modelador.renombrarRelacion(nombre, this._relacion);
+            this._modelador.renombrarRelacion(nombre, this._relacion);
         });
 
         this._input.addEventListener("click", (evento) => {
@@ -111,16 +111,6 @@ export class VistaRelacion {
 
         this._input.style.left = `${medio.x}px`;
         this._input.style.top = `${medio.y}px`;
-    }
-
-    actualizarReferenciaA(entidad: Entidad): Relacion {
-        const relacionAReferenciar = this._relacion.cambiarReferenciaA(entidad);
-        this._relacion = relacionAReferenciar;
-        return relacionAReferenciar;
-    }
-
-    relacion() {
-        return this._relacion;
     }
 
     borrarse() {

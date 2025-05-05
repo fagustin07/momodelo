@@ -1,4 +1,4 @@
-import {Posicion} from "../posicion";
+import {coordenada, Posicion} from "../posicion";
 import {Atributo} from "./atributo.ts";
 
 export class Entidad {
@@ -13,18 +13,17 @@ export class Entidad {
     }
 
     cambiarNombre(nuevoNombre: string) {
-        return new Entidad(nuevoNombre, this._atributos, this._posicion);
+        this._nombre = nuevoNombre;
     }
 
     agregarAtributo(nombreDeNuevoAtributo: string) {
-        const nuevoAtributo = new Atributo(nombreDeNuevoAtributo);
+        const nuevoAtributo = new Atributo(nombreDeNuevoAtributo, this.posicion().plus(coordenada(0, 20)));
         this._atributos.push(nuevoAtributo);
         return nuevoAtributo;
     }
 
     renombrarAtributo(atributo: Atributo, nuevoNombre: string) {
-        this._atributos = this._atributos.filter(atributoListado => atributoListado !== atributo);
-        return this.agregarAtributo(nuevoNombre);
+        this._atributos.find(atributoListado => atributoListado === atributo)!.cambiarNombre(nuevoNombre);
     }
 
     atributos() {
