@@ -4,49 +4,47 @@ import {Relacion} from "../modelo/relacion.ts";
 import {coordenada} from "../posicion.ts";
 import type {JsonModelo} from "./exportador.ts";
 
-export class Importador {
-    importar(json: JsonModelo): { entidades: Entidad[]; relaciones: Relacion[] } {
-        const atributosMap = new Map<number, Atributo>();
-        const entidadesMap = new Map<number, Entidad>();
-        const relaciones: Relacion[] = [];
+export function importar(json: JsonModelo): { entidades: Entidad[]; relaciones: Relacion[] } {
+    const atributosMap = new Map<number, Atributo>();
+    const entidadesMap = new Map<number, Entidad>();
+    const relaciones: Relacion[] = [];
 
-        json.atributos.forEach(attr => {
-            const atributo = new Atributo(attr.nombre, coordenada(attr.posicion.x, attr.posicion.y));
-            atributosMap.set(attr.id, atributo);
+    json.atributos.forEach(attr => {
+        const atributo = new Atributo(attr.nombre, coordenada(attr.posicion.x, attr.posicion.y));
+        atributosMap.set(attr.id, atributo);
+    });
+
+    json.entidades.forEach(entJson => {
+        const atributos = entJson.atributos.map(id => {
+            const a = atributosMap.get(id);
+            if (!a) throw new Error(`Atributo con ID ${id} no encontrado`);
+            return a;
         });
 
-        json.entidades.forEach(entJson => {
-            const atributos = entJson.atributos.map(id => {
-                const a = atributosMap.get(id);
-                if (!a) throw new Error(`Atributo con ID ${id} no encontrado`);
-                return a;
-            });
+        const entidad = new Entidad(entJson.nombre, atributos, coordenada(entJson.posicion.x, entJson.posicion.y));
+        entidadesMap.set(entJson.id, entidad);
+    });
 
-            const entidad = new Entidad(entJson.nombre, atributos, coordenada(entJson.posicion.x, entJson.posicion.y));
-            entidadesMap.set(entJson.id, entidad);
-        });
+    json.relaciones.forEach(relJson => {
+        const origen = entidadesMap.get(relJson.entidadOrigen);
+        const destino = entidadesMap.get(relJson.entidadDestino);
 
-        json.relaciones.forEach(relJson => {
-            const origen = entidadesMap.get(relJson.entidadOrigen);
-            const destino = entidadesMap.get(relJson.entidadDestino);
+        if (!origen || !destino) {
+            throw new Error(`Entidad origen o destino no encontrada para la relación ${relJson.nombre.toUpperCase()}`);
+        }
 
-            if (!origen || !destino) {
-                throw new Error(`Entidad origen o destino no encontrada para la relación ${relJson.nombre.toUpperCase()}`);
-            }
+        const relacion = new Relacion(
+            relJson.nombre,
+            origen,
+            destino,
+            coordenada(relJson.posicion.x, relJson.posicion.y)
+        );
 
-            const relacion = new Relacion(
-                relJson.nombre,
-                origen,
-                destino,
-                coordenada(relJson.posicion.x, relJson.posicion.y)
-            );
+        relaciones.push(relacion);
+    });
 
-            relaciones.push(relacion);
-        });
-
-        return {
-            entidades: Array.from(entidadesMap.values()),
-            relaciones
-        };
-    }
+    return {
+        entidades: Array.from(entidadesMap.values()),
+        relaciones
+    };
 }

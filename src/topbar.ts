@@ -1,7 +1,7 @@
 import {Modelador} from "./servicios/modelador.ts";
 import {createElement} from "./vista/dom/createElement.ts";
-import {Exportador} from "./servicios/exportador.ts";
-import {Importador} from "./servicios/importador.ts";
+import {exportar} from "./servicios/exportador.ts";
+import {importar} from "./servicios/importador.ts";
 
 export function generarTopbar(modelador: Modelador, elementoRaiz: HTMLElement) {
     const inputJson = createElement("input", {
@@ -16,7 +16,7 @@ export function generarTopbar(modelador: Modelador, elementoRaiz: HTMLElement) {
             const text = await file.text();
             const json = JSON.parse(text);
 
-            const { entidades, relaciones } = new Importador().importar(json);
+            const { entidades, relaciones } = importar(json);
             modelador.reemplazarModelo(entidades, relaciones, elementoRaiz);
 
             input.value = "";
@@ -43,11 +43,10 @@ export function generarTopbar(modelador: Modelador, elementoRaiz: HTMLElement) {
         createElement("button", {
             textContent: "Exportar",
             onclick: () => {
-                const json = new Exportador().exportar(modelador);
+                const json = exportar(modelador);
                 const blob = new Blob([JSON.stringify(json, null, 2)], { type: "application/json" });
                 const url = URL.createObjectURL(blob);
 
-                // Generar timestamp formateado
                 const timestamp = new Date().toISOString()
                     .replace(/T/, "_")
                     .replace(/:/g, "-")

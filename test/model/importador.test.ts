@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {JsonModelo} from "../../src/servicios/exportador.ts";
-import {Importador} from "../../src/servicios/importador.ts";
+import {importar} from "../../src/servicios/importador.ts";
 
 const pos = (x: number, y: number) => ({ x, y });
 
@@ -18,7 +18,7 @@ describe("Importador", () => {
             relaciones: []
         };
 
-        const { entidades, relaciones } = new Importador().importar(json);
+        const {entidades, relaciones} = importar(json);
 
         expect(entidades).toHaveLength(2);
         expect(entidades[0].nombre()).toBe("Entidad1");
@@ -45,7 +45,7 @@ describe("Importador", () => {
             ]
         };
 
-        const { entidades, relaciones } = new Importador().importar(json);
+        const { entidades, relaciones } = importar(json);
 
         expect(entidades).toHaveLength(2);
         expect(relaciones).toHaveLength(1);
@@ -63,7 +63,7 @@ describe("Importador", () => {
             relaciones: []
         };
 
-        expect(() => new Importador().importar(json)).toThrow("Atributo con ID 999 no encontrado");
+        expect(() => importar(json)).toThrow("Atributo con ID 999 no encontrado");
     });
 
     it("El importador lanza error si una entidad referenciada en relación no existe", () => {
@@ -77,7 +77,7 @@ describe("Importador", () => {
             ]
         };
 
-        expect(() => new Importador().importar(json)).toThrow("Entidad origen o destino no encontrada para la relación " + json.relaciones[0].nombre.toUpperCase());
+        expect(() => importar(json)).toThrow("Entidad origen o destino no encontrada para la relación " + json.relaciones[0].nombre.toUpperCase());
     });
 
     it("El importador preserva posiciones de todos los elementos", () => {
@@ -87,7 +87,7 @@ describe("Importador", () => {
             relaciones: []
         };
 
-        const { entidades } = new Importador().importar(json);
+        const { entidades } = importar(json);
         expect(entidades[0].posicion()).toMatchObject(pos(100, 200));
         expect(entidades[0].atributos()[0].posicion()).toMatchObject(pos(10, 20));
     });

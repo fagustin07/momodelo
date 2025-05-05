@@ -27,35 +27,33 @@ export type JsonModelo = {
     atributos: JsonAtributo[];
 };
 
-export class Exportador {
-    exportar(modelador: Modelador): JsonModelo {
-        const atributosJson: JsonAtributo[] = modelador.entidades.flatMap(entidad =>
-            entidad.atributos().map(atributo => ({
-                id: atributo.id(),
-                nombre: atributo.nombre(),
-                posicion: atributo.posicion()
-            }))
-        );
+export function exportar(modelador: Modelador): JsonModelo {
+    const atributosJson: JsonAtributo[] = modelador.entidades.flatMap(entidad =>
+        entidad.atributos().map(atributo => ({
+            id: atributo.id(),
+            nombre: atributo.nombre(),
+            posicion: atributo.posicion()
+        }))
+    );
 
-        const entidadesJson: JsonEntidad[] = modelador.entidades.map(entidad => ({
-            id: entidad.id(),
-            nombre: entidad.nombre(),
-            posicion: entidad.posicion(),
-            atributos: entidad.atributos().map(atributo => atributo.id())
-        }));
+    const entidadesJson: JsonEntidad[] = modelador.entidades.map(entidad => ({
+        id: entidad.id(),
+        nombre: entidad.nombre(),
+        posicion: entidad.posicion(),
+        atributos: entidad.atributos().map(atributo => atributo.id())
+    }));
 
-        const relacionesJson: JsonRelacion[] = modelador.relaciones.map(relacion => ({
-            id: relacion.id(),
-            nombre: relacion.nombre(),
-            posicion: relacion.posicion(),
-            entidadOrigen: relacion.entidadOrigen().id(),
-            entidadDestino: relacion.entidadDestino().id()
-        }));
+    const relacionesJson: JsonRelacion[] = modelador.relaciones.map(relacion => ({
+        id: relacion.id(),
+        nombre: relacion.nombre(),
+        posicion: relacion.posicion(),
+        entidadOrigen: relacion.entidadOrigen().id(),
+        entidadDestino: relacion.entidadDestino().id()
+    }));
 
-        return {
-            entidades: entidadesJson,
-            relaciones: relacionesJson,
-            atributos: atributosJson
-        };
-    }
+    return {
+        entidades: entidadesJson,
+        relaciones: relacionesJson,
+        atributos: atributosJson
+    };
 }

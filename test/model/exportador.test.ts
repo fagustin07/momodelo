@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
+import {describe, expect, it} from "vitest";
 import {coordenada} from "../../src/posicion.ts";
 import {Entidad} from "../../src/modelo/entidad.ts";
-import {Exportador} from "../../src/servicios/exportador.ts";
+import {exportar} from "../../src/servicios/exportador.ts";
 import {Modelador} from "../../src/servicios/modelador.ts";
 import {Atributo} from "../../src/modelo/atributo.ts";
 import {Relacion} from "../../src/modelo/relacion.ts";
@@ -11,9 +11,8 @@ describe("Exportador", () => {
 
     it("exporta una entidad sin atributos", () => {
         const entidad = new Entidad("E", [], pos(10, 20));
-        const exportador = new Exportador();
         const modelo = new Modelador([entidad]);
-        const json = exportador.exportar(modelo);
+        const json = exportar(modelo);
 
         expect(json.entidades).toHaveLength(1);
         expect(json.atributos).toHaveLength(0);
@@ -28,9 +27,8 @@ describe("Exportador", () => {
         const a1 = new Atributo("a", pos(0, 0));
         const a2 = new Atributo("b", pos(5, 5));
         const entidad = new Entidad("E", [a1, a2], pos(10, 10));
-        const exportador = new Exportador();
         const modelo = new Modelador([entidad]);
-        const json = exportador.exportar(modelo);
+        const json = exportar(modelo);
 
         expect(json.atributos).toHaveLength(2);
         const attrIds = json.entidades[0].atributos;
@@ -49,8 +47,7 @@ describe("Exportador", () => {
         const r3 = new Relacion("R3", e1, e3, pos(100, 100));
 
         const modelo = new Modelador([e1, e2, e3], [r1, r2, r3]);
-        const exportador = new Exportador();
-        const json = exportador.exportar(modelo);
+        const json = exportar(modelo);
 
         expect(json.relaciones).toHaveLength(3);
 
@@ -77,8 +74,7 @@ describe("Exportador", () => {
         const a = new Atributo("a", pos(1, 1));
         const e = new Entidad("E", [a], pos(0, 0));
         const modelo = new Modelador([e]);
-        const exportador = new Exportador();
-        const json = exportador.exportar(modelo);
+        const json = exportar(modelo);
 
         const entidadId = json.entidades[0].id;
         const atributoId = json.atributos[0].id;

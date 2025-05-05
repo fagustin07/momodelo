@@ -51,7 +51,7 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
         vistaRepresentandoEntidad(elementoRaiz, entidad, modelador);
     });
     relaciones.forEach(rel => {
-        modelador.crearRelacion(rel.entidades()[0], rel.entidades()[1], rel.nombre());
+        modelador.crearRelacion(rel.entidadOrigen(), rel.entidadDestino(), rel.nombre());
     })
     return modelador;
 }
