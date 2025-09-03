@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it} from "vitest";
-import {fireEvent, within} from "@testing-library/dom";
+import {fireEvent, within, screen} from "@testing-library/dom";
 import userEvent from "@testing-library/user-event";
 import {init} from "../../src/vista";
 import {Entidad} from "../../src/modelo/entidad";
@@ -21,7 +21,9 @@ function cambiarNombreEntidadPor(elementoEntidad: HTMLElement, nuevoValor: strin
 }
 
 function realizarGestoEliminarSobre(elemento: HTMLElement) {
-    fireEvent.click(elemento, {ctrlKey: true, shiftKey: true});
+    const botonBorrar = screen.getByRole('button', { name: /borrar/i });
+    fireEvent.click(botonBorrar);
+    fireEvent.click(elemento);
 }
 
 function agregarAtributoEn(elementoEntidad: HTMLElement, nombreAtributoNuevo: string) {
@@ -141,5 +143,6 @@ describe("[MER] Vista Modelo tests", () => {
         realizarGestoEliminarSobre(campoAtributo);
 
         expect(entidad.atributos()).toHaveLength(0);
+        expect(elementoEntidad).toBeInTheDocument();
     });
 });

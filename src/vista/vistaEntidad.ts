@@ -5,6 +5,7 @@ import {agregarAtributoEn, posicionarElemento} from "../vista";
 import {createElement} from "./dom/createElement";
 
 export class VistaEntidad {
+    // ToDo: Tener solo el id de la entidad por el futuro observer para que la vista reaccione sobre acciones específicas a la entidad.
     private _entidad: Entidad;
     private _modelador: Modelador;
     private _elementoDom: HTMLElement;
@@ -49,12 +50,12 @@ export class VistaEntidad {
     private _crearElementoDOMEntidad() {
         return createElement("div", {
             className: "entidad",
-            onclick: (evento) => {
-                if (evento.ctrlKey && evento.shiftKey) {
-                    this._eliminarEntidad();
-                } else if (evento.altKey) {
-                    this._modelador.seleccionarEntidad(this._entidad);
-                }
+            onclick: () => {
+                // ToDo:Esto es simplemente un paso intermedio, después deberíamos suscribirnos con un observer a
+                //  al modelador para saber qué acción se realizó finalmente y reflejarla en la vista.
+                //  haciendo this._modelador.emitirSeleccion(this._entidad); y en el contructor
+                //  modelador.onDelete(idEntidad, () => this._eliminarEntidad()
+                this._modelador.emitirSeleccion(this._entidad, this._eliminarEntidad.bind(this));
             }
         }, [
             this._campoNombre,
@@ -72,7 +73,8 @@ export class VistaEntidad {
 
     private _eliminarEntidad() {
         this._elementoDom.remove();
-        this._modelador.eliminarEntidad(this._entidad);
+        // todo: eliminar mensaje al modelador
+        // this._modelador.eliminarEntidad(this._entidad);
     }
 
     private _hacerArrastrableA(elementoDOMEntidad: HTMLElement) {

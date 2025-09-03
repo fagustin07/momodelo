@@ -27,10 +27,8 @@ export class VistaAtributo {
         return createElement("div", {
             className: "atributo",
             onclick: evento => {
-                if (evento.ctrlKey && evento.shiftKey) {
-                    evento.stopPropagation();
-                    this._eliminarAtributo();
-                }
+                evento.stopPropagation();
+                this._modelador.emitirSeleccionDeAtributo(this._entidad, this._atributo, this._eliminarAtributo.bind(this));
             }
         }, [
             this._campoNombre = createElement("input", {
@@ -51,6 +49,5 @@ export class VistaAtributo {
 
     private _eliminarAtributo() {
         this._elementoDom.remove();
-        this._modelador.eliminarAtributo(this._atributo, this._entidad);
     }
 }

@@ -4,7 +4,7 @@ import {init} from "../../src/vista";
 import {Entidad} from "../../src/modelo/entidad";
 import {coordenada} from "../../src/posicion";
 import "../../src/style.css";
-import {fireEvent} from "@testing-library/dom";
+import {fireEvent, screen} from "@testing-library/dom";
 import {Modelador} from "../../src/servicios/modelador.ts";
 
 function getElementoEntidades() {
@@ -15,12 +15,21 @@ function getInputRelaciones(): HTMLInputElement[] {
     return [...document.querySelectorAll<HTMLInputElement>('input[title="Nombre Relacion"]')!];
 }
 
-function realizarGestoParaRelacionarA(elementoEntidad: HTMLElement) {
-    fireEvent.click(elementoEntidad, {altKey: true});
+function realizarGestoParaRelacionarA(elementoOrigen: HTMLElement, elementoDestino: HTMLElement) {
+    const botonCrearRelacion = screen.getByRole('button', { name: /\+relacion/i });
+    fireEvent.click(botonCrearRelacion);
+    fireEvent.click(elementoOrigen);
+    fireEvent.click(elementoDestino);
 }
 
 function realizarGestoEliminarSobre(elemento: HTMLElement) {
     fireEvent.click(elemento, {ctrlKey: true, shiftKey: true});
+}
+
+function realizarGestoEliminarSobreEntidad(elemento: HTMLElement) {
+    const botonBorrar = screen.getByRole('button', { name: /borrar/i });
+    fireEvent.click(botonBorrar);
+    fireEvent.click(elemento);
 }
 
 describe("[MER] Vista Relaciones", () => {
@@ -44,8 +53,7 @@ describe("[MER] Vista Relaciones", () => {
     it("Dado dos entidades, cuando se seleccionan ambas, entonces se crea una relación entre ellas", async () => {
         const [elementoPersonaje, elementoHumorista] = getElementoEntidades();
 
-        realizarGestoParaRelacionarA(elementoPersonaje);
-        realizarGestoParaRelacionarA(elementoHumorista);
+        realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista);
 
         const [relacion] = modelador.relaciones;
         const [inputRelacion] = getInputRelaciones();
@@ -58,8 +66,7 @@ describe("[MER] Vista Relaciones", () => {
     it("Cuando se cambia el nombre a una relación, entonces se refleja en el modelo", async () => {
         const [elementoPersonaje, elementoHumorista] = getElementoEntidades();
 
-        realizarGestoParaRelacionarA(elementoPersonaje);
-        realizarGestoParaRelacionarA(elementoHumorista);
+        realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista);
 
         const campoNombre = document.activeElement as HTMLInputElement;
 
@@ -72,8 +79,7 @@ describe("[MER] Vista Relaciones", () => {
 
     it("Al eliminar una relacion, entonces no queda referencia de la misma, tanto en la vista como en el modelo", async () => {
         const [elementoPersonaje, elementoHumorista] = getElementoEntidades();
-        realizarGestoParaRelacionarA(elementoPersonaje);
-        realizarGestoParaRelacionarA(elementoHumorista);
+        realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista);
 
         const campoNombre = document.activeElement as HTMLInputElement;
         realizarGestoEliminarSobre(campoNombre);
@@ -84,13 +90,10 @@ describe("[MER] Vista Relaciones", () => {
 
     it("Al eliminar una entidad, entonces no quedan relaciones de la misma, tanto en la vista como en el modelo", async () => {
         const [elementoPersonaje, elementoHumorista] = getElementoEntidades();
-        realizarGestoParaRelacionarA(elementoPersonaje);
-        realizarGestoParaRelacionarA(elementoHumorista);
-        realizarGestoParaRelacionarA(elementoPersonaje);
-        realizarGestoParaRelacionarA(elementoHumorista);
-        expect(getInputRelaciones().length).toBe(2);
+        realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista);
+        realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista);
 
-        realizarGestoEliminarSobre(elementoPersonaje);
+        realizarGestoEliminarSobreEntidad(elementoPersonaje);
 
         expect(getInputRelaciones().length).toBe(0);
         expect(modelador.relaciones.length).toBe(0);

@@ -4,7 +4,7 @@ import {VistaAtributo} from "./vista/vistaAtributo.ts";
 import {Modelador} from "./servicios/modelador.ts";
 import {Atributo} from "./modelo/atributo.ts";
 import {VistaEntidad} from "./vista/vistaEntidad";
-import {generarTopbar} from "./topbar.ts";
+import {generarBarraDeInteracciones} from "./topbar.ts";
 import {Relacion} from "./modelo/relacion.ts";
 
 export function posicionarElemento(elementoDOMEntidad: HTMLElement, entidad: Entidad) {
@@ -21,9 +21,10 @@ export function vistaRepresentandoEntidad(contenedorEntidades: HTMLElement, enti
     vistaEntidad.representarseEn(contenedorEntidades);
 }
 
+// ToDo: Esto debería encapsularse en un objeto?
 export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], relaciones: Relacion[]) {
     const modelador = new Modelador(entidadesEnModelo);
-    const topbar = generarTopbar(modelador, elementoRaiz);
+    const topbar = generarBarraDeInteracciones(modelador, elementoRaiz);
 
     elementoRaiz.append(topbar);
 
@@ -36,6 +37,17 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
 
         vistaRepresentandoEntidad(elementoRaiz, entidad, modelador);
 
+    });
+
+    elementoRaiz.addEventListener("click", evento => {
+        if (evento.target !== elementoRaiz) return;
+        if (!modelador.puedoCrearUnaEntidad()) {
+            alert("nononono!!!");
+            return;
+        }
+        const posicion = coordenada(evento.offsetX, evento.offsetY);
+        const nuevaEntidad = modelador.generarEntidadUbicadaEn(posicion);
+        vistaRepresentandoEntidad(elementoRaiz, nuevaEntidad!!, modelador);
     });
 
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");

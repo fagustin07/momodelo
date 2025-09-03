@@ -3,7 +3,7 @@ import {createElement} from "./vista/dom/createElement.ts";
 import {exportar} from "./servicios/exportador.ts";
 import {importar} from "./servicios/importador.ts";
 
-export function generarTopbar(modelador: Modelador, elementoRaiz: HTMLElement) {
+export function generarBarraDeInteracciones(modelador: Modelador, elementoRaiz: HTMLElement) {
     const inputJson = createElement("input", {
         type: "file",
         accept: ".json",
@@ -40,35 +40,73 @@ export function generarTopbar(modelador: Modelador, elementoRaiz: HTMLElement) {
             gap: "12px"
         }
     }, [
-        createElement("button", {
-            textContent: "Exportar",
-            onclick: () => {
-                const json = exportar(modelador);
-                const blob = new Blob([JSON.stringify(json, null, 2)], { type: "application/json" });
-                const url = URL.createObjectURL(blob);
-
-                const timestamp = new Date().toISOString()
-                    .replace(/T/, "_")
-                    .replace(/:/g, "-")
-                    .replace(/\..+/, "");
-
-                const nombreSugerido = `MER_${timestamp}`;
-                const nombreSinExtension = prompt("Elegí el nombre del archivo:", nombreSugerido);
-
-                if (!nombreSinExtension) return;
-
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `${nombreSinExtension}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-            }
-        }),
-
-        createElement("button", {
-            textContent: "Importar",
-            onclick: () => inputJson.click()
-        }),
+        createElement("button", botonCrearEntidad(modelador)),
+        createElement("button", botonCrearRelacion(modelador)),
+        createElement("button", botonBorrar(modelador)),
+        createElement("button", botonDeExportar(modelador)),
+        createElement("button", botonImportar(inputJson)),
         inputJson
     ]);
+}
+
+function botonCrearEntidad(modelador: Modelador) {
+    return {
+        textContent: "+Entidad",
+        onclick: () => {
+            modelador.solicitudCrearEntidad();
+        }
+    };
+}
+
+function botonCrearRelacion(modelador: Modelador) {
+    return {
+        textContent: "+Relacion",
+        onclick: () => {
+            modelador.solicitudCrearRelacion();
+        }
+    };
+}
+
+function botonBorrar(modelador: Modelador) {
+    return {
+        // ToDo: debería borrar todo, no solo entidades
+        textContent: "Borrar",
+        onclick: () => {
+            modelador.solicitudDeBorrado();
+        }
+    };
+}
+
+function botonDeExportar(modelador: Modelador) {
+    return {
+        textContent: "Exportar",
+        onclick: () => {
+            const json = exportar(modelador);
+            const blob = new Blob([JSON.stringify(json, null, 2)], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+
+            const timestamp = new Date().toISOString()
+                .replace(/T/, "_")
+                .replace(/:/g, "-")
+                .replace(/\..+/, "");
+
+            const nombreSugerido = `MER_${timestamp}`;
+            const nombreSinExtension = prompt("Elegí el nombre del archivo:", nombreSugerido);
+
+            if (!nombreSinExtension) return;
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${nombreSinExtension}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    };
+}
+
+function botonImportar(inputJson: HTMLAnchorElement | HTMLElement | HTMLAreaElement | HTMLAudioElement | HTMLBaseElement | HTMLQuoteElement | HTMLBodyElement | HTMLBRElement | HTMLButtonElement | HTMLCanvasElement | HTMLTableCaptionElement | HTMLTableColElement | HTMLDataElement | HTMLDataListElement | HTMLModElement | HTMLDetailsElement | HTMLDialogElement | HTMLDivElement | HTMLDListElement | HTMLEmbedElement | HTMLFieldSetElement | HTMLFormElement | HTMLHeadingElement | HTMLHeadElement | HTMLHRElement | HTMLHtmlElement | HTMLIFrameElement | HTMLImageElement | HTMLInputElement | HTMLLabelElement | HTMLLegendElement | HTMLLIElement | HTMLLinkElement | HTMLMapElement | HTMLMenuElement | HTMLMetaElement | HTMLMeterElement | HTMLObjectElement | HTMLOListElement | HTMLOptGroupElement | HTMLOptionElement | HTMLOutputElement | HTMLParagraphElement | HTMLPictureElement | HTMLPreElement | HTMLProgressElement | HTMLScriptElement | HTMLSelectElement | HTMLSlotElement | HTMLSourceElement | HTMLSpanElement | HTMLStyleElement | HTMLTableElement | HTMLTableSectionElement | HTMLTableCellElement | HTMLTemplateElement | HTMLTextAreaElement | HTMLTimeElement | HTMLTitleElement | HTMLTableRowElement | HTMLTrackElement | HTMLUListElement | HTMLVideoElement) {
+    return {
+        textContent: "Importar",
+        onclick: () => inputJson.click()
+    };
 }
