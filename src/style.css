@@ -25,9 +25,10 @@ body {
 
   input {
     &:hover {
-      border-bottom: 1px solid gray;
+      border-bottom-color: gray;
     }
     border: none;
+    border-bottom: 1px solid transparent;
     text-align: center;
   }
 
