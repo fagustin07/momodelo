@@ -88,7 +88,7 @@ describe("[MER] Vista Modelo tests", () => {
     });
 
     it("Cuando se escribe un nombre en la entidad creada, el modelo se actualiza correctamente", async () => {
-        fireEvent.dblClick(elementoRaiz, {clientX: 100, clientY: 100});
+        realizarGestoParaAgregarEntidad("Marinero", elementoRaiz, coordenada(100, 100));
         const elementoEntidades = getElementoEntidades();
         expect(elementoEntidades.length).toBe(2);
         const nuevaEntidad = elementoEntidades[1];
@@ -100,7 +100,7 @@ describe("[MER] Vista Modelo tests", () => {
     });
 
     it("Cuando se crea una entidad, se puede escribir el nombre en ella inmediatamente", async () => {
-        fireEvent.dblClick(elementoRaiz, {clientX: 100, clientY: 100});
+        realizarGestoParaAgregarEntidad("Marinero", elementoRaiz, coordenada(100, 100));
         const elementoEntidad = getElementoEntidades()[1];
 
         const campoAtributo = within(elementoEntidad).getByTitle<HTMLButtonElement>("Nombre Entidad");

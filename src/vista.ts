@@ -28,17 +28,6 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
 
     elementoRaiz.append(topbar);
 
-    elementoRaiz.addEventListener("dblclick", evento => {
-        if (evento.target !== elementoRaiz) return;
-
-        const posicion = coordenada(evento.offsetX, evento.offsetY);
-        const entidad = new Entidad("Entidad", [], posicion);
-        modelador.entidades.push(entidad);
-
-        vistaRepresentandoEntidad(elementoRaiz, entidad, modelador);
-
-    });
-
     elementoRaiz.addEventListener("click", evento => {
         if (evento.target !== elementoRaiz) return;
         if (!modelador.puedoCrearUnaEntidad()) {

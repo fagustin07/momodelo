@@ -55,7 +55,7 @@ export class VistaEntidad {
                 //  al modelador para saber qué acción se realizó finalmente y reflejarla en la vista.
                 //  haciendo this._modelador.emitirSeleccion(this._entidad); y en el contructor
                 //  modelador.onDelete(idEntidad, () => this._eliminarEntidad()
-                this._modelador.emitirSeleccion(this._entidad, this._eliminarEntidad.bind(this));
+                this._modelador.emitirSeleccionDeEntidad(this._entidad, this._eliminarEntidad.bind(this));
             }
         }, [
             this._campoNombre,

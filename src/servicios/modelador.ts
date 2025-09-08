@@ -116,23 +116,6 @@ export class Modelador {
         });
     }
 
-    private _eliminarRelacionesQueContienenA(entidad: Entidad) {
-        this.relaciones
-            .filter(r => r.contieneA(entidad))
-            .forEach(rel => this.eliminarRelacion(rel));
-    }
-
-
-    private deseleccionarEntidad() {
-        this._entidadSeleccionada = null;
-    }
-
-    private _checkDeseleccionDe(entidad: Entidad) {
-        if (this._entidadSeleccionada === entidad) { // TODO: TEST
-            this.deseleccionarEntidad();
-        }
-    }
-
     solicitudCrearEntidad() {
         this.accionEnProceso = AccionEnProceso.CrearEntidad;
     }
@@ -145,10 +128,6 @@ export class Modelador {
         this.accionEnProceso = AccionEnProceso.CrearRelacion;
     }
 
-    puedoCrearUnaEntidad() {
-        return this.accionEnProceso === AccionEnProceso.CrearEntidad;
-    }
-
     generarEntidadUbicadaEn(posicion: Posicion) {
         if (this.accionEnProceso === AccionEnProceso.CrearEntidad) {
             return this._crearEntidad(posicion);
@@ -157,7 +136,14 @@ export class Modelador {
         }
     }
 
-    emitirSeleccion(entidad: Entidad, callback: () => void) {
+    emitirSeleccionDeRelacion(relacion: Relacion, callbackEliminar: () => void) {
+        if (this.accionEnProceso === AccionEnProceso.Borrado) {
+            this.eliminarRelacion(relacion);
+            callbackEliminar();
+        }
+    }
+
+    emitirSeleccionDeEntidad(entidad: Entidad, callback: () => void) {
         if (this.accionEnProceso === AccionEnProceso.Borrado) {
             this.eliminarEntidad(entidad);
             callback();
@@ -172,6 +158,10 @@ export class Modelador {
             this.eliminarAtributo(atributo, entidad);
             callbackEliminar();
         }
+    }
+
+    puedoCrearUnaEntidad() {
+        return this.accionEnProceso === AccionEnProceso.CrearEntidad;
     }
 
     private _crearEntidad(posicion: Posicion) {
@@ -193,10 +183,20 @@ export class Modelador {
         }
     }
 
-    emitirSeleccionDeRelacion(relacion: Relacion, callbackEliminar: () => void) {
-        if (this.accionEnProceso === AccionEnProceso.Borrado) {
-            this.eliminarRelacion(relacion);
-            callbackEliminar();
+    private _eliminarRelacionesQueContienenA(entidad: Entidad) {
+        this.relaciones
+            .filter(r => r.contieneA(entidad))
+            .forEach(rel => this.eliminarRelacion(rel));
+    }
+
+
+    private deseleccionarEntidad() {
+        this._entidadSeleccionada = null;
+    }
+
+    private _checkDeseleccionDe(entidad: Entidad) {
+        if (this._entidadSeleccionada === entidad) { // TODO: TEST
+            this.deseleccionarEntidad();
         }
     }
 }
