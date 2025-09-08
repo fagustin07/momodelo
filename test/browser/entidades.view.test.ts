@@ -3,7 +3,7 @@ import {fireEvent, within, screen} from "@testing-library/dom";
 import userEvent from "@testing-library/user-event";
 import {init} from "../../src/vista";
 import {Entidad} from "../../src/modelo/entidad";
-import {coordenada} from "../../src/posicion";
+import {coordenada, Posicion} from "../../src/posicion";
 import "../../src/style.css";
 import {Modelador} from "../../src/servicios/modelador.ts";
 
@@ -31,8 +31,25 @@ function agregarAtributoEn(elementoEntidad: HTMLElement, nombreAtributoNuevo: st
 
     botonAgregarAtributo.click();
 
-    const campoAtributo = within(elementoEntidad).getByTitle<HTMLInputElement>("Nombre de atributo");
-    fireEvent.input(campoAtributo, {target: {value: nombreAtributoNuevo}});
+    const camposDeAtributos = within(elementoEntidad).getAllByTitle<HTMLInputElement>("Nombre de atributo");
+    const nuevoAtributo = camposDeAtributos[camposDeAtributos.length - 1];
+    fireEvent.input(nuevoAtributo, { target: { value: nombreAtributoNuevo } });
+    return nuevoAtributo;
+}
+
+function realizarGestoParaAgregarEntidad(nombreEntidad: string, elementoRaiz: HTMLElement, posicion: Posicion) {
+    const botonAgregarEntidad = screen.getByRole('button', { name: /\+entidad/i });
+
+    botonAgregarEntidad.click();
+
+    fireEvent.click(elementoRaiz, posicion);
+
+    const entidades = getElementoEntidades();
+    const nuevaEntidad = entidades[entidades.length - 1];
+    const campoNombre = within(nuevaEntidad).getByTitle<HTMLInputElement>("Nombre Entidad");
+    fireEvent.input(campoNombre, { target: { value: nombreEntidad } });
+
+    return nuevaEntidad;
 }
 
 function nombresDeLosAtributosDe(elementoEntidad: HTMLElement): HTMLInputElement[] {
@@ -113,6 +130,18 @@ describe("[MER] Vista Modelo tests", () => {
         expect(modelador.entidades.length).toBe(0);
     });
 
+    it("Cuando se realiza el gesto de borrar sobre una entidad y luego se clickea en otra, entonces solo se borra la primer entidad", () => {
+        const elementoEntidades = getElementoEntidades();
+        const [elementoEntidad] = elementoEntidades;
+        const elementoEntidadBarco = realizarGestoParaAgregarEntidad("BARCO", elementoRaiz, coordenada(100, 100));
+        realizarGestoEliminarSobre(elementoEntidad);
+
+        fireEvent.click(elementoEntidadBarco);
+
+        expect(elementoEntidadBarco).toBeInTheDocument();
+        expect(modelador.entidades.length).toBe(1);
+    });
+
     it("Se puede agregar un atributo a una entidad existente", () => {
         const [elementoEntidad] = getElementoEntidades();
 
@@ -144,5 +173,17 @@ describe("[MER] Vista Modelo tests", () => {
 
         expect(entidad.atributos()).toHaveLength(0);
         expect(elementoEntidad).toBeInTheDocument();
+    });
+
+    it("Cuando se elimina un atributo y se clickea en otro, entonces solo se borra el primer atributo", () => {
+        const [elementoEntidad] = getElementoEntidades();
+        const atributoNombre = agregarAtributoEn(elementoEntidad, "nombre");
+        const atributoApellido = agregarAtributoEn(elementoEntidad, "apellido");
+        realizarGestoEliminarSobre(atributoNombre);
+
+        fireEvent.click(atributoApellido);
+
+        expect(entidad.atributos()).toHaveLength(1);
+        expect(atributoApellido).toBeInTheDocument();
     });
 });

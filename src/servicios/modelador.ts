@@ -42,6 +42,7 @@ export class Modelador {
         this._checkDeseleccionDe(entidad);
         this.entidades = this.entidades.filter(e => e !== entidad);
         this._eliminarRelacionesQueContienenA(entidad);
+        this._finalizarAccion();
     }
 
 // ATRIBUTOS
@@ -56,6 +57,7 @@ export class Modelador {
 
     eliminarAtributo(atributo: Atributo, entidad: Entidad): void {
         entidad.eliminarAtributo(atributo);
+        this._finalizarAccion();
     }
 
     // RELACIONES
@@ -66,6 +68,7 @@ export class Modelador {
         const nuevaVista = new VistaRelacion(entidadOrigen, entidadDestino, nombre, this);
         nuevaVista.representarse();
         this._relacionesVisuales.push(nuevaVista);
+        this._finalizarAccion();
     }
 
     eliminarRelacion(relacion: Relacion): void {
@@ -73,6 +76,7 @@ export class Modelador {
         const vistaRelacion = this._relacionesVisuales.find(vr => vr.representaA(relacion))!;
         this._relacionesVisuales = this._relacionesVisuales.filter(vr => vr !== vistaRelacion);
         vistaRelacion.borrarse();
+        this._finalizarAccion();
     }
 
     renombrarRelacion(nuevoNombre: string, relacion: Relacion) {
@@ -157,8 +161,9 @@ export class Modelador {
         if (this.accionEnProceso === AccionEnProceso.Borrado) {
             this.eliminarEntidad(entidad);
             callback();
+
         } if (this.accionEnProceso === AccionEnProceso.CrearRelacion) {
-            this._sarasasasa(entidad);
+            this._procesarSeleccionParaRelacionarA(entidad);
         }
     }
 
@@ -172,20 +177,26 @@ export class Modelador {
     private _crearEntidad(posicion: Posicion) {
         const nuevaEntidad = new Entidad("Entidad", [], posicion);
         this.entidades.push(nuevaEntidad);
-        this.finalizarAccion();
+        this._finalizarAccion();
         return nuevaEntidad;
     }
 
-    private finalizarAccion() {
+    private _finalizarAccion() {
         this.accionEnProceso = AccionEnProceso.SinAcciones;
     }
 
-    private _sarasasasa(entidad: Entidad) {
+    private _procesarSeleccionParaRelacionarA(entidad: Entidad) {
         if (!this._entidadSeleccionada) {
             this.seleccionarEntidad(entidad);
         } else {
             this.crearRelacion(this._entidadSeleccionada, entidad);
-            this.finalizarAccion();
+        }
+    }
+
+    emitirSeleccionDeRelacion(relacion: Relacion, callbackEliminar: () => void) {
+        if (this.accionEnProceso === AccionEnProceso.Borrado) {
+            this.eliminarRelacion(relacion);
+            callbackEliminar();
         }
     }
 }

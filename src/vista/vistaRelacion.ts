@@ -58,16 +58,12 @@ export class VistaRelacion {
             this._modelador.renombrarRelacion(nombre, this._relacion);
         });
 
-        this._input.addEventListener("click", (evento) => {
-            if (evento.ctrlKey && evento.shiftKey) {
-                this._eliminarRelacion();
-            }
+        this._input.addEventListener("click", () => {
+            this._modelador.emitirSeleccionDeRelacion(this._relacion, this.borrarse.bind(this));
         });
 
-        this._rombo.addEventListener("click", (evento) => {
-            if (evento.ctrlKey && evento.shiftKey) {
-                this._eliminarRelacion();
-            }
+        this._rombo.addEventListener("click", () => {
+            this._modelador.emitirSeleccionDeRelacion(this._relacion, this.borrarse.bind(this));
         });
     }
 
@@ -126,16 +122,6 @@ export class VistaRelacion {
     private _centroDeEntidad(entidad: Entidad) {
         return entidad.posicion().plus(coordenada(75, 25));
     }
-
-    private _eliminarRelacion() {
-        const svg = document.querySelector("svg")!;
-        svg.removeChild(this._lineaOrigen);
-        svg.removeChild(this._lineaDestino);
-        svg.removeChild(this._rombo);
-        document.body.removeChild(this._input);
-        this._modelador.eliminarRelacion(this._relacion);
-    }
-
     private _calcularCentro() {
         const c1 = this._centroDeEntidad(this._entidadOrigen);
         const c2 = this._centroDeEntidad(this._entidadDestino);
@@ -143,9 +129,5 @@ export class VistaRelacion {
             x: (c1.x + c2.x) / 2,
             y: (c1.y + c2.y) / 2
         };
-    }
-
-    relacionaA(entidad: Entidad) {
-        return this._relacion.contieneA(entidad);
     }
 }

@@ -69,7 +69,6 @@ function botonCrearRelacion(modelador: Modelador) {
 
 function botonBorrar(modelador: Modelador) {
     return {
-        // ToDo: debería borrar todo, no solo entidades
         textContent: "Borrar",
         onclick: () => {
             modelador.solicitudDeBorrado();
