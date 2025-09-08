@@ -73,8 +73,6 @@ export class VistaEntidad {
 
     private _eliminarEntidad() {
         this._elementoDom.remove();
-        // todo: eliminar mensaje al modelador
-        // this._modelador.eliminarEntidad(this._entidad);
     }
 
     private _hacerArrastrableA(elementoDOMEntidad: HTMLElement) {

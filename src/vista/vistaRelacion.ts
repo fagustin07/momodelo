@@ -29,18 +29,18 @@ export class VistaRelacion {
     private _crearElementoDom() {
         this._rombo = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
         this._rombo.setAttribute("fill", "white");
-        this._rombo.setAttribute("stroke", "black");
-        this._rombo.setAttribute("stroke-width", "2");
+        this._rombo.setAttribute("stroke", "gray");
+        this._rombo.setAttribute("stroke-width", "1");
         this._rombo.setAttribute("pointer-events", "all");
 
         this._lineaOrigen = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        this._lineaOrigen.setAttribute("stroke", "black");
-        this._lineaOrigen.setAttribute("stroke-width", "2");
+        this._lineaOrigen.setAttribute("stroke", "gray");
+        this._lineaOrigen.setAttribute("stroke-width", "1");
         this._lineaOrigen.setAttribute("pointer-events", "none");
 
         this._lineaDestino = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        this._lineaDestino.setAttribute("stroke", "black");
-        this._lineaDestino.setAttribute("stroke-width", "2");
+        this._lineaDestino.setAttribute("stroke", "gray");
+        this._lineaDestino.setAttribute("stroke-width", "1");
         this._lineaDestino.setAttribute("pointer-events", "none");
 
         this._input = document.createElement("input");
