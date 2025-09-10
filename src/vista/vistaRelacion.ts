@@ -7,6 +7,8 @@ export class VistaRelacion {
     private readonly _entidadOrigen: Entidad;
     private readonly _entidadDestino: Entidad;
     private readonly _modelador: Modelador;
+    private readonly _elementoRaiz: HTMLElement;
+    private readonly _elementoSvg: SVGElement;
     private _relacion: Relacion;
 
     private _rombo!: SVGPolygonElement;
@@ -14,10 +16,12 @@ export class VistaRelacion {
     private _lineaDestino!: SVGLineElement;
     private _input!: HTMLInputElement;
 
-    constructor(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string, modelador: Modelador) {
+    constructor(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string, modelador: Modelador, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
         this._entidadOrigen = entidadOrigen;
         this._entidadDestino = entidadDestino;
         this._modelador = modelador;
+        this._elementoRaiz = elementoRaiz;
+        this._elementoSvg = elementoSvg;
 
         const centro = this._calcularCentro();
         this._relacion = new Relacion(nombre, entidadOrigen, entidadDestino, coordenada(centro.x, centro.y));
@@ -68,11 +72,11 @@ export class VistaRelacion {
     }
 
     representarse() {
-        const svg = document.querySelector("svg")!;
+        const svg = this._elementoSvg;
         svg.appendChild(this._lineaOrigen);
         svg.appendChild(this._lineaDestino);
         svg.appendChild(this._rombo);
-        document.body.appendChild(this._input);
+        this._elementoRaiz.appendChild(this._input);
 
         this._input.focus();
         this._input.select();

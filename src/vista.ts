@@ -17,18 +17,26 @@ export function agregarAtributoEn(contenedorAtributos: HTMLElement, atributo: At
     vistaAtributo.representarseEn(contenedorAtributos);
 }
 
-export function vistaRepresentandoEntidad(contenedorEntidades: HTMLElement, entidad: Entidad, modelador: Modelador) {
-    const vistaEntidad = new VistaEntidad(entidad, modelador);
-    vistaEntidad.representarseEn(contenedorEntidades);
+function crearElementoSvgParaRelaciones() {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.style.position = "absolute";
+    svg.style.top = "0";
+    svg.style.left = "0";
+    svg.style.width = "100%";
+    svg.style.height = "100%";
+    svg.style.pointerEvents = "none";
+    return svg;
 }
 
 // ToDo: Esto debería encapsularse en un objeto?
 export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], relaciones: Relacion[]) {
-    const modelador = new Modelador(entidadesEnModelo);
+    const svg = crearElementoSvgParaRelaciones();
+    document.body.appendChild(svg);
+
+    const modelador = new Modelador(entidadesEnModelo, relaciones, elementoRaiz, svg);
     const topbar = generarBarraDeInteracciones(modelador, elementoRaiz);
 
     elementoRaiz.append(topbar);
-
 
     elementoRaiz.addEventListener("click", evento => {
         if (evento.target !== elementoRaiz) return;
@@ -37,24 +45,8 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
             return;
         }
         const posicion = coordenada(evento.offsetX, evento.offsetY);
-        const nuevaEntidad = modelador.generarEntidadUbicadaEn(posicion);
-        vistaRepresentandoEntidad(elementoRaiz, nuevaEntidad!!, modelador);
+        modelador.generarEntidadUbicadaEn(posicion);
     });
 
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.style.position = "absolute";
-    svg.style.top = "0";
-    svg.style.left = "0";
-    svg.style.width = "100%";
-    svg.style.height = "100%";
-    svg.style.pointerEvents = "none";
-    document.body.appendChild(svg);
-
-    modelador.entidades.forEach(entidad => {
-        vistaRepresentandoEntidad(elementoRaiz, entidad, modelador);
-    });
-    relaciones.forEach(rel => {
-        modelador.crearRelacion(rel.entidadOrigen(), rel.entidadDestino(), rel.nombre());
-    })
     return modelador;
 }

@@ -13,15 +13,25 @@ enum AccionEnProceso {
 }
 
 export class Modelador {
-    entidades: Entidad[];
+    entidades: Entidad[] = [];
     relaciones: Relacion[] = [];
     private _entidadSeleccionada: Entidad | null = null;
     private _relacionesVisuales: VistaRelacion[] = [];
+    private _entidadesVisuales: Map<Entidad, VistaEntidad> = new Map();
     accionEnProceso: AccionEnProceso = AccionEnProceso.SinAcciones;
+    private readonly _elementoRaiz: HTMLElement | null;
+    private readonly _elementoSvg: SVGElement | null;
 
-    constructor(entidades: Entidad[] = [], relaciones: Relacion[] = []) {
-        this.entidades = entidades;
-        this.relaciones = relaciones;
+    constructor(entidades: Entidad[] = [], relaciones: Relacion[] = [], elementoRaiz: HTMLElement | null = null, elementoSvg: SVGElement | null = null) {
+        this._elementoRaiz = elementoRaiz;
+        this._elementoSvg = elementoSvg;
+
+        entidades.forEach(entidad => {
+            this._registrarEntidad(entidad);
+        });
+        relaciones.forEach(rel => {
+            this._registrarRelacion(rel);
+        })
     }
 
     // ENTIDADES
@@ -41,11 +51,12 @@ export class Modelador {
     eliminarEntidad(entidad: Entidad) {
         this._checkDeseleccionDe(entidad);
         this.entidades = this.entidades.filter(e => e !== entidad);
+        this._entidadesVisuales.delete(entidad);
         this._eliminarRelacionesQueContienenA(entidad);
         this._finalizarAccion();
     }
 
-// ATRIBUTOS
+    // ATRIBUTOS
 
     agregarAtributo(_nombreDeAtributoNuevo: string, _entidadExistente: Entidad, _esMultivaluado: boolean): Atributo {
         throw new Error("Sin implementar");
@@ -65,9 +76,11 @@ export class Modelador {
     crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string = "RELACION") {
         // ToDo: El modelador no debería tener la responsabilidad de instanciar las vistas, decirles que se representen ni
         //  almacenarlas.
-        const nuevaVista = new VistaRelacion(entidadOrigen, entidadDestino, nombre, this);
-        nuevaVista.representarse();
-        this._relacionesVisuales.push(nuevaVista);
+        if (this._elementoSvg !== null && this._elementoRaiz !== null) {
+            const nuevaVista = new VistaRelacion(entidadOrigen, entidadDestino, nombre, this, this._elementoRaiz, this._elementoSvg);
+            nuevaVista.representarse();
+            this._relacionesVisuales.push(nuevaVista);
+        }
         this._finalizarAccion();
     }
 
@@ -109,7 +122,9 @@ export class Modelador {
                 relacion.entidades()[0],
                 relacion.entidades()[1],
                 relacion.nombre(),
-                this
+                this,
+                this._elementoRaiz!,
+                this._elementoSvg!
             );
             vista.representarse();
             this._relacionesVisuales.push(vista);
@@ -130,7 +145,7 @@ export class Modelador {
 
     generarEntidadUbicadaEn(posicion: Posicion) {
         if (this.accionEnProceso === AccionEnProceso.CrearEntidad) {
-            return this._crearEntidad(posicion);
+            return this._registrarEntidad(new Entidad("Entidad", [], posicion));
         } else {
             return null
         }
@@ -164,11 +179,20 @@ export class Modelador {
         return this.accionEnProceso === AccionEnProceso.CrearEntidad;
     }
 
-    private _crearEntidad(posicion: Posicion) {
-        const nuevaEntidad = new Entidad("Entidad", [], posicion);
+    private _registrarEntidad(nuevaEntidad: Entidad) {
         this.entidades.push(nuevaEntidad);
         this._finalizarAccion();
+        if (this._elementoRaiz !== null) {
+            const vistaEntidad = new VistaEntidad(nuevaEntidad, this);
+            vistaEntidad.representarseEn(this._elementoRaiz);
+            this._entidadesVisuales.set(nuevaEntidad, vistaEntidad);
+        }
         return nuevaEntidad;
+    }
+
+    private _registrarRelacion(rel: Relacion) {
+        this.relaciones.push(rel);
+        this.crearRelacion(rel.entidadOrigen(), rel.entidadDestino(), rel.nombre());
     }
 
     private _finalizarAccion() {
