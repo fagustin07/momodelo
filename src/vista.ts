@@ -6,6 +6,7 @@ import {Atributo} from "./modelo/atributo.ts";
 import {VistaEntidad} from "./vista/vistaEntidad";
 import {generarBarraDeInteracciones} from "./topbar.ts";
 import {Relacion} from "./modelo/relacion.ts";
+import {renderizarToast} from "./componentes/toast.ts";
 
 export function posicionarElemento(elementoDOMEntidad: HTMLElement, entidad: Entidad) {
     elementoDOMEntidad.style.translate = `${entidad.posicion().x}px ${entidad.posicion().y}px`;
@@ -28,10 +29,11 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
 
     elementoRaiz.append(topbar);
 
+
     elementoRaiz.addEventListener("click", evento => {
         if (evento.target !== elementoRaiz) return;
         if (!modelador.puedoCrearUnaEntidad()) {
-            alert("nononono!!!");
+            renderizarToast(elementoRaiz, "Hacé clic en “+Entidad” y luego en el diagrama para crear Entidades.");
             return;
         }
         const posicion = coordenada(evento.offsetX, evento.offsetY);

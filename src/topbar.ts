@@ -2,6 +2,7 @@ import {Modelador} from "./servicios/modelador.ts";
 import {createElement} from "./vista/dom/createElement.ts";
 import {exportar} from "./servicios/exportador.ts";
 import {importar} from "./servicios/importador.ts";
+import {renderizarToast} from "./componentes/toast.ts";
 
 export function generarBarraDeInteracciones(modelador: Modelador, elementoRaiz: HTMLElement) {
     const inputJson = createElement("input", {
@@ -41,7 +42,7 @@ export function generarBarraDeInteracciones(modelador: Modelador, elementoRaiz: 
         }
     }, [
         createElement("button", botonCrearEntidad(modelador)),
-        createElement("button", botonCrearRelacion(modelador)),
+        createElement("button", botonCrearRelacion(elementoRaiz, modelador)),
         createElement("button", botonBorrar(modelador)),
         createElement("button", botonDeExportar(modelador)),
         createElement("button", botonImportar(inputJson)),
@@ -58,11 +59,12 @@ function botonCrearEntidad(modelador: Modelador) {
     };
 }
 
-function botonCrearRelacion(modelador: Modelador) {
+function botonCrearRelacion(elementoRaiz: HTMLElement, modelador: Modelador) {
     return {
         textContent: "+Relacion",
         onclick: () => {
             modelador.solicitudCrearRelacion();
+            renderizarToast(elementoRaiz, "Hacé click en las entidades de origen y destino para generar una nueva relación", {duracion: 3000});
         }
     };
 }
