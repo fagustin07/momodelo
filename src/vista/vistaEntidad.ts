@@ -3,12 +3,13 @@ import {Modelador} from "../servicios/modelador";
 import {hacerArrastrable} from "../arrastrable";
 import {agregarAtributoEn, posicionarElemento} from "../vista";
 import {createElement} from "./dom/createElement";
+import {coordenada} from "../posicion.ts";
 
 export class VistaEntidad {
     // ToDo: Tener solo el id de la entidad por el futuro observer para que la vista reaccione sobre acciones específicas a la entidad.
-    private _entidad: Entidad;
-    private _modelador: Modelador;
-    private _elementoDom: HTMLElement;
+    private readonly _entidad: Entidad;
+    private readonly _modelador: Modelador;
+    private readonly _elementoDom: HTMLElement;
     private _campoNombre!: HTMLInputElement;
     private _contenedorDeAtributos!: HTMLElement;
 
@@ -94,5 +95,14 @@ export class VistaEntidad {
         this._entidad.atributos().forEach((atributo) => {
             agregarAtributoEn(this._contenedorDeAtributos, atributo, this._entidad, this._modelador);
         });
+    }
+
+    entidad() {
+        return this._entidad;
+    }
+
+    centro() {
+        const boundingBox = this._elementoDom.getBoundingClientRect();
+        return this._entidad.posicion().plus(coordenada(boundingBox.width / 2, boundingBox.height / 2));
     }
 }

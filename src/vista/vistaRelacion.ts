@@ -1,30 +1,30 @@
-import {Entidad} from "../modelo/entidad";
 import {Modelador} from "../servicios/modelador";
 import {Relacion} from "../modelo/relacion";
 import {coordenada} from "../posicion";
+import {VistaEntidad} from "./vistaEntidad.ts";
 
 export class VistaRelacion {
-    private readonly _entidadOrigen: Entidad;
-    private readonly _entidadDestino: Entidad;
+    private readonly _vistaEntidadOrigen: VistaEntidad;
+    private readonly _vistaEntidadDestino: VistaEntidad;
     private readonly _modelador: Modelador;
     private readonly _elementoRaiz: HTMLElement;
     private readonly _elementoSvg: SVGElement;
-    private _relacion: Relacion;
+    private readonly _relacion: Relacion;
 
     private _rombo!: SVGPolygonElement;
     private _lineaOrigen!: SVGLineElement;
     private _lineaDestino!: SVGLineElement;
     private _input!: HTMLInputElement;
 
-    constructor(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string, modelador: Modelador, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
-        this._entidadOrigen = entidadOrigen;
-        this._entidadDestino = entidadDestino;
+    constructor(vistaEntidadOrigen: VistaEntidad, vistaEntidadDestino: VistaEntidad, nombre: string, modelador: Modelador, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
+        this._vistaEntidadOrigen = vistaEntidadOrigen;
+        this._vistaEntidadDestino = vistaEntidadDestino;
         this._modelador = modelador;
         this._elementoRaiz = elementoRaiz;
         this._elementoSvg = elementoSvg;
 
         const centro = this._calcularCentro();
-        this._relacion = new Relacion(nombre, entidadOrigen, entidadDestino, coordenada(centro.x, centro.y));
+        this._relacion = new Relacion(nombre, this._vistaEntidadOrigen.entidad(), this._vistaEntidadDestino.entidad(), coordenada(centro.x, centro.y));
         this._modelador.relaciones.push(this._relacion);
         this._crearElementoDom();
         this.reposicionarRelacion();
@@ -83,8 +83,8 @@ export class VistaRelacion {
     }
 
     reposicionarRelacion() {
-        const c1 = this._centroDeEntidad(this._entidadOrigen);
-        const c2 = this._centroDeEntidad(this._entidadDestino);
+        const c1 = this._vistaEntidadOrigen.centro();
+        const c2 = this._vistaEntidadDestino.centro();
         const medio = this._calcularCentro();
 
         this._relacion.moverseHacia(coordenada(medio.x, medio.y));
@@ -122,13 +122,9 @@ export class VistaRelacion {
     representaA(relacion: Relacion) {
         return this._relacion === relacion;
     }
-
-    private _centroDeEntidad(entidad: Entidad) {
-        return entidad.posicion().plus(coordenada(75, 25));
-    }
     private _calcularCentro() {
-        const c1 = this._centroDeEntidad(this._entidadOrigen);
-        const c2 = this._centroDeEntidad(this._entidadDestino);
+        const c1 = this._vistaEntidadOrigen.centro();
+        const c2 = this._vistaEntidadDestino.centro();
         return {
             x: (c1.x + c2.x) / 2,
             y: (c1.y + c2.y) / 2

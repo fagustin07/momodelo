@@ -77,11 +77,20 @@ export class Modelador {
         // ToDo: El modelador no debería tener la responsabilidad de instanciar las vistas, decirles que se representen ni
         //  almacenarlas.
         if (this._elementoSvg !== null && this._elementoRaiz !== null) {
-            const nuevaVista = new VistaRelacion(entidadOrigen, entidadDestino, nombre, this, this._elementoRaiz, this._elementoSvg);
+            const nuevaVista = new VistaRelacion(
+                this._vistaDeEntidad(entidadOrigen),
+                this._vistaDeEntidad(entidadDestino),
+                nombre, this, this._elementoRaiz, this._elementoSvg
+            );
             nuevaVista.representarse();
             this._relacionesVisuales.push(nuevaVista);
         }
         this._finalizarAccion();
+    }
+
+    private _vistaDeEntidad(entidadOrigen: Entidad) {
+        if (!this._entidadesVisuales.has(entidadOrigen)) throw new Error("La entidad no existe");
+        return this._entidadesVisuales.get(entidadOrigen)!;
     }
 
     eliminarRelacion(relacion: Relacion): void {
@@ -119,8 +128,8 @@ export class Modelador {
 
         nuevasRelaciones.forEach(relacion => {
             const vista = new VistaRelacion(
-                relacion.entidades()[0],
-                relacion.entidades()[1],
+                this._vistaDeEntidad(relacion.entidades()[0]),
+                this._vistaDeEntidad(relacion.entidades()[1]),
                 relacion.nombre(),
                 this,
                 this._elementoRaiz!,
