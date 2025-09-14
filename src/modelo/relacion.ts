@@ -53,4 +53,7 @@ export class Relacion {
         return this._entidadOrigen === entidad || this._entidadDestino === entidad;
     }
 
+    posicionarseEn(posicion: Posicion) {
+        this._posicion = posicion;
+    }
 }

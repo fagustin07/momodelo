@@ -16,7 +16,7 @@ export class VistaRelacion {
     private _lineaDestino!: SVGLineElement;
     private _input!: HTMLInputElement;
 
-    constructor(vistaEntidadOrigen: VistaEntidad, vistaEntidadDestino: VistaEntidad, nombre: string, modelador: Modelador, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
+    constructor(vistaEntidadOrigen: VistaEntidad, vistaEntidadDestino: VistaEntidad, relacion: Relacion, modelador: Modelador, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
         this._vistaEntidadOrigen = vistaEntidadOrigen;
         this._vistaEntidadDestino = vistaEntidadDestino;
         this._modelador = modelador;
@@ -24,8 +24,9 @@ export class VistaRelacion {
         this._elementoSvg = elementoSvg;
 
         const centro = this._calcularCentro();
-        this._relacion = new Relacion(nombre, this._vistaEntidadOrigen.entidad(), this._vistaEntidadDestino.entidad(), coordenada(centro.x, centro.y));
-        this._modelador.relaciones.push(this._relacion);
+        this._relacion = relacion;
+        this._modelador.posicionarRelacionEn(this._relacion, centro);
+
         this._crearElementoDom();
         this.reposicionarRelacion();
     }

@@ -3,14 +3,8 @@ import {Atributo} from "../modelo/atributo.ts";
 import {VistaRelacion} from "../vista/vistaRelacion.ts";
 import {Relacion} from "../modelo/relacion.ts";
 import {VistaEntidad} from "../vista/vistaEntidad.ts";
-import {Posicion} from "../posicion.ts";
-
-enum AccionEnProceso {
-    SinAcciones = "Sin Acciones",
-    CrearEntidad = "Crear Entidad",
-    Borrado = "Borrado",
-    CrearRelacion = "Crear Relacion",
-}
+import {coordenada, Posicion} from "../posicion.ts";
+import {AccionEnProceso} from "./accionEnProceso.ts";
 
 export class Modelador {
     entidades: Entidad[] = [];
@@ -49,7 +43,6 @@ export class Modelador {
     }
 
     eliminarEntidad(entidad: Entidad) {
-        this._checkDeseleccionDe(entidad);
         this.entidades = this.entidades.filter(e => e !== entidad);
         this._entidadesVisuales.delete(entidad);
         this._eliminarRelacionesQueContienenA(entidad);
@@ -73,14 +66,17 @@ export class Modelador {
 
     // RELACIONES
 
-    crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string = "RELACION") {
+    crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string = "RELACION", pos: {x: number, y: number} = {x: 0, y: 0}) {
         // ToDo: El modelador no debería tener la responsabilidad de instanciar las vistas, decirles que se representen ni
         //  almacenarlas.
+        const nuevaRelacion = new Relacion(nombre, entidadOrigen, entidadDestino, coordenada(pos.x, pos.y));
+        this._registrarRelacion(nuevaRelacion);
+
         if (this._elementoSvg !== null && this._elementoRaiz !== null) {
             const nuevaVista = new VistaRelacion(
                 this._vistaDeEntidad(entidadOrigen),
                 this._vistaDeEntidad(entidadDestino),
-                nombre, this, this._elementoRaiz, this._elementoSvg
+                nuevaRelacion, this, this._elementoRaiz, this._elementoSvg
             );
             nuevaVista.representarse();
             this._relacionesVisuales.push(nuevaVista);
@@ -88,9 +84,8 @@ export class Modelador {
         this._finalizarAccion();
     }
 
-    private _vistaDeEntidad(entidadOrigen: Entidad) {
-        if (!this._entidadesVisuales.has(entidadOrigen)) throw new Error("La entidad no existe");
-        return this._entidadesVisuales.get(entidadOrigen)!;
+    posicionarRelacionEn(relacion: Relacion, centro: { x: number; y: number }) {
+        relacion.posicionarseEn(coordenada(centro.x, centro.y))
     }
 
     eliminarRelacion(relacion: Relacion): void {
@@ -130,7 +125,7 @@ export class Modelador {
             const vista = new VistaRelacion(
                 this._vistaDeEntidad(relacion.entidades()[0]),
                 this._vistaDeEntidad(relacion.entidades()[1]),
-                relacion.nombre(),
+                relacion,
                 this,
                 this._elementoRaiz!,
                 this._elementoSvg!
@@ -201,11 +196,11 @@ export class Modelador {
 
     private _registrarRelacion(rel: Relacion) {
         this.relaciones.push(rel);
-        this.crearRelacion(rel.entidadOrigen(), rel.entidadDestino(), rel.nombre());
     }
 
     private _finalizarAccion() {
         this.accionEnProceso = AccionEnProceso.SinAcciones;
+        this._entidadSeleccionada = null;
     }
 
     private _procesarSeleccionParaRelacionarA(entidad: Entidad) {
@@ -222,14 +217,8 @@ export class Modelador {
             .forEach(rel => this.eliminarRelacion(rel));
     }
 
-
-    private deseleccionarEntidad() {
-        this._entidadSeleccionada = null;
-    }
-
-    private _checkDeseleccionDe(entidad: Entidad) {
-        if (this._entidadSeleccionada === entidad) { // TODO: TEST
-            this.deseleccionarEntidad();
-        }
+    private _vistaDeEntidad(entidadOrigen: Entidad) {
+        if (!this._entidadesVisuales.has(entidadOrigen)) throw new Error("La entidad no existe");
+        return this._entidadesVisuales.get(entidadOrigen)!;
     }
 }
