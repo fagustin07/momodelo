@@ -10,8 +10,10 @@ export class Modelador {
     entidades: Entidad[] = [];
     relaciones: Relacion[] = [];
     private _entidadSeleccionada: Entidad | null = null;
-    private _relacionesVisuales: VistaRelacion[] = [];
+
     private _entidadesVisuales: Map<Entidad, VistaEntidad> = new Map();
+    private _relacionesVisuales: Map<Relacion, VistaRelacion> = new Map();
+
     accionEnProceso: AccionEnProceso = AccionEnProceso.SinAcciones;
     private readonly _elementoRaiz: HTMLElement | null;
     private readonly _elementoSvg: SVGElement | null;
@@ -20,12 +22,8 @@ export class Modelador {
         this._elementoRaiz = elementoRaiz;
         this._elementoSvg = elementoSvg;
 
-        entidades.forEach(entidad => {
-            this._registrarEntidad(entidad);
-        });
-        relaciones.forEach(rel => {
-            this._registrarRelacion(rel);
-        })
+        entidades.forEach(entidad => this._registrarEntidad(entidad));
+        relaciones.forEach(rel => this._registrarRelacion(rel));
     }
 
     // ENTIDADES
@@ -50,7 +48,6 @@ export class Modelador {
     }
 
     // ATRIBUTOS
-
     agregarAtributo(_nombreDeAtributoNuevo: string, _entidadExistente: Entidad, _esMultivaluado: boolean): Atributo {
         throw new Error("Sin implementar");
     }
@@ -65,10 +62,7 @@ export class Modelador {
     }
 
     // RELACIONES
-
     crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string = "RELACION", pos: {x: number, y: number} = {x: 0, y: 0}) {
-        // ToDo: El modelador no debería tener la responsabilidad de instanciar las vistas, decirles que se representen ni
-        //  almacenarlas.
         const nuevaRelacion = new Relacion(nombre, entidadOrigen, entidadDestino, coordenada(pos.x, pos.y));
         this._registrarRelacion(nuevaRelacion);
 
@@ -79,20 +73,21 @@ export class Modelador {
                 nuevaRelacion, this, this._elementoRaiz, this._elementoSvg
             );
             nuevaVista.representarse();
-            this._relacionesVisuales.push(nuevaVista);
+            this._relacionesVisuales.set(nuevaRelacion, nuevaVista);
         }
         this._finalizarAccion();
     }
 
     posicionarRelacionEn(relacion: Relacion, centro: { x: number; y: number }) {
-        relacion.posicionarseEn(coordenada(centro.x, centro.y))
+        relacion.posicionarseEn(coordenada(centro.x, centro.y));
     }
 
     eliminarRelacion(relacion: Relacion): void {
         this.relaciones = this.relaciones.filter(r => r !== relacion);
-        const vistaRelacion = this._relacionesVisuales.find(vr => vr.representaA(relacion))!;
-        this._relacionesVisuales = this._relacionesVisuales.filter(vr => vr !== vistaRelacion);
-        vistaRelacion.borrarse();
+
+        this._relacionesVisuales.get(relacion)!.borrarse();
+        this._relacionesVisuales.delete(relacion);
+
         this._finalizarAccion();
     }
 
@@ -101,8 +96,8 @@ export class Modelador {
     }
 
     actualizarRelacionesVisuales() {
-        this._relacionesVisuales.forEach(rel => {
-            rel.reposicionarRelacion();
+        this._relacionesVisuales.forEach(vista => {
+            vista.reposicionarRelacion();
         });
     }
 
@@ -113,12 +108,15 @@ export class Modelador {
 
         this.entidades = [];
         this.relaciones = [];
-        this._relacionesVisuales = [];
+
+        this._entidadesVisuales = new Map();
+        this._relacionesVisuales = new Map();
 
         nuevasEntidades.forEach(entidad => {
             this.entidades.push(entidad);
             const vista = new VistaEntidad(entidad, this);
             vista.representarseEn(contenedor);
+            this._entidadesVisuales.set(entidad, vista);
         });
 
         nuevasRelaciones.forEach(relacion => {
@@ -131,7 +129,9 @@ export class Modelador {
                 this._elementoSvg!
             );
             vista.representarse();
-            this._relacionesVisuales.push(vista);
+
+            this._relacionesVisuales.set(relacion, vista);
+            this.relaciones.push(relacion);
         });
     }
 
@@ -151,7 +151,7 @@ export class Modelador {
         if (this.accionEnProceso === AccionEnProceso.CrearEntidad) {
             return this._registrarEntidad(new Entidad("Entidad", [], posicion));
         } else {
-            return null
+            return null;
         }
     }
 
@@ -166,8 +166,8 @@ export class Modelador {
         if (this.accionEnProceso === AccionEnProceso.Borrado) {
             this.eliminarEntidad(entidad);
             callback();
-
-        } if (this.accionEnProceso === AccionEnProceso.CrearRelacion) {
+        }
+        if (this.accionEnProceso === AccionEnProceso.CrearRelacion) {
             this._procesarSeleccionParaRelacionarA(entidad);
         }
     }
@@ -218,7 +218,9 @@ export class Modelador {
     }
 
     private _vistaDeEntidad(entidadOrigen: Entidad) {
-        if (!this._entidadesVisuales.has(entidadOrigen)) throw new Error("La entidad no existe");
-        return this._entidadesVisuales.get(entidadOrigen)!;
+        const vista = this._entidadesVisuales.get(entidadOrigen);
+        if (!vista)
+            throw new Error("La entidad no existe");
+        return vista;
     }
 }
