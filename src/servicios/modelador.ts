@@ -5,6 +5,7 @@ import {Relacion} from "../modelo/relacion.ts";
 import {VistaEntidad} from "../vista/vistaEntidad.ts";
 import {coordenada, Posicion} from "../posicion.ts";
 import {AccionEnProceso} from "./accionEnProceso.ts";
+import {VistaAtributo} from "../vista/vistaAtributo.ts";
 
 export class Modelador {
     entidades: Entidad[] = [];
@@ -160,6 +161,14 @@ export class Modelador {
             this.eliminarRelacion(relacion);
             callbackEliminar();
         }
+    }
+
+    emitirCreacionDeAtributoEn(contenedor: HTMLElement, entidad: Entidad, nombreAtributo: string = "Atributo") {
+        const entidadBuscada = this.entidades.find( (ent) => ent === entidad)!;
+        const nuevoAtributo = entidadBuscada.agregarAtributo(nombreAtributo);
+
+        const vistaAtributo = new VistaAtributo(nuevoAtributo, this, entidadBuscada);
+        vistaAtributo.representarseEn(contenedor);
     }
 
     emitirSeleccionDeEntidad(entidad: Entidad, callback: () => void) {

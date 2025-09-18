@@ -1,7 +1,6 @@
 import {Entidad} from "../modelo/entidad";
 import {Modelador} from "../servicios/modelador";
 import {hacerArrastrable} from "../arrastrable";
-import {agregarAtributoEn, posicionarElemento} from "../vista";
 import {createElement} from "./dom/createElement";
 import {coordenada} from "../posicion.ts";
 
@@ -31,7 +30,7 @@ export class VistaEntidad {
 
         const elementoDOMEntidad = this._crearElementoDOMEntidad();
 
-        posicionarElemento(elementoDOMEntidad, this._entidad);
+        this.posicionarElemento(elementoDOMEntidad, this._entidad);
         this._crearAtributosExistentesDeEntidad();
         this._hacerArrastrableA(elementoDOMEntidad);
 
@@ -64,8 +63,7 @@ export class VistaEntidad {
                 textContent: "+",
                 title: "Agregar atributo",
                 onclick: () => {
-                    const atributoNuevo = this._entidad.agregarAtributo("Atributo");
-                    agregarAtributoEn(this._contenedorDeAtributos, atributoNuevo, this._entidad, this._modelador);
+                    this._modelador.emitirCreacionDeAtributoEn(this._contenedorDeAtributos, this._entidad);
                 }
             }, []),
             this._contenedorDeAtributos
@@ -84,7 +82,7 @@ export class VistaEntidad {
             },
             alArrastrar: (_, delta) => {
                 this._entidad.moverseHacia(delta);
-                posicionarElemento(elementoDOMEntidad, this._entidad);
+                this.posicionarElemento(elementoDOMEntidad, this._entidad);
                 this._modelador.actualizarRelacionesVisuales();
             },
             alSoltar: () => elementoDOMEntidad.classList.remove("moviendose"),
@@ -93,8 +91,12 @@ export class VistaEntidad {
 
     private _crearAtributosExistentesDeEntidad() {
         this._entidad.atributos().forEach((atributo) => {
-            agregarAtributoEn(this._contenedorDeAtributos, atributo, this._entidad, this._modelador);
+            this._modelador.emitirCreacionDeAtributoEn(this._contenedorDeAtributos, this._entidad, atributo.nombre());
         });
+    }
+
+    private posicionarElemento(elementoDOMEntidad: HTMLElement, entidad: Entidad) {
+        elementoDOMEntidad.style.translate = `${entidad.posicion().x}px ${entidad.posicion().y}px`;
     }
 
     entidad() {
