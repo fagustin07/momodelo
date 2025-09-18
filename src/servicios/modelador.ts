@@ -24,7 +24,7 @@ export class Modelador {
         this._elementoSvg = elementoSvg;
 
         entidades.forEach(entidad => this._registrarEntidad(entidad));
-        relaciones.forEach(rel => this._registrarRelacion(rel));
+        relaciones.forEach(rel => this.crearRelacion(rel.entidadOrigen(), rel.entidadDestino(), rel.nombre(), rel.posicion()));
     }
 
     // ENTIDADES
