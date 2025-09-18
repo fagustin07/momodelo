@@ -148,11 +148,14 @@ export class Modelador {
         this.accionEnProceso = AccionEnProceso.CrearRelacion;
     }
 
-    generarEntidadUbicadaEn(posicion: Posicion) {
+    generarEntidadUbicadaEn(posicion: Posicion): Entidad {
         if (this.accionEnProceso === AccionEnProceso.CrearEntidad) {
-            return this._registrarEntidad(new Entidad("Entidad", [], posicion));
+            const nuevaEntidad = new Entidad("Entidad", [], posicion);
+            this.entidades.push(nuevaEntidad);
+            this._finalizarAccion();
+            return nuevaEntidad;
         } else {
-            return null;
+            throw new Error("No se puede crear una entidad en este momento");
         }
     }
 
