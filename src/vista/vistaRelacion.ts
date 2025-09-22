@@ -2,6 +2,7 @@ import {Modelador} from "../servicios/modelador";
 import {Relacion} from "../modelo/relacion";
 import {coordenada} from "../posicion";
 import {VistaEntidad} from "./vistaEntidad.ts";
+import {createElement, createSvgElement} from "./dom/createElement.ts";
 
 export class VistaRelacion {
     private readonly _vistaEntidadOrigen: VistaEntidad;
@@ -32,31 +33,37 @@ export class VistaRelacion {
     }
 
     private _crearElementoDom() {
-        this._rombo = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-        this._rombo.setAttribute("fill", "white");
-        this._rombo.setAttribute("stroke", "gray");
-        this._rombo.setAttribute("stroke-width", "1");
-        this._rombo.setAttribute("pointer-events", "all");
+        this._rombo = createSvgElement("polygon", {
+            fill: "white",
+            stroke: "gray",
+            'stroke-width': 1,
+            'pointer-events': "all"
+        });
 
-        this._lineaOrigen = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        this._lineaOrigen.setAttribute("stroke", "gray");
-        this._lineaOrigen.setAttribute("stroke-width", "1");
-        this._lineaOrigen.setAttribute("pointer-events", "none");
+        this._lineaOrigen = createSvgElement("line", {
+            stroke: "gray",
+            'stroke-width': 1,
+            'pointer-events': "none"
+        });
 
-        this._lineaDestino = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        this._lineaDestino.setAttribute("stroke", "gray");
-        this._lineaDestino.setAttribute("stroke-width", "1");
-        this._lineaDestino.setAttribute("pointer-events", "none");
+        this._lineaDestino = createSvgElement("line", {
+            stroke: "gray",
+            'stroke-width': 1,
+            'pointer-events': "none"
+        });
 
-        this._input = document.createElement("input");
-        this._input.value = this._relacion.nombre();
-        this._input.title = "Nombre Relacion";
-        this._input.style.position = "absolute";
-        this._input.style.width = "80px";
-        this._input.style.border = "none";
-        this._input.style.textAlign = "center";
-        this._input.style.background = "transparent";
-        this._input.style.transform = "translate(-50%, -50%)";
+        this._input = createElement("input", {
+            value: this._relacion.nombre(),
+            title: "Nombre Relacion",
+            style: {
+                position: "absolute",
+                width: "80px",
+                border: "none",
+                textAlign: "center",
+                background: "transparent",
+                transform: "translate(-50%, -50%)"
+            }
+        });
 
         this._input.addEventListener("input", () => {
             const nombre = this._input.value.trim() || "RELACION";
