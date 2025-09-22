@@ -21,6 +21,16 @@ export class Posicion {
             this.y - otraPosicion.y,
         );
     }
+
+    round(): Posicion {
+        return this.map(Math.round);
+    }
+
+    map(f: (componente: number) => number) {
+        return coordenada(
+            f(this.x), f(this.y)
+        );
+    }
 }
 
 export function coordenada(x: number, y: number) {

@@ -16,6 +16,10 @@ export class VistaRelacion {
     private _lineaOrigen!: SVGLineElement;
     private _lineaDestino!: SVGLineElement;
     private _input!: HTMLInputElement;
+    private _grupoElementos!: SVGGElement;
+
+    private _ancho = 200;
+    private _alto = 100;
 
     constructor(vistaEntidadOrigen: VistaEntidad, vistaEntidadDestino: VistaEntidad, relacion: Relacion, modelador: Modelador, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
         this._vistaEntidadOrigen = vistaEntidadOrigen;
@@ -32,37 +36,90 @@ export class VistaRelacion {
         this.reposicionarRelacion();
     }
 
+    representarse() {
+        this._elementoSvg.append(
+            this._lineaOrigen,
+            this._lineaDestino,
+            this._grupoElementos,
+        );
+
+        this._input.focus();
+        this._input.select();
+    }
+
+    reposicionarRelacion() {
+        const c1 = this._vistaEntidadOrigen.centro();
+        const c2 = this._vistaEntidadDestino.centro();
+        const medio = this._calcularCentro().round();
+
+        this._relacion.moverseHacia(medio);
+
+        this._lineaOrigen.setAttribute("x1", `${c1.x}`);
+        this._lineaOrigen.setAttribute("y1", `${c1.y}`);
+        this._lineaOrigen.setAttribute("x2", `${medio.x}`);
+        this._lineaOrigen.setAttribute("y2", `${medio.y}`);
+
+        this._lineaDestino.setAttribute("x1", `${c2.x}`);
+        this._lineaDestino.setAttribute("y1", `${c2.y}`);
+        this._lineaDestino.setAttribute("x2", `${medio.x}`);
+        this._lineaDestino.setAttribute("y2", `${medio.y}`);
+
+        const posicion = medio.minus(coordenada(this._ancho / 2, this._alto / 2));
+        this._grupoElementos.setAttribute("transform", `translate(${posicion.x},${posicion.y})`);
+    }
+
+    borrarse() {
+        this._lineaOrigen.remove();
+        this._lineaDestino.remove();
+        this._rombo.remove();
+        this._input.remove();
+    }
+
     private _crearElementoDom() {
-        this._rombo = createSvgElement("polygon", {
-            fill: "white",
-            stroke: "gray",
-            'stroke-width': 1,
-            'pointer-events': "all"
-        });
+        this._grupoElementos = createSvgElement("g", {}, [
+            this._rombo = createSvgElement("polygon", {
+                fill: "white",
+                stroke: "gray",
+                "stroke-width": 1,
+                "pointer-events": "all",
+                points: [
+                    `${this._ancho / 2},${0}`,
+                    `${this._ancho},${this._alto / 2}`,
+                    `${this._ancho / 2},${this._alto}`,
+                    `${0},${this._alto / 2}`,
+                ].join(" ")
+            }),
+            createSvgElement("foreignObject", {
+                width: this._ancho,
+                height: this._alto
+            }, [
+                this._input = createElement("input", {
+                    value: this._relacion.nombre(),
+                    title: "Nombre Relacion",
+                    style: {
+                        position: "absolute",
+                        width: "80px",
+                        border: "none",
+                        textAlign: "center",
+                        background: "transparent",
+                        transform: "translate(-50%, -50%)",
+                        left: "50%",
+                        top: "50%"
+                    },
+                })
+            ])
+        ]);
 
         this._lineaOrigen = createSvgElement("line", {
             stroke: "gray",
-            'stroke-width': 1,
-            'pointer-events': "none"
+            "stroke-width": 1,
+            "pointer-events": "none",
         });
 
         this._lineaDestino = createSvgElement("line", {
             stroke: "gray",
-            'stroke-width': 1,
-            'pointer-events': "none"
-        });
-
-        this._input = createElement("input", {
-            value: this._relacion.nombre(),
-            title: "Nombre Relacion",
-            style: {
-                position: "absolute",
-                width: "80px",
-                border: "none",
-                textAlign: "center",
-                background: "transparent",
-                transform: "translate(-50%, -50%)"
-            }
+            "stroke-width": 1,
+            "pointer-events": "none",
         });
 
         this._input.addEventListener("input", () => {
@@ -79,63 +136,12 @@ export class VistaRelacion {
         });
     }
 
-    representarse() {
-        const svg = this._elementoSvg;
-        svg.appendChild(this._lineaOrigen);
-        svg.appendChild(this._lineaDestino);
-        svg.appendChild(this._rombo);
-        this._elementoRaiz.appendChild(this._input);
-
-        this._input.focus();
-        this._input.select();
-    }
-
-    reposicionarRelacion() {
-        const c1 = this._vistaEntidadOrigen.centro();
-        const c2 = this._vistaEntidadDestino.centro();
-        const medio = this._calcularCentro();
-
-        this._relacion.moverseHacia(coordenada(medio.x, medio.y));
-
-        this._lineaOrigen.setAttribute("x1", `${c1.x}`);
-        this._lineaOrigen.setAttribute("y1", `${c1.y}`);
-        this._lineaOrigen.setAttribute("x2", `${medio.x}`);
-        this._lineaOrigen.setAttribute("y2", `${medio.y}`);
-
-        this._lineaDestino.setAttribute("x1", `${c2.x}`);
-        this._lineaDestino.setAttribute("y1", `${c2.y}`);
-        this._lineaDestino.setAttribute("x2", `${medio.x}`);
-        this._lineaDestino.setAttribute("y2", `${medio.y}`);
-
-        const ancho = 200, alto = 100;
-        const puntos = [
-            `${medio.x},${medio.y - alto / 2}`,
-            `${medio.x + ancho / 2},${medio.y}`,
-            `${medio.x},${medio.y + alto / 2}`,
-            `${medio.x - ancho / 2},${medio.y}`
-        ].join(" ");
-        this._rombo.setAttribute("points", puntos);
-
-        this._input.style.left = `${medio.x}px`;
-        this._input.style.top = `${medio.y}px`;
-    }
-
-    borrarse() {
-        this._lineaOrigen.remove();
-        this._lineaDestino.remove();
-        this._rombo.remove();
-        this._input.remove();
-    }
-
-    representaA(relacion: Relacion) {
-        return this._relacion === relacion;
-    }
     private _calcularCentro() {
         const c1 = this._vistaEntidadOrigen.centro();
         const c2 = this._vistaEntidadDestino.centro();
-        return {
-            x: (c1.x + c2.x) / 2,
-            y: (c1.y + c2.y) / 2
-        };
+        return coordenada(
+            (c1.x + c2.x) / 2,
+            (c1.y + c2.y) / 2,
+        );
     }
 }
