@@ -5,6 +5,7 @@ import {generarBarraDeInteracciones} from "./topbar.ts";
 import {Relacion} from "./modelo/relacion.ts";
 import {renderizarToast} from "./componentes/toast.ts";
 import {VistaEditorMER} from "./servicios/vistaEditorMER.ts";
+import {hacerArrastrable} from "./arrastrable.ts";
 
 function crearElementoSvgParaRelaciones() {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -13,13 +14,13 @@ function crearElementoSvgParaRelaciones() {
     svg.style.left = "0";
     svg.style.width = "100%";
     svg.style.height = "100%";
-    svg.style.pointerEvents = "none";
     return svg;
 }
 
 // ToDo: Esto debería encapsularse en el constructor de VistaModeloManager?
 export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], relaciones: Relacion[]) {
     const svg = crearElementoSvgParaRelaciones();
+    // TODO: podría ser elementoRaiz?
     document.body.appendChild(svg);
 
     const modelador = new Modelador(entidadesEnModelo, relaciones, elementoRaiz, svg);
@@ -37,6 +38,28 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
         const posicion = coordenada(evento.offsetX, evento.offsetY);
         vistaEditorMER.solicitarCreacionDeEntidad(posicion);
     });
+
+    let posicionActual = coordenada(0, 0);
+
+    function actualizarViewBoxSvg() {
+        const svgBoundingBox = svg.getBoundingClientRect();
+        svg.setAttribute("viewBox", `${-posicionActual.x} ${-posicionActual.y} ${svgBoundingBox.width} ${svgBoundingBox.height}`);
+    }
+
+    hacerArrastrable(svg as any, {
+        alArrastrar(_posicionCursor, delta) {
+            posicionActual = posicionActual.plus(delta);
+            for (const elementoHijo of elementoRaiz.children) {
+                if (elementoHijo instanceof HTMLElement && elementoHijo.classList.contains("entidad")) {
+                    elementoHijo.style.transform = `translate(${posicionActual.x}px, ${posicionActual.y}px)`
+                }
+            }
+            actualizarViewBoxSvg();
+        }
+    });
+
+    const resizeObserver = new ResizeObserver(() => actualizarViewBoxSvg());
+    resizeObserver.observe(svg);
 
     return modelador;
 }
