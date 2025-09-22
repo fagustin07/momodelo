@@ -15,7 +15,7 @@ export class Modelador {
     private _entidadesVisuales: Map<Entidad, VistaEntidad> = new Map();
     private _relacionesVisuales: Map<Relacion, VistaRelacion> = new Map();
 
-    accionEnProceso: AccionEnProceso = AccionEnProceso.SinAcciones;
+    private _accionEnProceso: AccionEnProceso = AccionEnProceso.SinAcciones;
     private readonly _elementoRaiz: HTMLElement | null;
     private readonly _elementoSvg: SVGElement | null;
 
@@ -137,19 +137,19 @@ export class Modelador {
     }
 
     solicitudCrearEntidad() {
-        this.accionEnProceso = AccionEnProceso.CrearEntidad;
+        this._iniciarAccion(AccionEnProceso.CrearEntidad);
     }
 
     solicitudDeBorrado() {
-        this.accionEnProceso = AccionEnProceso.Borrado;
+        this._iniciarAccion(AccionEnProceso.Borrado);
     }
 
     solicitudCrearRelacion() {
-        this.accionEnProceso = AccionEnProceso.CrearRelacion;
+        this._iniciarAccion(AccionEnProceso.CrearRelacion);
     }
 
     generarEntidadUbicadaEn(posicion: Posicion): Entidad {
-        if (this.accionEnProceso === AccionEnProceso.CrearEntidad) {
+        if (this._accionEnProceso === AccionEnProceso.CrearEntidad) {
             const nuevaEntidad = new Entidad("Entidad", [], posicion);
             this.entidades.push(nuevaEntidad);
             this._finalizarAccion();
@@ -160,7 +160,7 @@ export class Modelador {
     }
 
     emitirSeleccionDeRelacion(relacion: Relacion, callbackEliminar: () => void) {
-        if (this.accionEnProceso === AccionEnProceso.Borrado) {
+        if (this._accionEnProceso === AccionEnProceso.Borrado) {
             this.eliminarRelacion(relacion);
             callbackEliminar();
         }
@@ -175,24 +175,24 @@ export class Modelador {
     }
 
     emitirSeleccionDeEntidad(entidad: Entidad, callback: () => void) {
-        if (this.accionEnProceso === AccionEnProceso.Borrado) {
+        if (this._accionEnProceso === AccionEnProceso.Borrado) {
             this.eliminarEntidad(entidad);
             callback();
         }
-        if (this.accionEnProceso === AccionEnProceso.CrearRelacion) {
+        if (this._accionEnProceso === AccionEnProceso.CrearRelacion) {
             this._procesarSeleccionParaRelacionarA(entidad);
         }
     }
 
     emitirSeleccionDeAtributo(entidad: Entidad, atributo: Atributo, callbackEliminar: () => void) {
-        if (this.accionEnProceso === AccionEnProceso.Borrado) {
+        if (this._accionEnProceso === AccionEnProceso.Borrado) {
             this.eliminarAtributo(atributo, entidad);
             callbackEliminar();
         }
     }
 
     puedoCrearUnaEntidad() {
-        return this.accionEnProceso === AccionEnProceso.CrearEntidad;
+        return this._accionEnProceso === AccionEnProceso.CrearEntidad;
     }
 
     private _registrarEntidad(nuevaEntidad: Entidad) {
@@ -210,9 +210,15 @@ export class Modelador {
         this.relaciones.push(rel);
     }
 
+    private _iniciarAccion(acción: AccionEnProceso) {
+        this._accionEnProceso = acción;
+        this._elementoRaiz?.classList.add("accion-en-curso");
+    }
+
     private _finalizarAccion() {
-        this.accionEnProceso = AccionEnProceso.SinAcciones;
+        this._accionEnProceso = AccionEnProceso.SinAcciones;
         this._entidadSeleccionada = null;
+        this._elementoRaiz?.classList.remove("accion-en-curso");
     }
 
     private _procesarSeleccionParaRelacionarA(entidad: Entidad) {

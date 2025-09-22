@@ -7,6 +7,12 @@ body {
   overflow: hidden;
 }
 
+.accion-en-curso {
+  .entidad, svg {
+    pointer-events: none;
+  }
+}
+
 .entidad {
   border: 1px solid gray;
   padding: 1em;
