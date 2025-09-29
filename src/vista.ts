@@ -20,8 +20,7 @@ function crearElementoSvgParaRelaciones() {
 // ToDo: Esto debería encapsularse en el constructor de VistaModeloManager?
 export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], relaciones: Relacion[]) {
     const svg = crearElementoSvgParaRelaciones();
-    // TODO: podría ser elementoRaiz?
-    document.body.appendChild(svg);
+    elementoRaiz.appendChild(svg);
 
     const modelador = new Modelador(entidadesEnModelo, relaciones, elementoRaiz, svg);
     const vistaEditorMER = new VistaEditorMER(modelador, elementoRaiz, svg);
