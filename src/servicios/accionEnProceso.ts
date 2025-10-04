@@ -1,5 +1,5 @@
-export enum AccionEnProceso {
-    SinAcciones = "Sin Acciones",
+export enum InteraccionEnProceso {
+    SinInteracciones = "Sin Interacciones",
     CrearEntidad = "Crear Entidad",
     Borrado = "Borrado",
     CrearRelacion = "Crear Relacion",

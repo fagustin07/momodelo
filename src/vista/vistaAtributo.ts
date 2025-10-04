@@ -1,19 +1,19 @@
 import {Entidad} from "../modelo/entidad.ts";
 import {createElement} from "./dom/createElement.ts";
-import {Modelador} from "../servicios/modelador.ts";
 import {Atributo} from "../modelo/atributo.ts";
+import {VistaEditorMER} from "./vistaEditorMER.ts";
 
 export class VistaAtributo {
     private _atributo: Atributo;
     private _entidad: Entidad;
     private _elementoDom: HTMLElement;
     private _campoNombre!: HTMLInputElement;
-    private _modelador: Modelador;
+    private vistaEditorMER: VistaEditorMER;
 
-    constructor(atributo: Atributo, modelador: Modelador, entidad: Entidad) {
+    constructor(atributo: Atributo, vistaEditorMER: VistaEditorMER, entidad: Entidad) {
         this._atributo = atributo;
         this._entidad = entidad;
-        this._modelador = modelador;
+        this.vistaEditorMER = vistaEditorMER;
         this._elementoDom = this._crearElementoDom();
     }
 
@@ -28,7 +28,7 @@ export class VistaAtributo {
             className: "atributo",
             onclick: evento => {
                 evento.stopPropagation();
-                this._modelador.emitirSeleccionDeAtributo(this._entidad, this._atributo, this._eliminarAtributo.bind(this));
+                this.vistaEditorMER.emitirSeleccionDeAtributo(this._entidad, this._atributo, this._eliminarAtributo.bind(this));
             }
         }, [
             this._campoNombre = createElement("input", {
@@ -40,7 +40,7 @@ export class VistaAtributo {
     }
 
     private _cambiarNombreEnModelo() {
-        this._modelador.renombrarAtributo(this._valorCampoNombre(), this._atributo, this._entidad);
+        this.vistaEditorMER.renombrarAtributo(this._valorCampoNombre(), this._atributo, this._entidad);
     }
 
     private _valorCampoNombre() {

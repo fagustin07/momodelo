@@ -1,14 +1,14 @@
-import {Modelador} from "./servicios/modelador.ts";
 import {createElement} from "./vista/dom/createElement.ts";
 import {exportar} from "./servicios/exportador.ts";
 import {importar} from "./servicios/importador.ts";
 import {renderizarToast} from "./componentes/toast.ts";
+import {VistaEditorMER} from "./vista/vistaEditorMER.ts";
 
-export function generarBarraDeInteracciones(modelador: Modelador, elementoRaiz: HTMLElement) {
+export function generarBarraDeInteracciones(vistaEditorMER: VistaEditorMER, elementoRaiz: HTMLElement) {
     const inputJson = createElement("input", {
         type: "file",
         accept: ".json",
-        style: { display: "none" },
+        style: {display: "none"},
         onchange: async (event: Event) => {
             const input = event.target as HTMLInputElement;
             if (!input.files?.length) return;
@@ -17,8 +17,8 @@ export function generarBarraDeInteracciones(modelador: Modelador, elementoRaiz: 
             const text = await file.text();
             const json = JSON.parse(text);
 
-            const { entidades, relaciones } = importar(json);
-            modelador.reemplazarModelo(entidades, relaciones, elementoRaiz);
+            const {entidades, relaciones} = importar(json);
+            vistaEditorMER.reemplazarModelo(entidades, relaciones, elementoRaiz);
 
             input.value = "";
         }
@@ -41,48 +41,48 @@ export function generarBarraDeInteracciones(modelador: Modelador, elementoRaiz: 
             gap: "12px"
         }
     }, [
-        createElement("button", botonCrearEntidad(modelador)),
-        createElement("button", botonCrearRelacion(elementoRaiz, modelador)),
-        createElement("button", botonBorrar(modelador)),
-        createElement("button", botonDeExportar(modelador)),
+        createElement("button", botonCrearEntidad(vistaEditorMER)),
+        createElement("button", botonCrearRelacion(elementoRaiz, vistaEditorMER)),
+        createElement("button", botonBorrar(vistaEditorMER)),
+        createElement("button", botonDeExportar(vistaEditorMER)),
         createElement("button", botonImportar(inputJson)),
         inputJson
     ]);
 }
 
-function botonCrearEntidad(modelador: Modelador) {
+function botonCrearEntidad(vistaEditorMER: VistaEditorMER) {
     return {
         textContent: "+Entidad",
         onclick: () => {
-            modelador.solicitudCrearEntidad();
+            vistaEditorMER.solicitudCrearEntidad();
         }
     };
 }
 
-function botonCrearRelacion(elementoRaiz: HTMLElement, modelador: Modelador) {
+function botonCrearRelacion(elementoRaiz: HTMLElement, vistaEditorMER: VistaEditorMER) {
     return {
         textContent: "+Relacion",
         onclick: () => {
-            modelador.solicitudCrearRelacion();
+            vistaEditorMER.solicitudCrearRelacion();
             renderizarToast(elementoRaiz, "Hacé click en las entidades de origen y destino para generar una nueva relación", {duracion: 3000});
         }
     };
 }
 
-function botonBorrar(modelador: Modelador) {
+function botonBorrar(vistaEditorMER: VistaEditorMER) {
     return {
         textContent: "Borrar",
         onclick: () => {
-            modelador.solicitudDeBorrado();
+            vistaEditorMER.solicitudDeBorrado();
         }
     };
 }
 
-function botonDeExportar(modelador: Modelador) {
+function botonDeExportar(vistaEditorMER: VistaEditorMER) {
     return {
         textContent: "Exportar",
         onclick: () => {
-            const json = exportar(modelador);
+            const json = exportar(vistaEditorMER.modelador);
             const blob = new Blob([JSON.stringify(json, null, 2)], {type: "application/json"});
             const url = URL.createObjectURL(blob);
 

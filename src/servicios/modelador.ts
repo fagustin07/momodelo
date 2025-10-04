@@ -1,248 +1,118 @@
-import {Entidad} from "../modelo/entidad.ts";
-import {Atributo} from "../modelo/atributo.ts";
-import {VistaRelacion} from "../vista/vistaRelacion.ts";
-import {Relacion} from "../modelo/relacion.ts";
-import {VistaEntidad} from "../vista/vistaEntidad.ts";
-import {coordenada, Posicion} from "../posicion.ts";
-import {AccionEnProceso} from "./accionEnProceso.ts";
-import {VistaAtributo} from "../vista/vistaAtributo.ts";
+import {Entidad} from "../modelo/entidad";
+import {Atributo} from "../modelo/atributo";
+import {Relacion} from "../modelo/relacion";
+import {coordenada, Posicion} from "../posicion";
+import type {VistaEditorMER} from "../vista/vistaEditorMER";
 
 export class Modelador {
     entidades: Entidad[] = [];
     relaciones: Relacion[] = [];
-    private _entidadSeleccionada: Entidad | null = null;
 
-    private _entidadesVisuales: Map<Entidad, VistaEntidad> = new Map();
-    private _relacionesVisuales: Map<Relacion, VistaRelacion> = new Map();
+    private _vista: VistaEditorMER | null = null;
 
-    private _accionEnProceso: AccionEnProceso = AccionEnProceso.SinAcciones;
-    private readonly _elementoRaiz: HTMLElement | null;
-    private readonly _elementoSvg: SVGElement | null;
-
-    constructor(entidades: Entidad[] = [], relaciones: Relacion[] = [], elementoRaiz: HTMLElement | null = null, elementoSvg: SVGElement | null = null) {
-        this._elementoRaiz = elementoRaiz;
-        this._elementoSvg = elementoSvg;
-
-        entidades.forEach(entidad => this._registrarEntidad(entidad));
-        relaciones.forEach(rel => this.crearRelacion(rel.entidadOrigen(), rel.entidadDestino(), rel.nombre(), rel.posicion()));
+    constructor(entidades: Entidad[] = [], relaciones: Relacion[] = []) {
+        entidades.forEach(ent => this._registrarEntidad(ent));
+        relaciones.forEach(rel =>
+            this.crearRelacion(rel.entidadOrigen(), rel.entidadDestino(), rel.nombre(), rel.posicion())
+        );
     }
 
-    // ENTIDADES
-    seleccionarEntidad(entidad: Entidad) {
-        if (this._entidadSeleccionada && this._entidadSeleccionada !== entidad) {
-            this.crearRelacion(this._entidadSeleccionada, entidad);
-            this._entidadSeleccionada = null;
-        } else {
-            this._entidadSeleccionada = entidad;
-        }
+    conectarVista(vistaEditorMER: VistaEditorMER) {
+        this._vista = vistaEditorMER;
+    }
+
+    reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[]) {
+        this.entidades = [];
+        this.relaciones = [];
+        nuevasEntidades.forEach(ent => this._registrarEntidad(ent));
+        nuevasRelaciones.forEach(rel =>
+            this.crearRelacion(rel.entidades()[0], rel.entidades()[1], rel.nombre(), rel.posicion())
+        );
+    }
+
+
+    // ========= ENTIDADES =========
+
+    generarEntidadUbicadaEn(posicion: Posicion): Entidad {
+        const nueva = new Entidad("Entidad", [], posicion);
+        this.entidades.push(nueva);
+        this._vista?.entidadCreada(nueva);
+        return nueva;
     }
 
     renombrarEntidad(nuevoNombre: string, entidad: Entidad) {
         entidad.cambiarNombre(nuevoNombre);
+        this._vista?.entidadRenombrada(entidad);
     }
+
 
     eliminarEntidad(entidad: Entidad) {
-        this.entidades = this.entidades.filter(e => e !== entidad);
-        this._entidadesVisuales.delete(entidad);
-        this._eliminarRelacionesQueContienenA(entidad);
-        this._finalizarAccion();
+        const relacionesAfectadas = this._relacionesAsociadasA(entidad);
+
+        this._eliminarRelaciones(relacionesAfectadas);
+        this._eliminarEntidadDelModelo(entidad);
+        this._notificarEliminacionEntidad(entidad, relacionesAfectadas);
     }
 
-    // ATRIBUTOS
-    agregarAtributo(_nombreDeAtributoNuevo: string, _entidadExistente: Entidad, _esMultivaluado: boolean): Atributo {
-        throw new Error("Sin implementar");
+    // ========= ATRIBUTOS =========
+
+    renombrarAtributo(nuevoNombre: string, atributo: Atributo, entidad: Entidad) {
+        entidad.renombrarAtributo(atributo, nuevoNombre);
     }
 
-    renombrarAtributo(nuevoNombre: string, atributoExistente: Atributo, entidad: Entidad) {
-        entidad.renombrarAtributo(atributoExistente, nuevoNombre);
-    }
-
-    eliminarAtributo(atributo: Atributo, entidad: Entidad): void {
+    eliminarAtributo(atributo: Atributo, entidad: Entidad) {
         entidad.eliminarAtributo(atributo);
-        this._finalizarAccion();
+        this._vista?.atributoEliminado(entidad, atributo);
     }
 
-    // RELACIONES
-    crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string = "RELACION", pos: {x: number, y: number} = {x: 0, y: 0}) {
-        const nuevaRelacion = new Relacion(nombre, entidadOrigen, entidadDestino, coordenada(pos.x, pos.y));
-        this._registrarRelacion(nuevaRelacion);
+    // ========= RELACIONES =========
 
-        if (this._elementoSvg !== null && this._elementoRaiz !== null) {
-            const nuevaVista = new VistaRelacion(
-                this._vistaDeEntidad(entidadOrigen),
-                this._vistaDeEntidad(entidadDestino),
-                nuevaRelacion, this, this._elementoRaiz, this._elementoSvg
-            );
-            nuevaVista.representarse();
-            this._relacionesVisuales.set(nuevaRelacion, nuevaVista);
-        }
-        this._finalizarAccion();
+    crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string = "RELACION", pos: { x: number; y: number } = {x: 0, y: 0}) {
+        const nuevaRelacion = new Relacion(nombre, entidadOrigen, entidadDestino, coordenada(pos.x, pos.y));
+        this.relaciones.push(nuevaRelacion);
+        this._vista?.relacionCreada(nuevaRelacion);
     }
 
     posicionarRelacionEn(relacion: Relacion, centro: { x: number; y: number }) {
         relacion.posicionarseEn(coordenada(centro.x, centro.y));
+        this._vista?.relacionReposicionada(relacion);
     }
 
-    eliminarRelacion(relacion: Relacion): void {
-        this.relaciones = this.relaciones.filter(r => r !== relacion);
-
-        this._relacionesVisuales.get(relacion)!.borrarse();
-        this._relacionesVisuales.delete(relacion);
-
-        this._finalizarAccion();
+    eliminarRelacion(relacion: Relacion) {
+        this.relaciones = this.relaciones.filter(rel => rel !== relacion);
+        this._vista?.relacionEliminada(relacion);
     }
 
     renombrarRelacion(nuevoNombre: string, relacion: Relacion) {
         relacion.cambiarNombre(nuevoNombre);
+        this._vista?.relacionRenombrada(relacion);
     }
 
-    actualizarRelacionesVisuales() {
-        this._relacionesVisuales.forEach(vista => {
-            vista.reposicionarRelacion();
-        });
+
+    agregarAtributoPara(entidad: Entidad, nombreAtributo: string = "Atributo") {
+        const nuevo = entidad.agregarAtributo(nombreAtributo);
+        this._vista?.atributoCreado(entidad, nuevo);
     }
 
-    reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[], contenedor: HTMLElement) {
-        Array.from(contenedor.querySelectorAll(".entidad")).forEach(e => e.remove());
-        Array.from(document.querySelectorAll("svg line, svg polygon")).forEach(el => el.remove());
-        Array.from(document.querySelectorAll("body > input[title='Nombre Relacion']")).forEach(el => el.remove());
-
-        this.entidades = [];
-        this.relaciones = [];
-
-        this._entidadesVisuales = new Map();
-        this._relacionesVisuales = new Map();
-
-        nuevasEntidades.forEach(entidad => {
-            this.entidades.push(entidad);
-            const vista = new VistaEntidad(entidad, this);
-            vista.representarseEn(contenedor);
-            this._entidadesVisuales.set(entidad, vista);
-        });
-
-        nuevasRelaciones.forEach(relacion => {
-            const vista = new VistaRelacion(
-                this._vistaDeEntidad(relacion.entidades()[0]),
-                this._vistaDeEntidad(relacion.entidades()[1]),
-                relacion,
-                this,
-                this._elementoRaiz!,
-                this._elementoSvg!
-            );
-            vista.representarse();
-
-            this._relacionesVisuales.set(relacion, vista);
-            this.relaciones.push(relacion);
-        });
+    private _registrarEntidad(entidad: Entidad) {
+        this.entidades.push(entidad);
+        this._vista?.entidadCreada(entidad);
+    }
+    private _relacionesAsociadasA(entidad: Entidad): Relacion[] {
+        return this.relaciones.filter(r => r.contieneA(entidad));
     }
 
-    solicitudCrearEntidad() {
-        this._iniciarAccion(AccionEnProceso.CrearEntidad);
+    private _eliminarRelaciones(relacionesAEliminar: Relacion[]): void {
+        this.relaciones = this.relaciones.filter(r => !relacionesAEliminar.includes(r));
+        relacionesAEliminar.forEach(r => this._vista?.relacionEliminada(r));
     }
 
-    solicitudDeBorrado() {
-        this._iniciarAccion(AccionEnProceso.Borrado);
+    private _eliminarEntidadDelModelo(entidad: Entidad): void {
+        this.entidades = this.entidades.filter(e => e !== entidad);
     }
 
-    solicitudCrearRelacion() {
-        this._iniciarAccion(AccionEnProceso.CrearRelacion);
+    private _notificarEliminacionEntidad(entidad: Entidad, relacionesEliminadas: Relacion[]): void {
+        this._vista?.entidadEliminada(entidad, relacionesEliminadas);
     }
 
-    generarEntidadUbicadaEn(posicion: Posicion): Entidad {
-        if (this._accionEnProceso === AccionEnProceso.CrearEntidad) {
-            const nuevaEntidad = new Entidad("Entidad", [], posicion);
-            this.entidades.push(nuevaEntidad);
-            this._finalizarAccion();
-            return nuevaEntidad;
-        } else {
-            throw new Error("No se puede crear una entidad en este momento");
-        }
-    }
-
-    emitirSeleccionDeRelacion(relacion: Relacion, callbackEliminar: () => void) {
-        if (this._accionEnProceso === AccionEnProceso.Borrado) {
-            this.eliminarRelacion(relacion);
-            callbackEliminar();
-        }
-    }
-
-    emitirCreacionDeAtributoEn(contenedor: HTMLElement, entidad: Entidad, nombreAtributo: string = "Atributo") {
-        const entidadBuscada = this.entidades.find( (ent) => ent === entidad)!;
-        const nuevoAtributo = entidadBuscada.agregarAtributo(nombreAtributo);
-
-        const vistaAtributo = new VistaAtributo(nuevoAtributo, this, entidadBuscada);
-        vistaAtributo.representarseEn(contenedor);
-    }
-
-    emitirSeleccionDeEntidad(entidad: Entidad, callback: () => void) {
-        if (this._accionEnProceso === AccionEnProceso.Borrado) {
-            this.eliminarEntidad(entidad);
-            callback();
-        }
-        if (this._accionEnProceso === AccionEnProceso.CrearRelacion) {
-            this._procesarSeleccionParaRelacionarA(entidad);
-        }
-    }
-
-    emitirSeleccionDeAtributo(entidad: Entidad, atributo: Atributo, callbackEliminar: () => void) {
-        if (this._accionEnProceso === AccionEnProceso.Borrado) {
-            this.eliminarAtributo(atributo, entidad);
-            callbackEliminar();
-        }
-    }
-
-    puedoCrearUnaEntidad() {
-        return this._accionEnProceso === AccionEnProceso.CrearEntidad;
-    }
-
-    elementoRaiz() {
-        return this._elementoRaiz;
-    }
-
-    private _registrarEntidad(nuevaEntidad: Entidad) {
-        this.entidades.push(nuevaEntidad);
-        this._finalizarAccion();
-        if (this._elementoRaiz !== null) {
-            const vistaEntidad = new VistaEntidad(nuevaEntidad, this);
-            vistaEntidad.representarseEn(this._elementoRaiz);
-            this._entidadesVisuales.set(nuevaEntidad, vistaEntidad);
-        }
-        return nuevaEntidad;
-    }
-
-    private _registrarRelacion(rel: Relacion) {
-        this.relaciones.push(rel);
-    }
-
-    private _iniciarAccion(acción: AccionEnProceso) {
-        this._accionEnProceso = acción;
-        this._elementoRaiz?.classList.add("accion-en-curso");
-    }
-
-    private _finalizarAccion() {
-        this._accionEnProceso = AccionEnProceso.SinAcciones;
-        this._entidadSeleccionada = null;
-        this._elementoRaiz?.classList.remove("accion-en-curso");
-    }
-
-    private _procesarSeleccionParaRelacionarA(entidad: Entidad) {
-        if (!this._entidadSeleccionada) {
-            this.seleccionarEntidad(entidad);
-        } else {
-            this.crearRelacion(this._entidadSeleccionada, entidad);
-        }
-    }
-
-    private _eliminarRelacionesQueContienenA(entidad: Entidad) {
-        this.relaciones
-            .filter(r => r.contieneA(entidad))
-            .forEach(rel => this.eliminarRelacion(rel));
-    }
-
-    private _vistaDeEntidad(entidadOrigen: Entidad) {
-        const vista = this._entidadesVisuales.get(entidadOrigen);
-        if (!vista)
-            throw new Error("La entidad no existe");
-        return vista;
-    }
 }

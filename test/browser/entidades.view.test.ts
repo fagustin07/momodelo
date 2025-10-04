@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it} from "vitest";
-import {fireEvent, within, screen} from "@testing-library/dom";
+import {fireEvent, screen, within} from "@testing-library/dom";
 import userEvent from "@testing-library/user-event";
 import {init} from "../../src/vista";
 import {Entidad} from "../../src/modelo/entidad";

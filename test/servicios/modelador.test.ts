@@ -14,8 +14,8 @@ describe("[MER] Modelador", () => {
         const entidad2 = crearEntidadLlamada("Marin");
         const entidad3 = crearEntidadLlamada("Tenryu");
 
-        generarRelacionEnModeloEntre(entidad1, entidad2);
-        generarRelacionEnModeloEntre(entidad1, entidad3);
+        modelador.crearRelacion(entidad1, entidad2);
+        modelador.crearRelacion(entidad1, entidad3);
 
         expect(modelador.relaciones.length).toEqual(2);
 
@@ -30,15 +30,9 @@ describe("[MER] Modelador", () => {
     });
 
     function crearEntidadLlamada(nombreEntidad: string): Entidad {
-        modelador.solicitudCrearEntidad();
         const nuevaEntidad = modelador.generarEntidadUbicadaEn(coordenada(200, 200));
         modelador.renombrarEntidad(nombreEntidad, nuevaEntidad!);
         return nuevaEntidad!;
     }
 
-    function generarRelacionEnModeloEntre(entidadOrigen: Entidad, entidadDestino: Entidad) {
-        modelador.solicitudCrearRelacion();
-        modelador.emitirSeleccionDeEntidad(entidadOrigen, () => {});
-        modelador.emitirSeleccionDeEntidad(entidadDestino, () => {});
-    }
 });

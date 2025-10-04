@@ -22,20 +22,20 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
     const svg = crearElementoSvgParaRelaciones();
     elementoRaiz.appendChild(svg);
 
-    const modelador = new Modelador(entidadesEnModelo, relaciones, elementoRaiz, svg);
-    const vistaEditorMER = new VistaEditorMER(modelador);
-    const topbar = generarBarraDeInteracciones(modelador, elementoRaiz);
+    const vistaEditorMER = new VistaEditorMER(new Modelador(entidadesEnModelo, relaciones), elementoRaiz, svg);
+    const topbar = generarBarraDeInteracciones(vistaEditorMER, elementoRaiz);
 
     elementoRaiz.append(topbar);
 
     elementoRaiz.addEventListener("click", evento => {
         if (evento.target !== elementoRaiz) return;
-        if (!modelador.puedoCrearUnaEntidad()) {
+        if (!vistaEditorMER.puedoCrearUnaEntidad()) {
             renderizarToast(elementoRaiz, "Hacé clic en “+Entidad” y luego en el diagrama para crear Entidades.");
             return;
         }
         const posicion = coordenada(evento.offsetX, evento.offsetY);
-        vistaEditorMER.solicitudCrearEntidad(posicion);
+        vistaEditorMER.solicitudCrearEntidad();
+        vistaEditorMER.agregarEntidadEn(posicion);
     });
 
     let posicionActual = coordenada(0, 0);

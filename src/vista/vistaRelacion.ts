@@ -1,13 +1,13 @@
-import {Modelador} from "../servicios/modelador";
 import {Relacion} from "../modelo/relacion";
 import {coordenada} from "../posicion";
 import {VistaEntidad} from "./vistaEntidad.ts";
 import {createElement, createSvgElement} from "./dom/createElement.ts";
+import {VistaEditorMER} from "./vistaEditorMER.ts";
 
 export class VistaRelacion {
     private readonly _vistaEntidadOrigen: VistaEntidad;
     private readonly _vistaEntidadDestino: VistaEntidad;
-    private readonly _modelador: Modelador;
+    private readonly _vistaEditorMER: VistaEditorMER;
     private readonly _elementoRaiz: HTMLElement;
     private readonly _elementoSvg: SVGElement;
     private readonly _relacion: Relacion;
@@ -21,16 +21,16 @@ export class VistaRelacion {
     private _ancho = 200;
     private _alto = 100;
 
-    constructor(vistaEntidadOrigen: VistaEntidad, vistaEntidadDestino: VistaEntidad, relacion: Relacion, modelador: Modelador, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
+    constructor(vistaEntidadOrigen: VistaEntidad, vistaEntidadDestino: VistaEntidad, relacion: Relacion, vistaEditorMER: VistaEditorMER, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
         this._vistaEntidadOrigen = vistaEntidadOrigen;
         this._vistaEntidadDestino = vistaEntidadDestino;
-        this._modelador = modelador;
+        this._vistaEditorMER = vistaEditorMER;
         this._elementoRaiz = elementoRaiz;
         this._elementoSvg = elementoSvg;
 
         const centro = this._calcularCentro();
         this._relacion = relacion;
-        this._modelador.posicionarRelacionEn(this._relacion, centro);
+        this._vistaEditorMER.posicionarRelacionEn(this._relacion, centro);
 
         this._crearElementoDom();
         this.reposicionarRelacion();
@@ -73,6 +73,10 @@ export class VistaRelacion {
         this._lineaDestino.remove();
         this._rombo.remove();
         this._input.remove();
+    }
+
+    actualizarNombre() {
+        this._input.value = this._relacion.nombre();
     }
 
     private _crearElementoDom() {
@@ -124,15 +128,15 @@ export class VistaRelacion {
 
         this._input.addEventListener("input", () => {
             const nombre = this._input.value.trim() || "RELACION";
-            this._modelador.renombrarRelacion(nombre, this._relacion);
+            this._vistaEditorMER.renombrarRelacion(nombre, this._relacion);
         });
 
         this._input.addEventListener("click", () => {
-            this._modelador.emitirSeleccionDeRelacion(this._relacion, this.borrarse.bind(this));
+            this._vistaEditorMER.emitirSeleccionDeRelacion(this._relacion);
         });
 
         this._rombo.addEventListener("click", () => {
-            this._modelador.emitirSeleccionDeRelacion(this._relacion, this.borrarse.bind(this));
+            this._vistaEditorMER.emitirSeleccionDeRelacion(this._relacion);
         });
     }
 

@@ -1,55 +1,60 @@
-import { Entidad } from "../modelo/entidad";
-import { Atributo } from "../modelo/atributo";
-import { Relacion } from "../modelo/relacion";
-import { Posicion } from "../posicion";
-import {Modelador} from "../servicios/modelador.ts";
-import {VistaEntidad} from "./vistaEntidad.ts";
+import {Entidad} from "../modelo/entidad";
+import {Atributo} from "../modelo/atributo";
+import {Relacion} from "../modelo/relacion";
+import {Posicion} from "../posicion";
+import {Modelador} from "../servicios/modelador";
+import {InteraccionEnProceso} from "../servicios/accionEnProceso";
+import {VistaEntidad} from "./vistaEntidad";
+import {VistaRelacion} from "./vistaRelacion";
+import {VistaAtributo} from "./vistaAtributo";
 
-// ToDo: ELEMENTOS RAIZ y SVG REQUIRED
 export class VistaEditorMER {
     readonly modelador: Modelador;
 
-    constructor(modelador: Modelador) {
+    private _interaccionEnProceso: InteraccionEnProceso = InteraccionEnProceso.SinInteracciones;
+    private _entidadSeleccionada: Entidad | null = null;
+
+    private readonly _elementoRaíz: HTMLElement;
+    private readonly _elementoSvg: SVGElement;
+
+    private _entidadesVisuales: Map<Entidad, VistaEntidad> = new Map();
+    private _relacionesVisuales: Map<Relacion, VistaRelacion> = new Map();
+
+    constructor(modelador: Modelador, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
         this.modelador = modelador;
+        this._elementoRaíz = elementoRaiz;
+        this._elementoSvg = elementoSvg;
+
+        this.modelador.conectarVista(this);
+
+        this.modelador.entidades.forEach(e => this._crearVistaEntidad(e));
+        this.modelador.relaciones.forEach(r => this._crearVistaRelacion(r));
     }
 
-    // ENTIDADES
-    seleccionarEntidad(entidad: Entidad): void {
-        this.modelador.seleccionarEntidad(entidad);
+    reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[], contenedor: HTMLElement): void {
+        this._entidadesVisuales.forEach(entVisual => entVisual.borrarse());
+        this._relacionesVisuales.forEach(relVisual => relVisual.borrarse());
+
+        this.modelador.reemplazarModelo(nuevasEntidades, nuevasRelaciones);
+    }
+
+    agregarEntidadEn(posicion: Posicion): void {
+        if (this._interaccionEnProceso === InteraccionEnProceso.CrearEntidad) {
+            this.modelador.generarEntidadUbicadaEn(posicion);
+            this._finalizarInteraccion();
+        }
     }
 
     renombrarEntidad(nuevoNombre: string, entidad: Entidad): void {
         this.modelador.renombrarEntidad(nuevoNombre, entidad);
     }
 
-    eliminarEntidad(entidad: Entidad): void {
-        this.modelador.eliminarEntidad(entidad);
-    }
-
-    // ATRIBUTOS
-    agregarAtributo(nombreDeAtributoNuevo: string, entidadExistente: Entidad, esMultivaluado: boolean): Atributo {
-        return this.modelador.agregarAtributo(nombreDeAtributoNuevo, entidadExistente, esMultivaluado);
-    }
-
     renombrarAtributo(nuevoNombre: string, atributoExistente: Atributo, entidad: Entidad): void {
         this.modelador.renombrarAtributo(nuevoNombre, atributoExistente, entidad);
     }
 
-    eliminarAtributo(atributo: Atributo, entidad: Entidad): void {
-        this.modelador.eliminarAtributo(atributo, entidad);
-    }
-
-    // RELACIONES
-    crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string = "RELACION", pos: { x: number, y: number } = { x: 0, y: 0 }): void {
-        this.modelador.crearRelacion(entidadOrigen, entidadDestino, nombre, pos);
-    }
-
     posicionarRelacionEn(relacion: Relacion, centro: { x: number; y: number }): void {
         this.modelador.posicionarRelacionEn(relacion, centro);
-    }
-
-    eliminarRelacion(relacion: Relacion): void {
-        this.modelador.eliminarRelacion(relacion);
     }
 
     renombrarRelacion(nuevoNombre: string, relacion: Relacion): void {
@@ -57,52 +62,135 @@ export class VistaEditorMER {
     }
 
     actualizarRelacionesVisuales(): void {
-        this.modelador.actualizarRelacionesVisuales();
+        this._relacionesVisuales.forEach(relVisual => relVisual.reposicionarRelacion());
     }
 
-    // IMPORT
-    reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[], contenedor: HTMLElement): void {
-        this.modelador.reemplazarModelo(nuevasEntidades, nuevasRelaciones, contenedor);
-    }
-
-    // SOLICITUDES DE ACCIONES
-    solicitudCrearEntidad(posicion: Posicion): void {
-        const nuevaEntidad = this.modelador.generarEntidadUbicadaEn(posicion);
-        const vistaEntidad = new VistaEntidad(nuevaEntidad, this.modelador);
-        vistaEntidad.representarseEn(this.modelador.elementoRaiz()!);
+    solicitudCrearEntidad(): void {
+        this._iniciarInteraccion(InteraccionEnProceso.CrearEntidad);
     }
 
     solicitudDeBorrado(): void {
-        this.modelador.solicitudDeBorrado();
+        this._iniciarInteraccion(InteraccionEnProceso.Borrado);
     }
 
     solicitudCrearRelacion(): void {
-        this.modelador.solicitudCrearRelacion();
+        this._iniciarInteraccion(InteraccionEnProceso.CrearRelacion);
     }
 
-    // EVENTOS
-    generarEntidadUbicadaEn(posicion: Posicion): Entidad {
-        return this.modelador.generarEntidadUbicadaEn(posicion);
+    emitirSeleccionDeRelacion(relacion: Relacion): void {
+        if (this._interaccionEnProceso === InteraccionEnProceso.Borrado) {
+            this.modelador.eliminarRelacion(relacion);
+            this._finalizarInteraccion();
+        }
     }
 
-    emitirSeleccionDeRelacion(relacion: Relacion, callbackEliminar: () => void): void {
-        this.modelador.emitirSeleccionDeRelacion(relacion, callbackEliminar);
+    emitirCreacionDeAtributoEn(entidad: Entidad, nombreAtributo: string = "Atributo"): void {
+        this.modelador.agregarAtributoPara(entidad, nombreAtributo);
     }
 
-    emitirCreacionDeAtributoEn(contenedor: HTMLElement, entidad: Entidad, nombreAtributo: string = "Atributo"): void {
-        this.modelador.emitirCreacionDeAtributoEn(contenedor, entidad, nombreAtributo);
-    }
-
-    emitirSeleccionDeEntidad(entidad: Entidad, callback: () => void): void {
-        this.modelador.emitirSeleccionDeEntidad(entidad, callback);
+    emitirSeleccionDeEntidad(entidad: Entidad): void {
+        if (this._interaccionEnProceso === InteraccionEnProceso.Borrado) {
+            this.modelador.eliminarEntidad(entidad);
+            this._finalizarInteraccion();
+            return;
+        }
+        if (this._interaccionEnProceso === InteraccionEnProceso.CrearRelacion) {
+            this.seleccionarEntidad(entidad);
+        }
     }
 
     emitirSeleccionDeAtributo(entidad: Entidad, atributo: Atributo, callbackEliminar: () => void): void {
-        this.modelador.emitirSeleccionDeAtributo(entidad, atributo, callbackEliminar);
+        if (this._interaccionEnProceso === InteraccionEnProceso.Borrado) {
+            this.modelador.eliminarAtributo(atributo, entidad);
+            callbackEliminar();
+            this._finalizarInteraccion();
+        }
     }
 
-    // CONSULTAS DE ESTADO
     puedoCrearUnaEntidad(): boolean {
-        return this.modelador.puedoCrearUnaEntidad();
+        return this._interaccionEnProceso === InteraccionEnProceso.CrearEntidad;
+    }
+
+    entidadCreada(entidad: Entidad) {
+        if (!this._entidadesVisuales.has(entidad)) this._crearVistaEntidad(entidad);
+    }
+
+    entidadRenombrada(entidad: Entidad) {
+        this._entidadesVisuales.get(entidad)?.actualizarNombre?.();
+    }
+
+    entidadEliminada(entidad: Entidad, relacionesEliminadas: Relacion[]) {
+        this._entidadesVisuales.get(entidad)?.borrarse();
+        this._entidadesVisuales.delete(entidad);
+        relacionesEliminadas.forEach(rel => this.relacionEliminada(rel));
+    }
+
+    atributoCreado(entidad: Entidad, atributo: Atributo) {
+        // ToDo: guardar el atributo creado
+        new VistaAtributo(atributo, this, entidad)
+            .representarseEn(this._entidadesVisuales.get(entidad)!.contenedorDeAtributos());
+    }
+
+    atributoEliminado(_entidad: Entidad, _atributo: Atributo) {
+        // ToDo: que el manager avise a la vistaAtributo que debe eliminarse
+    }
+
+    relacionCreada(relacion: Relacion) {
+        this._crearVistaRelacion(relacion);
+    }
+
+    relacionRenombrada(relacion: Relacion) {
+        this._relacionesVisuales.get(relacion)?.actualizarNombre?.();
+    }
+
+    relacionReposicionada(relacion: Relacion) {
+        this._relacionesVisuales.get(relacion)?.reposicionarRelacion();
+    }
+
+    relacionEliminada(relacion: Relacion) {
+        this._relacionesVisuales.get(relacion)?.borrarse();
+        this._relacionesVisuales.delete(relacion);
+    }
+
+    // =================== PRIVATE ===================
+    private seleccionarEntidad(entidad: Entidad): void {
+        if (this._interaccionEnProceso === InteraccionEnProceso.CrearRelacion) {
+            if (!this._entidadSeleccionada) {
+                this._entidadSeleccionada = entidad;
+            } else {
+                this.modelador.crearRelacion(this._entidadSeleccionada, entidad);
+                this._finalizarInteraccion();
+            }
+        }
+    }
+
+    private _crearVistaEntidad(entidad: Entidad) {
+        const vista = new VistaEntidad(entidad, this);
+        vista.representarseEn(this._elementoRaíz);
+        this._entidadesVisuales.set(entidad, vista);
+    }
+
+    private _crearVistaRelacion(relacion: Relacion) {
+        const [entidadOrigen, entidadDestino] = relacion.entidades();
+        const entVisualOrigen = this._entidadesVisuales.get(entidadOrigen)!;
+        const entVisualDestino = this._entidadesVisuales.get(entidadDestino)!;
+
+        const vista = new VistaRelacion(entVisualOrigen, entVisualDestino, relacion, this, this._elementoRaíz, this._elementoSvg);
+        vista.representarse();
+        this._relacionesVisuales.set(relacion, vista);
+    }
+
+    private _iniciarInteraccion(interaccionAComenzar: InteraccionEnProceso) {
+        this._interaccionEnProceso = interaccionAComenzar;
+        this._elementoRaíz.classList.add("accion-en-curso");
+        if (interaccionAComenzar !== InteraccionEnProceso.CrearRelacion) {
+            this._entidadSeleccionada = null;
+        }
+    }
+
+    private _finalizarInteraccion() {
+        this._interaccionEnProceso = InteraccionEnProceso.SinInteracciones;
+        this._entidadSeleccionada = null;
+        this._elementoRaíz.classList.remove("accion-en-curso");
     }
 }
