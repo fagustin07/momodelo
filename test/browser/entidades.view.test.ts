@@ -5,7 +5,7 @@ import {init} from "../../src/vista";
 import {Entidad} from "../../src/modelo/entidad";
 import {coordenada, Posicion} from "../../src/posicion";
 import "../../src/style.css";
-import {Modelador} from "../../src/servicios/modelador.ts";
+import {VistaEditorMER} from "../../src/vista/vistaEditorMER.ts";
 
 export function getElementoEntidades() {
     return [...document.querySelectorAll<HTMLElement>(".entidad")];
@@ -60,7 +60,7 @@ describe("[MER] Vista Modelo tests", () => {
     let entidad: Entidad;
     let elementoRaiz: HTMLElement;
     let entidadesEnModelo: Entidad[];
-    let modelador: Modelador;
+    let vistaEditorMER: VistaEditorMER;
 
     beforeEach(() => {
         document.body.innerHTML = '';
@@ -68,7 +68,7 @@ describe("[MER] Vista Modelo tests", () => {
         document.body.append(elementoRaiz);
         entidad = new Entidad("Pirata", [], coordenada(10, 10));
         entidadesEnModelo = [entidad];
-        modelador = init(elementoRaiz, entidadesEnModelo, []);
+        vistaEditorMER = init(elementoRaiz, entidadesEnModelo, []);
     });
 
     it("Dada una inicializacion con una entidad, entonces la misma se encuentra en el DOM", () => {
@@ -84,7 +84,7 @@ describe("[MER] Vista Modelo tests", () => {
 
         cambiarNombreEntidadPor(elementoEntidad, "Marinero");
 
-        expect(modelador.entidades[0].nombre()).toEqual("Marinero");
+        expect(vistaEditorMER.modelador.entidades[0].nombre()).toEqual("Marinero");
     });
 
     it("Cuando se escribe un nombre en la entidad creada, el modelo se actualiza correctamente", async () => {
@@ -127,7 +127,7 @@ describe("[MER] Vista Modelo tests", () => {
         realizarGestoEliminarSobre(elementoEntidad);
 
         expect(getElementoEntidades().length).toBe(0);
-        expect(modelador.entidades.length).toBe(0);
+        expect(vistaEditorMER.modelador.entidades.length).toBe(0);
     });
 
     it("Cuando se realiza el gesto de borrar sobre una entidad y luego se clickea en otra, entonces solo se borra la primer entidad", () => {
@@ -139,7 +139,7 @@ describe("[MER] Vista Modelo tests", () => {
         fireEvent.click(elementoEntidadBarco);
 
         expect(elementoEntidadBarco).toBeInTheDocument();
-        expect(modelador.entidades.length).toBe(1);
+        expect(vistaEditorMER.modelador.entidades.length).toBe(1);
     });
 
     it("Se puede agregar un atributo a una entidad existente", () => {

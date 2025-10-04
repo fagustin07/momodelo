@@ -195,6 +195,10 @@ export class Modelador {
         return this._accionEnProceso === AccionEnProceso.CrearEntidad;
     }
 
+    elementoRaiz() {
+        return this._elementoRaiz;
+    }
+
     private _registrarEntidad(nuevaEntidad: Entidad) {
         this.entidades.push(nuevaEntidad);
         this._finalizarAccion();

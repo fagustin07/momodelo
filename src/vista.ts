@@ -4,8 +4,8 @@ import {Modelador} from "./servicios/modelador.ts";
 import {generarBarraDeInteracciones} from "./topbar.ts";
 import {Relacion} from "./modelo/relacion.ts";
 import {renderizarToast} from "./componentes/toast.ts";
-import {VistaEditorMER} from "./servicios/vistaEditorMER.ts";
 import {hacerArrastrable} from "./arrastrable.ts";
+import {VistaEditorMER} from "./vista/vistaEditorMER.ts";
 
 function crearElementoSvgParaRelaciones() {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -23,7 +23,7 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
     elementoRaiz.appendChild(svg);
 
     const modelador = new Modelador(entidadesEnModelo, relaciones, elementoRaiz, svg);
-    const vistaEditorMER = new VistaEditorMER(modelador, elementoRaiz, svg);
+    const vistaEditorMER = new VistaEditorMER(modelador);
     const topbar = generarBarraDeInteracciones(modelador, elementoRaiz);
 
     elementoRaiz.append(topbar);
@@ -35,7 +35,7 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
             return;
         }
         const posicion = coordenada(evento.offsetX, evento.offsetY);
-        vistaEditorMER.solicitarCreacionDeEntidad(posicion);
+        vistaEditorMER.solicitudCrearEntidad(posicion);
     });
 
     let posicionActual = coordenada(0, 0);
@@ -60,5 +60,5 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
     const resizeObserver = new ResizeObserver(() => actualizarViewBoxSvg());
     resizeObserver.observe(svg);
 
-    return modelador;
+    return vistaEditorMER;
 }

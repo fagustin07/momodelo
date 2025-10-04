@@ -5,7 +5,7 @@ import {Entidad} from "../../src/modelo/entidad";
 import {coordenada} from "../../src/posicion";
 import "../../src/style.css";
 import {fireEvent, screen} from "@testing-library/dom";
-import {Modelador} from "../../src/servicios/modelador.ts";
+import {VistaEditorMER} from "../../src/vista/vistaEditorMER.ts";
 
 function getElementoEntidades() {
     return [...document.querySelectorAll<HTMLElement>(".entidad")];
@@ -37,7 +37,7 @@ describe("[MER] Vista Relaciones", () => {
     let personaje: Entidad;
     let humorista: Entidad;
     let entidades: Entidad[];
-    let modelador: Modelador;
+    let vistaEditorMER: VistaEditorMER;
 
     beforeEach(() => {
         document.body.innerHTML = "";
@@ -48,7 +48,7 @@ describe("[MER] Vista Relaciones", () => {
         humorista = new Entidad("HUMORISTA", [], coordenada(300, 500));
         entidades = [personaje, humorista];
 
-        modelador = init(raiz, entidades, []);
+        vistaEditorMER = init(raiz, entidades, []);
     });
 
     it("Dado dos entidades, cuando se seleccionan ambas, entonces se crea una relación entre ellas", async () => {
@@ -56,7 +56,7 @@ describe("[MER] Vista Relaciones", () => {
 
         realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista);
 
-        const [relacion] = modelador.relaciones;
+        const [relacion] = vistaEditorMER.modelador.relaciones;
         const [inputRelacion] = getInputRelaciones();
 
         expect(inputRelacion.value).toBe("RELACION");
@@ -75,7 +75,7 @@ describe("[MER] Vista Relaciones", () => {
             skipClick: true
         });
 
-        expect(modelador.relaciones[0].nombre()).toBe("IMITA");
+        expect(vistaEditorMER.modelador.relaciones[0].nombre()).toBe("IMITA");
     });
 
     it("Al eliminar una relacion, entonces no queda referencia de la misma, tanto en la vista como en el modelo", async () => {
@@ -86,7 +86,7 @@ describe("[MER] Vista Relaciones", () => {
         realizarGestoEliminarSobre(campoNombreRelacion);
 
         expect(getInputRelaciones().length).toBe(0);
-        expect(modelador.relaciones.length).toBe(0);
+        expect(vistaEditorMER.modelador.relaciones.length).toBe(0);
     });
 
     it("Al eliminar una relacion y clickear en otra, solo se elimina la primer relacion", async () => {
@@ -98,7 +98,7 @@ describe("[MER] Vista Relaciones", () => {
         fireEvent.click(elementoRelacionAma);
 
         expect(elementoRelacionAma).toBeInTheDocument();
-        expect(modelador.relaciones.length).toBe(1);
+        expect(vistaEditorMER.modelador.relaciones.length).toBe(1);
     });
 
     it("Al eliminar una entidad, entonces no quedan relaciones de la misma, tanto en la vista como en el modelo", async () => {
@@ -109,6 +109,6 @@ describe("[MER] Vista Relaciones", () => {
         realizarGestoEliminarSobre(elementoPersonaje);
 
         expect(getInputRelaciones().length).toBe(0);
-        expect(modelador.relaciones.length).toBe(0);
+        expect(vistaEditorMER.modelador.relaciones.length).toBe(0);
     });
 });
