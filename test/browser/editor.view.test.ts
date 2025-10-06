@@ -4,6 +4,7 @@ import {Relacion} from "../../src/modelo/relacion.ts";
 import {coordenada} from "../../src/posicion.ts";
 import {Modelador} from "../../src/servicios/modelador.ts";
 import {VistaEditorMER} from "../../src/vista/vistaEditorMER.ts";
+import "../../src/style.css";
 
 describe("[MER] VistaEditor", () => {
     let elementoRaiz: HTMLElement;
