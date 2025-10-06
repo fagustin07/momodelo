@@ -32,9 +32,7 @@ export class VistaEditorMER {
     }
 
     reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[]): void {
-        this._entidadesVisuales.forEach(entVisual => entVisual.borrarse());
-        this._relacionesVisuales.forEach(relVisual => relVisual.borrarse());
-
+        this.limpiarVistaDelUsuario();
         this.modelador.reemplazarModelo(nuevasEntidades, nuevasRelaciones);
     }
 
@@ -197,4 +195,20 @@ export class VistaEditorMER {
         this._entidadSeleccionada = null;
         this._elementoRaíz.classList.remove("accion-en-curso");
     }
+
+    private limpiarVistaDelUsuario() {
+        this.reiniciarVisual();
+        this.reiniciarDiccionarios();
+    }
+
+    private reiniciarDiccionarios() {
+        this._entidadesVisuales.clear();
+        this._relacionesVisuales.clear();
+    }
+
+    private reiniciarVisual() {
+        this._entidadesVisuales.forEach(entVisual => entVisual.borrarse());
+        this._relacionesVisuales.forEach(relVisual => relVisual.borrarse());
+    }
+
 }

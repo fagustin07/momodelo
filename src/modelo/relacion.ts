@@ -1,5 +1,5 @@
 import {Entidad} from "./entidad";
-import {Posicion} from "../posicion";
+import {coordenada, Posicion} from "../posicion";
 import {generadorDeIDs} from "../servicios/generadorDeIDs.ts";
 
 export class Relacion {
@@ -9,7 +9,7 @@ export class Relacion {
     private _nombre: string;
     private _posicion: Posicion;
 
-    constructor(nombre: string, entidadOrigen: Entidad, entidadDestino: Entidad, posicion: Posicion) {
+    constructor(nombre: string, entidadOrigen: Entidad, entidadDestino: Entidad, posicion: Posicion = coordenada(0,0)) {
         this._nombre = nombre;
         this._entidadOrigen = entidadOrigen;
         this._entidadDestino = entidadDestino;
