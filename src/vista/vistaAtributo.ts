@@ -23,12 +23,16 @@ export class VistaAtributo {
         this._campoNombre.select();
     }
 
+    borrarse() {
+        this._elementoDom.remove();
+    }
+
     private _crearElementoDom() {
         return createElement("div", {
             className: "atributo",
             onclick: evento => {
                 evento.stopPropagation();
-                this.vistaEditorMER.emitirSeleccionDeAtributo(this._entidad, this._atributo, this._eliminarAtributo.bind(this));
+                this.vistaEditorMER.emitirSeleccionDeAtributo(this._entidad, this._atributo);
             }
         }, [
             this._campoNombre = createElement("input", {
@@ -45,9 +49,5 @@ export class VistaAtributo {
 
     private _valorCampoNombre() {
         return this._campoNombre.value;
-    }
-
-    private _eliminarAtributo() {
-        this._elementoDom.remove();
     }
 }

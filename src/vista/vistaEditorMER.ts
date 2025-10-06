@@ -19,6 +19,7 @@ export class VistaEditorMER {
 
     private _entidadesVisuales: Map<Entidad, VistaEntidad> = new Map();
     private _relacionesVisuales: Map<Relacion, VistaRelacion> = new Map();
+    private _atributosVisuales: Map<Atributo, VistaAtributo> = new Map();
 
     constructor(modelador: Modelador, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
         this.modelador = modelador;
@@ -97,10 +98,9 @@ export class VistaEditorMER {
         }
     }
 
-    emitirSeleccionDeAtributo(entidad: Entidad, atributo: Atributo, callbackEliminar: () => void): void {
+    emitirSeleccionDeAtributo(entidad: Entidad, atributo: Atributo): void {
         if (this._interaccionEnProceso === InteraccionEnProceso.Borrado) {
             this.modelador.eliminarAtributo(atributo, entidad);
-            callbackEliminar();
             this._finalizarInteraccion();
         }
     }
@@ -110,7 +110,9 @@ export class VistaEditorMER {
     }
 
     entidadCreada(entidad: Entidad) {
-        if (!this._entidadesVisuales.has(entidad)) this._crearVistaEntidad(entidad);
+        if (!this._entidadesVisuales.has(entidad)) {
+            this._crearVistaEntidad(entidad);
+        }
     }
 
     entidadRenombrada(entidad: Entidad) {
@@ -124,13 +126,16 @@ export class VistaEditorMER {
     }
 
     atributoCreado(entidad: Entidad, atributo: Atributo) {
-        // ToDo: guardar el atributo creado
-        new VistaAtributo(atributo, this, entidad)
-            .representarseEn(this._entidadesVisuales.get(entidad)!.contenedorDeAtributos());
+        if (!this._atributosVisuales.has(atributo)){
+            const atrVisual = new VistaAtributo(atributo, this, entidad);
+            atrVisual.representarseEn(this._entidadesVisuales.get(entidad)!.contenedorDeAtributos());
+            this._atributosVisuales.set(atributo, atrVisual);
+        }
     }
 
-    atributoEliminado(_entidad: Entidad, _atributo: Atributo) {
-        // ToDo: que el manager avise a la vistaAtributo que debe eliminarse
+    atributoEliminado(_entidad: Entidad, atributo: Atributo) {
+        this._atributosVisuales.get(atributo)!.borrarse();
+        this._atributosVisuales.delete(atributo);
     }
 
     relacionCreada(relacion: Relacion) {
