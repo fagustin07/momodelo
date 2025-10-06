@@ -18,7 +18,7 @@ export function generarBarraDeInteracciones(vistaEditorMER: VistaEditorMER, elem
             const json = JSON.parse(text);
 
             const {entidades, relaciones} = importar(json);
-            vistaEditorMER.reemplazarModelo(entidades, relaciones, elementoRaiz);
+            vistaEditorMER.reemplazarModelo(entidades, relaciones);
 
             input.value = "";
         }

@@ -34,7 +34,6 @@ export class VistaEntidad {
         const elementoDOMEntidad = this._crearElementoDOMEntidad();
 
         this.posicionarElemento(elementoDOMEntidad, this._entidad);
-        this._crearAtributosExistentesDeEntidad();
         this._hacerArrastrableA(elementoDOMEntidad);
 
         return elementoDOMEntidad;
@@ -89,12 +88,6 @@ export class VistaEntidad {
                 this.vistaEditorMER.actualizarRelacionesVisuales();
             },
             alSoltar: () => elementoDOMEntidad.classList.remove("moviendose"),
-        });
-    }
-
-    private _crearAtributosExistentesDeEntidad() {
-        this._entidad.atributos().forEach((atributo) => {
-            this.vistaEditorMER.emitirCreacionDeAtributoEn(this._entidad, atributo.nombre());
         });
     }
 

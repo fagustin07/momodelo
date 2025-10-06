@@ -98,6 +98,7 @@ export class Modelador {
         this.entidades.push(entidad);
         this._vista?.entidadCreada(entidad);
     }
+
     private _relacionesAsociadasA(entidad: Entidad): Relacion[] {
         return this.relaciones.filter(r => r.contieneA(entidad));
     }

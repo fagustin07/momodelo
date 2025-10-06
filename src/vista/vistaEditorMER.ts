@@ -31,7 +31,7 @@ export class VistaEditorMER {
         this.modelador.relaciones.forEach(r => this._crearVistaRelacion(r));
     }
 
-    reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[], contenedor: HTMLElement): void {
+    reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[]): void {
         this._entidadesVisuales.forEach(entVisual => entVisual.borrarse());
         this._relacionesVisuales.forEach(relVisual => relVisual.borrarse());
 
@@ -168,6 +168,10 @@ export class VistaEditorMER {
         const vista = new VistaEntidad(entidad, this);
         vista.representarseEn(this._elementoRaíz);
         this._entidadesVisuales.set(entidad, vista);
+
+        entidad.atributos().forEach((atr) => {
+            this.atributoCreado(entidad, atr)
+        });
     }
 
     private _crearVistaRelacion(relacion: Relacion) {

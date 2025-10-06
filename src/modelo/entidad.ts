@@ -8,7 +8,7 @@ export class Entidad {
     private _atributos: Atributo[];
     private _posicion: Posicion;
 
-    constructor(nombre: string = 'ENTIDAD', atributos: Atributo[], posicion: Posicion) {
+    constructor(nombre: string = 'ENTIDAD', atributos: Atributo[], posicion: Posicion = coordenada(0,0)) {
         this._nombre = nombre;
         this._posicion = posicion;
         this._atributos = atributos;

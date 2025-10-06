@@ -1,4 +1,4 @@
-import {Posicion} from "../posicion";
+import {coordenada, Posicion} from "../posicion";
 import {generadorDeIDs} from "../servicios/generadorDeIDs.ts";
 
 export class Atributo {
@@ -6,7 +6,7 @@ export class Atributo {
     private _nombre: string;
     private _posicion: Posicion;
 
-    constructor(nombre: string = 'ATRIBUTO', posicion: Posicion) {
+    constructor(nombre: string = 'ATRIBUTO', posicion: Posicion = coordenada(0,0)) {
         this._nombre = nombre;
         this._posicion = posicion;
         this._id = generadorDeIDs.tomarID();
