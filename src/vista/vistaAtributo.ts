@@ -43,6 +43,7 @@ export class VistaAtributo {
             })
         ]);
 
+        this.posicionarElemento(elementoDom);
         hacerArrastrable(elementoDom, {
             alAgarrar: () => {
                 elementoDom.parentElement?.append(elementoDom);
@@ -53,8 +54,6 @@ export class VistaAtributo {
                 this.vistaEditorMER.actualizarRelacionesVisuales();
             },
         });
-
-        this.posicionarElemento(elementoDom);
 
         return elementoDom;
     }

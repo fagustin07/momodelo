@@ -33,8 +33,17 @@ export class VistaEntidad {
 
         const elementoDOMEntidad = this._crearElementoDOMEntidad();
 
-        this.posicionarElemento(elementoDOMEntidad, this._entidad);
-        this._hacerArrastrableA(elementoDOMEntidad);
+        this.posicionarElemento(elementoDOMEntidad);
+        hacerArrastrable(elementoDOMEntidad, {
+            alAgarrar: () => {
+                elementoDOMEntidad.parentElement?.append(elementoDOMEntidad);
+            },
+            alArrastrar: (_, delta) => {
+                this._entidad.moverseHacia(delta);
+                this.posicionarElemento(elementoDOMEntidad);
+                this.vistaEditorMER.actualizarRelacionesVisuales();
+            },
+        });
 
         return elementoDOMEntidad;
     }
@@ -76,21 +85,8 @@ export class VistaEntidad {
         this._elementoDom.remove();
     }
 
-    private _hacerArrastrableA(elementoDOMEntidad: HTMLElement) {
-        hacerArrastrable(elementoDOMEntidad, {
-            alAgarrar: () => {
-                elementoDOMEntidad.parentElement?.append(elementoDOMEntidad);
-            },
-            alArrastrar: (_, delta) => {
-                this._entidad.moverseHacia(delta);
-                this.posicionarElemento(elementoDOMEntidad, this._entidad);
-                this.vistaEditorMER.actualizarRelacionesVisuales();
-            },
-        });
-    }
-
-    private posicionarElemento(elementoDOMEntidad: HTMLElement, entidad: Entidad) {
-        elementoDOMEntidad.style.translate = `${entidad.posicion().x}px ${entidad.posicion().y}px`;
+    private posicionarElemento(elementoDOMEntidad: HTMLElement) {
+        elementoDOMEntidad.style.translate = `${this._entidad.posicion().x}px ${this._entidad.posicion().y}px`;
     }
 
     entidad() {
