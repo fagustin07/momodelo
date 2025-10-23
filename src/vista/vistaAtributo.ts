@@ -2,20 +2,21 @@ import {Entidad} from "../modelo/entidad.ts";
 import {createElement} from "./dom/createElement.ts";
 import {Atributo} from "../modelo/atributo.ts";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
-import {hacerArrastrable} from "../arrastrable.ts";
+import {VistaElementoMER} from "./vistaElementoMER.ts";
 
-export class VistaAtributo {
-    private _atributo: Atributo;
+export class VistaAtributo extends VistaElementoMER<Atributo> {
     private _entidad: Entidad;
     private _elementoDom: HTMLElement;
     private _campoNombre!: HTMLInputElement;
-    private vistaEditorMER: VistaEditorMER;
 
     constructor(atributo: Atributo, vistaEditorMER: VistaEditorMER, entidad: Entidad) {
-        this._atributo = atributo;
+        super(atributo, vistaEditorMER);
         this._entidad = entidad;
-        this.vistaEditorMER = vistaEditorMER;
         this._elementoDom = this._crearElementoDom();
+    }
+
+    private get _atributo() {
+        return this._elemento;
     }
 
     representarseEn(contenedor: HTMLElement) {
@@ -33,7 +34,7 @@ export class VistaAtributo {
             className: "atributo",
             onclick: evento => {
                 evento.stopPropagation();
-                this.vistaEditorMER.emitirSeleccionDeAtributo(this._entidad, this._atributo);
+                this._vistaEditorMER.emitirSeleccionDeAtributo(this._entidad, this._atributo);
             }
         }, [
             this._campoNombre = createElement("input", {
@@ -44,26 +45,13 @@ export class VistaAtributo {
         ]);
 
         this.posicionarElemento(elementoDom);
-        hacerArrastrable(elementoDom, {
-            alAgarrar: () => {
-                elementoDom.parentElement?.append(elementoDom);
-            },
-            alArrastrar: (_, delta) => {
-                this._atributo.moverseHacia(delta);
-                this.posicionarElemento(elementoDom);
-                this.vistaEditorMER.actualizarRelacionesVisuales();
-            },
-        });
+        this.hacerArrastrable(elementoDom);
 
         return elementoDom;
     }
 
-    private posicionarElemento(elementoDOMAtributo: HTMLElement) {
-        elementoDOMAtributo.style.translate = `${this._atributo.posicion().x}px ${this._atributo.posicion().y}px`;
-    }
-
     private _cambiarNombreEnModelo() {
-        this.vistaEditorMER.renombrarAtributo(this._valorCampoNombre(), this._atributo, this._entidad);
+        this._vistaEditorMER.renombrarAtributo(this._valorCampoNombre(), this._atributo, this._entidad);
     }
 
     private _valorCampoNombre() {

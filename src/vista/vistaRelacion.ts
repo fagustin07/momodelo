@@ -3,14 +3,13 @@ import {coordenada} from "../posicion";
 import {VistaEntidad} from "./vistaEntidad.ts";
 import {createElement, createSvgElement} from "./dom/createElement.ts";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
+import {VistaElementoMER} from "./vistaElementoMER.ts";
 
-export class VistaRelacion {
+export class VistaRelacion extends VistaElementoMER<Relacion> {
     private readonly _vistaEntidadOrigen: VistaEntidad;
     private readonly _vistaEntidadDestino: VistaEntidad;
-    private readonly _vistaEditorMER: VistaEditorMER;
     private readonly _elementoRaiz: HTMLElement;
     private readonly _elementoSvg: SVGElement;
-    private readonly _relacion: Relacion;
 
     private _rombo!: SVGPolygonElement;
     private _lineaOrigen!: SVGLineElement;
@@ -22,18 +21,21 @@ export class VistaRelacion {
     private _alto = 100;
 
     constructor(vistaEntidadOrigen: VistaEntidad, vistaEntidadDestino: VistaEntidad, relacion: Relacion, vistaEditorMER: VistaEditorMER, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
+        super(relacion, vistaEditorMER);
         this._vistaEntidadOrigen = vistaEntidadOrigen;
         this._vistaEntidadDestino = vistaEntidadDestino;
-        this._vistaEditorMER = vistaEditorMER;
         this._elementoRaiz = elementoRaiz;
         this._elementoSvg = elementoSvg;
 
         const centro = this._calcularCentro();
-        this._relacion = relacion;
         this._vistaEditorMER.posicionarRelacionEn(this._relacion, centro);
 
         this._crearElementoDom();
         this.reposicionarRelacion();
+    }
+
+    private get _relacion() {
+        return this._elemento;
     }
 
     representarse() {

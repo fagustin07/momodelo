@@ -1,14 +1,14 @@
 import {coordenada, Posicion} from "../posicion";
 import {generadorDeIDs} from "../servicios/generadorDeIDs.ts";
+import {ElementoMER} from "./elementoMER.ts";
 
-export class Atributo {
+export class Atributo extends ElementoMER {
     private readonly _id: number;
     private _nombre: string;
-    private _posicion: Posicion;
 
     constructor(nombre: string = 'ATRIBUTO', posicion: Posicion = coordenada(0,0)) {
+        super(posicion);
         this._nombre = nombre;
-        this._posicion = posicion;
         this._id = generadorDeIDs.tomarID();
     }
 
@@ -16,16 +16,8 @@ export class Atributo {
         return this._nombre;
     }
 
-    posicion() {
-        return this._posicion;
-    }
-
     id() {
         return this._id;
-    }
-
-    moverseHacia(delta: Posicion) {
-        this._posicion = this._posicion.plus(delta);
     }
 
     cambiarNombre(nuevoNombre: string) {

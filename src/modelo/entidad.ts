@@ -1,16 +1,16 @@
 import {coordenada, Posicion} from "../posicion";
 import {Atributo} from "./atributo.ts";
 import {generadorDeIDs} from "../servicios/generadorDeIDs.ts";
+import {ElementoMER} from "./elementoMER.ts";
 
-export class Entidad {
+export class Entidad extends ElementoMER {
     private readonly _id: number;
     private _nombre: string;
     private _atributos: Atributo[];
-    private _posicion: Posicion;
 
     constructor(nombre: string = 'ENTIDAD', atributos: Atributo[], posicion: Posicion = coordenada(0,0)) {
+        super(posicion);
         this._nombre = nombre;
-        this._posicion = posicion;
         this._atributos = atributos;
         this._id = generadorDeIDs.tomarID();
     }
@@ -39,14 +39,6 @@ export class Entidad {
 
     id() {
         return this._id;
-    }
-
-    posicion() {
-        return this._posicion;
-    }
-
-    moverseHacia(delta: Posicion) {
-        this._posicion = this._posicion.plus(delta);
     }
 
     eliminarAtributo(atributoAEliminar: Atributo) {

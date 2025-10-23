@@ -1,20 +1,21 @@
 import {Entidad} from "../modelo/entidad";
-import {hacerArrastrable} from "../arrastrable";
 import {createElement} from "./dom/createElement";
 import {coordenada} from "../posicion.ts";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
+import {VistaElementoMER} from "./vistaElementoMER.ts";
 
-export class VistaEntidad {
-    private readonly _entidad: Entidad;
-    private readonly vistaEditorMER: VistaEditorMER;
+export class VistaEntidad extends VistaElementoMER<Entidad> {
     private readonly _elementoDom: HTMLElement;
     private _campoNombre!: HTMLInputElement;
     private _contenedorDeAtributos!: HTMLElement;
 
     constructor(entidad: Entidad, vistaEditorMER: VistaEditorMER) {
-        this._entidad = entidad;
-        this.vistaEditorMER = vistaEditorMER;
+        super(entidad, vistaEditorMER);
         this._elementoDom = this._crearElementoDom();
+    }
+
+    private get _entidad() {
+        return this._elemento;
     }
 
     representarseEn(contenedor: HTMLElement) {
@@ -31,21 +32,12 @@ export class VistaEntidad {
         this._contenedorDeAtributos = createElement("div");
         this._campoNombre = this._crearInputCampoNombre();
 
-        const elementoDOMEntidad = this._crearElementoDOMEntidad();
+        const elementoDom = this._crearElementoDOMEntidad();
 
-        this.posicionarElemento(elementoDOMEntidad);
-        hacerArrastrable(elementoDOMEntidad, {
-            alAgarrar: () => {
-                elementoDOMEntidad.parentElement?.append(elementoDOMEntidad);
-            },
-            alArrastrar: (_, delta) => {
-                this._entidad.moverseHacia(delta);
-                this.posicionarElemento(elementoDOMEntidad);
-                this.vistaEditorMER.actualizarRelacionesVisuales();
-            },
-        });
+        this.posicionarElemento(elementoDom);
+        this.hacerArrastrable(elementoDom);
 
-        return elementoDOMEntidad;
+        return elementoDom;
     }
 
     private _crearInputCampoNombre() {
@@ -53,7 +45,7 @@ export class VistaEntidad {
             title: "Nombre Entidad",
             value: this._entidad.nombre(),
             oninput: () => {
-                this.vistaEditorMER.renombrarEntidad(this._campoNombre.value, this._entidad);
+                this._vistaEditorMER.renombrarEntidad(this._campoNombre.value, this._entidad);
             },
         }, []);
     }
@@ -62,7 +54,7 @@ export class VistaEntidad {
         return createElement("div", {
             className: "entidad",
             onclick: () => {
-                this.vistaEditorMER.emitirSeleccionDeEntidad(this._entidad);
+                this._vistaEditorMER.emitirSeleccionDeEntidad(this._entidad);
             }
         }, [
             this._campoNombre,
@@ -70,7 +62,7 @@ export class VistaEntidad {
                 textContent: "+",
                 title: "Agregar atributo",
                 onclick: () => {
-                    this.vistaEditorMER.emitirCreacionDeAtributoEn(this._entidad);
+                    this._vistaEditorMER.emitirCreacionDeAtributoEn(this._entidad);
                 }
             }, []),
             this._contenedorDeAtributos
@@ -83,10 +75,6 @@ export class VistaEntidad {
 
     private _eliminarEntidad() {
         this._elementoDom.remove();
-    }
-
-    private posicionarElemento(elementoDOMEntidad: HTMLElement) {
-        elementoDOMEntidad.style.translate = `${this._entidad.posicion().x}px ${this._entidad.posicion().y}px`;
     }
 
     entidad() {
