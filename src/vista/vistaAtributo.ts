@@ -2,6 +2,7 @@ import {Entidad} from "../modelo/entidad.ts";
 import {createElement} from "./dom/createElement.ts";
 import {Atributo} from "../modelo/atributo.ts";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
+import {hacerArrastrable} from "../arrastrable.ts";
 
 export class VistaAtributo {
     private _atributo: Atributo;
@@ -28,7 +29,7 @@ export class VistaAtributo {
     }
 
     private _crearElementoDom() {
-        return createElement("div", {
+        let elementoDom = createElement("div", {
             className: "atributo",
             onclick: evento => {
                 evento.stopPropagation();
@@ -41,6 +42,28 @@ export class VistaAtributo {
                 oninput: () => this._cambiarNombreEnModelo()
             })
         ]);
+
+        hacerArrastrable(elementoDom, {
+            alAgarrar: () => {
+                // TODO: esto parece ser innecesario
+                elementoDom.classList.add("moviendose");
+                elementoDom.parentElement?.append(elementoDom);
+            },
+            alArrastrar: (_, delta) => {
+                this._atributo.moverseHacia(delta);
+                this.posicionarElemento(elementoDom);
+                this.vistaEditorMER.actualizarRelacionesVisuales();
+            },
+            alSoltar: () => elementoDom.classList.remove("moviendose"),
+        });
+
+        this.posicionarElemento(elementoDom);
+
+        return elementoDom;
+    }
+
+    private posicionarElemento(elementoDOMAtributo: HTMLElement) {
+        elementoDOMAtributo.style.translate = `${this._atributo.posicion().x}px ${this._atributo.posicion().y}px`;
     }
 
     private _cambiarNombreEnModelo() {

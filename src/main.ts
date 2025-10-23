@@ -7,18 +7,18 @@ import {Relacion} from "./modelo/relacion.ts";
 
 const entidades: Entidad[] = [
     new Entidad("CLIENTE", [
-        new Atributo("nombre", coordenada(100, 180)),
-        new Atributo("dni", coordenada(130, 210))
+        new Atributo("nombre", coordenada(-45, 70)),
+        new Atributo("dni", coordenada(115, 70))
     ], coordenada(100, 100)),
 
     new Entidad("PEDIDO", [
-        new Atributo("fecha", coordenada(350, 180)),
-        new Atributo("monto", coordenada(390, 210))
+        new Atributo("fecha", coordenada(210, -60)),
+        new Atributo("monto", coordenada(230, 10))
     ], coordenada(600, 100)),
 
     new Entidad("PRODUCTO", [
-        new Atributo("codigo", coordenada(600, 180)),
-        new Atributo("descripcion", coordenada(620, 210))
+        new Atributo("codigo", coordenada(-150, -50)),
+        new Atributo("descripcion", coordenada(-150, 20))
     ], coordenada(600, 400))
 ];
 const coord = coordenada(50,60);

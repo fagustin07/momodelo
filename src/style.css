@@ -41,21 +41,16 @@ body {
 
   & > div:last-child {
     position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateY(100%) translateX(-50%);
-    width: 400px;
-    padding-top: 10px;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: center;
+    top: 0;
+    left: 0;
   }
 
   .atributo {
+    position: absolute;
+    top: 0;
+    left: 0;
     background: white;
     padding: 1em;
-    margin: .2em;
     border-radius: 100%;
     border: 1px solid gray;
 
@@ -63,7 +58,6 @@ body {
       max-width: 100px;
     }
   }
-
 }
 
 .arrastrable {
