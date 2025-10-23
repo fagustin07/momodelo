@@ -79,7 +79,6 @@ export class VistaEntidad {
     private _hacerArrastrableA(elementoDOMEntidad: HTMLElement) {
         hacerArrastrable(elementoDOMEntidad, {
             alAgarrar: () => {
-                elementoDOMEntidad.classList.add("moviendose");
                 elementoDOMEntidad.parentElement?.append(elementoDOMEntidad);
             },
             alArrastrar: (_, delta) => {
@@ -87,7 +86,6 @@ export class VistaEntidad {
                 this.posicionarElemento(elementoDOMEntidad, this._entidad);
                 this.vistaEditorMER.actualizarRelacionesVisuales();
             },
-            alSoltar: () => elementoDOMEntidad.classList.remove("moviendose"),
         });
     }
 

@@ -68,10 +68,9 @@ body {
   }
 }
 
-.moviendose, .moviendose .atributo {
+.agarrando, .agarrando .atributo {
   box-shadow: 5px 5px 0 0 rgba(0, 0, 0, 0.5);
 }
-
 
 #topbar {
   position: fixed;

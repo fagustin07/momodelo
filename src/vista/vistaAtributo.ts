@@ -45,8 +45,6 @@ export class VistaAtributo {
 
         hacerArrastrable(elementoDom, {
             alAgarrar: () => {
-                // TODO: esto parece ser innecesario
-                elementoDom.classList.add("moviendose");
                 elementoDom.parentElement?.append(elementoDom);
             },
             alArrastrar: (_, delta) => {
@@ -54,7 +52,6 @@ export class VistaAtributo {
                 this.posicionarElemento(elementoDom);
                 this.vistaEditorMER.actualizarRelacionesVisuales();
             },
-            alSoltar: () => elementoDom.classList.remove("moviendose"),
         });
 
         this.posicionarElemento(elementoDom);
