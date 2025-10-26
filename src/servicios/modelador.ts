@@ -3,6 +3,7 @@ import {Atributo} from "../modelo/atributo";
 import {Relacion} from "../modelo/relacion";
 import {coordenada, Posicion} from "../posicion";
 import type {VistaEditorMER} from "../vista/vistaEditorMER";
+import {RelacionRecursivaError} from "./errores";
 
 export class Modelador {
     entidades: Entidad[] = [];
@@ -68,6 +69,9 @@ export class Modelador {
     // ========= RELACIONES =========
 
     crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string = "RELACION", pos: { x: number; y: number } = {x: 0, y: 0}) {
+        if (entidadOrigen === entidadDestino) {
+            throw new RelacionRecursivaError();
+        }
         const nuevaRelacion = new Relacion(nombre, entidadOrigen, entidadDestino, coordenada(pos.x, pos.y));
         this.relaciones.push(nuevaRelacion);
         this._vista?.relacionCreada(nuevaRelacion);

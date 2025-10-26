@@ -7,6 +7,8 @@ import {InteraccionEnProceso} from "../servicios/accionEnProceso";
 import {VistaEntidad} from "./vistaEntidad";
 import {VistaRelacion} from "./vistaRelacion";
 import {VistaAtributo} from "./vistaAtributo";
+import {renderizarToast} from "../componentes/toast";
+import {RelacionRecursivaError} from "../servicios/errores";
 
 export class VistaEditorMER {
     readonly modelador: Modelador;
@@ -62,6 +64,7 @@ export class VistaEditorMER {
 
     actualizarRelacionesVisuales(): void {
         this._relacionesVisuales.forEach(relVisual => relVisual.reposicionarRelacion());
+        this._atributosVisuales.forEach(atrVisual => atrVisual.actualizarLinea());
     }
 
     solicitudCrearEntidad(): void {
@@ -127,8 +130,9 @@ export class VistaEditorMER {
 
     atributoCreado(entidad: Entidad, atributo: Atributo) {
         if (!this._atributosVisuales.has(atributo)){
-            const atrVisual = new VistaAtributo(atributo, this, entidad);
-            atrVisual.representarseEn(this._entidadesVisuales.get(entidad)!.contenedorDeAtributos());
+            const vistaEntidad = this._entidadesVisuales.get(entidad)!;
+            const atrVisual = new VistaAtributo(atributo, this, entidad, vistaEntidad, this._elementoSvg);
+            atrVisual.representarseEn(vistaEntidad.contenedorDeAtributos());
             this._atributosVisuales.set(atributo, atrVisual);
         }
     }
@@ -161,7 +165,15 @@ export class VistaEditorMER {
             if (!this._entidadSeleccionada) {
                 this._entidadSeleccionada = entidad;
             } else {
-                this.modelador.crearRelacion(this._entidadSeleccionada, entidad);
+                try {
+                    this.modelador.crearRelacion(this._entidadSeleccionada, entidad);
+                } catch (error) {
+                    if (error instanceof RelacionRecursivaError) {
+                        renderizarToast(this._elementoRaíz, error.message, {variante: "error"});
+                    } else {
+                        throw error;
+                    }
+                }
                 this._finalizarInteraccion();
             }
         }

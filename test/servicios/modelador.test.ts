@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Entidad } from "../../src/modelo/entidad.ts";
 import { coordenada } from "../../src/posicion.ts";
 import {Modelador} from "../../src/servicios/modelador.ts";
+import {RelacionRecursivaError} from "../../src/servicios/errores.ts";
 
 describe("[MER] Modelador", () => {
 
@@ -27,6 +28,18 @@ describe("[MER] Modelador", () => {
 
         expect(relacionPirataTenryu.entidadOrigen()).toEqual(entidad1);
         expect(relacionPirataTenryu.entidadDestino()).toEqual(entidad3);
+    });
+
+    it("No se puede crear una relación recursiva", () => {
+        modelador = new Modelador();
+
+        const entidad = crearEntidadLlamada("Pirata");
+
+        expect(() => {
+            modelador.crearRelacion(entidad, entidad);
+        }).toThrow(RelacionRecursivaError);
+
+        expect(modelador.relaciones.length).toEqual(0);
     });
 
     function crearEntidadLlamada(nombreEntidad: string): Entidad {

@@ -111,4 +111,16 @@ describe("[MER] Vista Relaciones", () => {
         expect(getInputRelaciones().length).toBe(0);
         expect(vistaEditorMER.modelador.relaciones.length).toBe(0);
     });
+
+    it("No se puede crear una relación recursiva", async () => {
+        const [elementoPersonaje] = getElementoEntidades();
+
+        const botonCrearRelacion = screen.getByRole('button', { name: /\+relacion/i });
+        fireEvent.click(botonCrearRelacion);
+        fireEvent.click(elementoPersonaje);
+        fireEvent.click(elementoPersonaje);
+
+        expect(getInputRelaciones().length).toBe(0);
+        expect(vistaEditorMER.modelador.relaciones.length).toBe(0);
+    });
 });
