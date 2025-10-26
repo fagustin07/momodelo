@@ -62,9 +62,21 @@ export class VistaEditorMER {
         this.modelador.renombrarRelacion(nuevoNombre, relacion);
     }
 
-    actualizarRelacionesVisuales(): void {
+    reposicionarElementosSVG(): void {
         this._relacionesVisuales.forEach(relVisual => relVisual.reposicionarRelacion());
-        this._atributosVisuales.forEach(atrVisual => atrVisual.actualizarLinea());
+        this._atributosVisuales.forEach(atrVisual => atrVisual.reposicionarConexión());
+    }
+
+    centroDeEntidad(entidad: Entidad): Posicion {
+        const vistaEntidad = this._entidadesVisuales.get(entidad);
+        if (!vistaEntidad) {
+            throw new Error(`No se encontró vista para la entidad ${entidad.nombre()}`);
+        }
+        return vistaEntidad.centro();
+    }
+
+    agregarElementoSvg(...elementos: SVGElement[]): void {
+        elementos.forEach(elemento => this._elementoSvg.appendChild(elemento));
     }
 
     solicitudCrearEntidad(): void {
@@ -131,7 +143,7 @@ export class VistaEditorMER {
     atributoCreado(entidad: Entidad, atributo: Atributo) {
         if (!this._atributosVisuales.has(atributo)){
             const vistaEntidad = this._entidadesVisuales.get(entidad)!;
-            const atrVisual = new VistaAtributo(atributo, this, entidad, vistaEntidad, this._elementoSvg);
+            const atrVisual = new VistaAtributo(atributo, this, entidad);
             atrVisual.representarseEn(vistaEntidad.contenedorDeAtributos());
             this._atributosVisuales.set(atributo, atrVisual);
         }
@@ -191,10 +203,8 @@ export class VistaEditorMER {
 
     private _crearVistaRelacion(relacion: Relacion) {
         const [entidadOrigen, entidadDestino] = relacion.entidades();
-        const entVisualOrigen = this._entidadesVisuales.get(entidadOrigen)!;
-        const entVisualDestino = this._entidadesVisuales.get(entidadDestino)!;
 
-        const vista = new VistaRelacion(entVisualOrigen, entVisualDestino, relacion, this, this._elementoRaíz, this._elementoSvg);
+        const vista = new VistaRelacion(entidadOrigen, entidadDestino, relacion, this);
         vista.representarse();
         this._relacionesVisuales.set(relacion, vista);
     }

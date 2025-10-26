@@ -1,6 +1,5 @@
 import {Entidad} from "../modelo/entidad";
 import {createElement} from "./dom/createElement";
-import {coordenada} from "../posicion.ts";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
 import {VistaElementoMER} from "./vistaElementoMER.ts";
 
@@ -22,6 +21,10 @@ export class VistaEntidad extends VistaElementoMER<Entidad> {
         contenedor.append(this._elementoDom);
         this._campoNombre.focus();
         this._campoNombre.select();
+    }
+
+    centro() {
+        return this.calcularCentroBasadoEn(this._elementoDom, this._entidad.posicion());
     }
 
     actualizarNombre() {
@@ -79,11 +82,6 @@ export class VistaEntidad extends VistaElementoMER<Entidad> {
 
     entidad() {
         return this._entidad;
-    }
-
-    centro() {
-        const boundingBox = this._elementoDom.getBoundingClientRect();
-        return this._entidad.posicion().plus(coordenada(boundingBox.width / 2, boundingBox.height / 2));
     }
 
     contenedorDeAtributos() {

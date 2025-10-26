@@ -1,15 +1,13 @@
 import {Relacion} from "../modelo/relacion";
 import {coordenada} from "../posicion";
-import {VistaEntidad} from "./vistaEntidad.ts";
 import {createElement, createSvgElement} from "./dom/createElement.ts";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
 import {VistaElementoMER} from "./vistaElementoMER.ts";
+import {Entidad} from "../modelo/entidad.ts";
 
 export class VistaRelacion extends VistaElementoMER<Relacion> {
-    private readonly _vistaEntidadOrigen: VistaEntidad;
-    private readonly _vistaEntidadDestino: VistaEntidad;
-    private readonly _elementoRaiz: HTMLElement;
-    private readonly _elementoSvg: SVGElement;
+    private readonly _entidadOrigen: Entidad;
+    private readonly _entidadDestino: Entidad;
 
     private _rombo!: SVGPolygonElement;
     private _lineaOrigen!: SVGLineElement;
@@ -20,14 +18,12 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
     private _ancho = 200;
     private _alto = 100;
 
-    constructor(vistaEntidadOrigen: VistaEntidad, vistaEntidadDestino: VistaEntidad, relacion: Relacion, vistaEditorMER: VistaEditorMER, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
+    constructor(vistaEntidadOrigen: Entidad, vistaEntidadDestino: Entidad, relacion: Relacion, vistaEditorMER: VistaEditorMER) {
         super(relacion, vistaEditorMER);
-        this._vistaEntidadOrigen = vistaEntidadOrigen;
-        this._vistaEntidadDestino = vistaEntidadDestino;
-        this._elementoRaiz = elementoRaiz;
-        this._elementoSvg = elementoSvg;
+        this._entidadOrigen = vistaEntidadOrigen;
+        this._entidadDestino = vistaEntidadDestino;
 
-        const centro = this._calcularCentro();
+        const centro = this.centro();
         this._vistaEditorMER.posicionarRelacionEn(this._relacion, centro);
 
         this._crearElementoDom();
@@ -39,7 +35,7 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
     }
 
     representarse() {
-        this._elementoSvg.append(
+        this._vistaEditorMER.agregarElementoSvg(
             this._lineaOrigen,
             this._lineaDestino,
             this._grupoElementos,
@@ -49,10 +45,19 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
         this._input.select();
     }
 
+    centro() {
+        const c1 = this._vistaEditorMER.centroDeEntidad(this._entidadOrigen);
+        const c2 = this._vistaEditorMER.centroDeEntidad(this._entidadDestino);
+        return coordenada(
+            (c1.x + c2.x) / 2,
+            (c1.y + c2.y) / 2,
+        );
+    }
+
     reposicionarRelacion() {
-        const c1 = this._vistaEntidadOrigen.centro();
-        const c2 = this._vistaEntidadDestino.centro();
-        const medio = this._calcularCentro().round();
+        const c1 = this._vistaEditorMER.centroDeEntidad(this._entidadOrigen);
+        const c2 = this._vistaEditorMER.centroDeEntidad(this._entidadDestino);
+        const medio = this.centro().round();
 
         this._relacion.moverseHacia(medio);
 
@@ -140,14 +145,5 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
         this._rombo.addEventListener("click", () => {
             this._vistaEditorMER.emitirSeleccionDeRelacion(this._relacion);
         });
-    }
-
-    private _calcularCentro() {
-        const c1 = this._vistaEntidadOrigen.centro();
-        const c2 = this._vistaEntidadDestino.centro();
-        return coordenada(
-            (c1.x + c2.x) / 2,
-            (c1.y + c2.y) / 2,
-        );
     }
 }
