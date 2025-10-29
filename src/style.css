@@ -55,7 +55,8 @@ body {
     border: 1px solid gray;
 
     input {
-      max-width: 100px;
+      min-width: 50px;
+      field-sizing: content;
     }
   }
 }
