@@ -27,13 +27,12 @@ export abstract class VistaElementoMER<E extends ElementoMER> {
         });
     }
 
-    protected posicionarElemento(elementoDOMAtributo: HTMLElement) {
-        elementoDOMAtributo.style.translate = `${this._elemento.posicion().x}px ${this._elemento.posicion().y}px`;
+    protected posicionarElemento(elementoDom: HTMLElement) {
+        elementoDom.style.translate = `${this._elemento.posicion().x}px ${this._elemento.posicion().y}px`;
     }
 
     protected calcularCentroBasadoEn(elementoDom: HTMLElement, posición: Posicion) {
         const boundingBox = elementoDom.getBoundingClientRect();
         return posición.plus(coordenada(boundingBox.width / 2, boundingBox.height / 2));
-
     }
 }
