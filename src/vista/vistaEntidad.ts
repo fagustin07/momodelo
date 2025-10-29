@@ -87,4 +87,8 @@ export class VistaEntidad extends VistaElementoMER<Entidad> {
     contenedorDeAtributos() {
         return this._contenedorDeAtributos;
     }
+
+    elementoDom() {
+        return this._elementoDom;
+    }
 }

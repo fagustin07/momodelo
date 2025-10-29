@@ -27,6 +27,25 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
 
     elementoRaiz.append(topbar);
 
+    let posicionActualVista = coordenada(0, 0);
+
+    function actualizarViewBoxSvg() {
+        const svgBoundingBox = svg.getBoundingClientRect();
+        svg.setAttribute("viewBox", `${-posicionActualVista.x} ${-posicionActualVista.y} ${svgBoundingBox.width} ${svgBoundingBox.height}`);
+    }
+
+    hacerArrastrable(svg as any, {
+        alArrastrar(_posicionCursor, delta) {
+            posicionActualVista = posicionActualVista.plus(delta);
+            for (const elementoHijo of elementoRaiz.children) {
+                if (elementoHijo instanceof HTMLElement && elementoHijo.classList.contains("entidad")) {
+                    elementoHijo.style.transform = `translate(${posicionActualVista.x}px, ${posicionActualVista.y}px)`
+                }
+            }
+            actualizarViewBoxSvg();
+        }
+    });
+
     elementoRaiz.addEventListener("click", evento => {
         if (evento.target !== elementoRaiz) return;
         if (!vistaEditorMER.puedoCrearUnaEntidad()) {
@@ -35,26 +54,7 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
         }
         const posicion = coordenada(evento.offsetX, evento.offsetY);
         vistaEditorMER.solicitudCrearEntidad();
-        vistaEditorMER.agregarEntidadEn(posicion);
-    });
-
-    let posicionActual = coordenada(0, 0);
-
-    function actualizarViewBoxSvg() {
-        const svgBoundingBox = svg.getBoundingClientRect();
-        svg.setAttribute("viewBox", `${-posicionActual.x} ${-posicionActual.y} ${svgBoundingBox.width} ${svgBoundingBox.height}`);
-    }
-
-    hacerArrastrable(svg as any, {
-        alArrastrar(_posicionCursor, delta) {
-            posicionActual = posicionActual.plus(delta);
-            for (const elementoHijo of elementoRaiz.children) {
-                if (elementoHijo instanceof HTMLElement && elementoHijo.classList.contains("entidad")) {
-                    elementoHijo.style.transform = `translate(${posicionActual.x}px, ${posicionActual.y}px)`
-                }
-            }
-            actualizarViewBoxSvg();
-        }
+        vistaEditorMER.agregarEntidadEn(posicion, posicionActualVista);
     });
 
     const resizeObserver = new ResizeObserver(() => actualizarViewBoxSvg());

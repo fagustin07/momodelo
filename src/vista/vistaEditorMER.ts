@@ -39,9 +39,12 @@ export class VistaEditorMER {
         this.modelador.reemplazarModelo(nuevasEntidades, nuevasRelaciones);
     }
 
-    agregarEntidadEn(posicion: Posicion): void {
+    agregarEntidadEn(posicion: Posicion, posicionActualVista: Posicion): void {
         if (this._interaccionEnProceso === InteraccionEnProceso.CrearEntidad) {
-            this.modelador.generarEntidadUbicadaEn(posicion);
+            const entidadNueva = this.modelador.generarEntidadUbicadaEn(posicion.minus(posicionActualVista));
+
+            this._entidadesVisuales.get(entidadNueva)!.elementoDom()
+                .style.transform = `translate(${posicionActualVista.x}px, ${posicionActualVista.y}px)`;
             this._finalizarInteraccion();
         }
     }
