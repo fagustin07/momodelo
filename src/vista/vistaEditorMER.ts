@@ -138,7 +138,9 @@ export class VistaEditorMER {
     }
 
     entidadEliminada(entidad: Entidad, relacionesEliminadas: Relacion[]) {
-        this._entidadesVisuales.get(entidad)?.borrarse();
+        const vistaEntidadElementoMER = this._entidadesVisuales.get(entidad);
+        vistaEntidadElementoMER?.borrarse();
+        entidad.atributos().forEach( atr => this.modelador.eliminarAtributo(atr, entidad));
         this._entidadesVisuales.delete(entidad);
         relacionesEliminadas.forEach(rel => this.relacionEliminada(rel));
     }
@@ -216,7 +218,7 @@ export class VistaEditorMER {
         this._interaccionEnProceso = interaccionAComenzar;
         this._elementoRaíz.classList.add("accion-en-curso");
 
-        if (interaccionAComenzar === InteraccionEnProceso.CrearRelacion) {
+        if (interaccionAComenzar === InteraccionEnProceso.CrearRelacion || interaccionAComenzar === InteraccionEnProceso.Borrado) {
             this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
                 .forEach(e => e.style.pointerEvents = "auto");
         } else {
