@@ -87,10 +87,11 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
     }
 
     private _crearElementoDom() {
-        this._grupoElementos = createSvgElement("g", {}, [
+        this._grupoElementos = createSvgElement("g", {
+            class: "relacion",
+        }, [
             this._rombo = createSvgElement("polygon", {
                 "pointer-events": "all",
-                class: "rombo-relacion",
                 points: [
                     `${this._ancho / 2},${0}`,
                     `${this._ancho},${this._alto / 2}`,

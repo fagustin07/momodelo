@@ -8,14 +8,35 @@ body {
 }
 
 .diagrama-mer[data-interaccion-en-curso='Borrado'] {
-  .entidad:not(:has(.atributo:hover)), .atributo, .rombo-relacion {
+  .entidad:not(:has(.atributo:hover)), .atributo, .relacion polygon {
     &:hover {
+      --color-resaltado: rgba(245, 19, 19, 0.5);
       cursor: pointer;
-      box-shadow: 0 0 5px rgba(245, 19, 19, 0.5);
-      filter: drop-shadow(0 0 5px rgba(245, 19, 19, 0.5));
+      box-shadow: 0 0 5px var(--color-resaltado);
+      filter: drop-shadow(0 0 5px var(--color-resaltado));
       user-select: none;
     }
   }
+}
+
+.diagrama-mer[data-interaccion-en-curso='Crear Relacion'] {
+  .entidad:not(:has(.atributo:hover)) {
+    &:hover {
+      --color-resaltado: rgba(16, 173, 128, 0.53);
+      cursor: pointer;
+      box-shadow: 0 0 5px var(--color-resaltado);
+      filter: drop-shadow(0 0 5px var(--color-resaltado));
+      user-select: none;
+    }
+  }
+
+  .atributo, .relacion, line {
+    filter: blur(3px);
+  }
+}
+
+.atributo, .relacion, line {
+  transition: filter 0.2s;
 }
 
 .diagrama-mer.accion-en-curso {
@@ -97,7 +118,7 @@ body {
   }
 }
 
-.rombo-relacion {
+.relacion polygon {
     fill: white;
     stroke: gray;
     stroke-width: 1;
