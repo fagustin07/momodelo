@@ -7,7 +7,7 @@ export abstract class VistaElementoMER<E extends ElementoMER> {
     protected readonly _elemento: E;
     protected readonly _vistaEditorMER: VistaEditorMER;
 
-    constructor(elemento: E, vistaEditorMER: VistaEditorMER) {
+    protected constructor(elemento: E, vistaEditorMER: VistaEditorMER) {
         this._elemento = elemento;
         this._vistaEditorMER = vistaEditorMER;
     }

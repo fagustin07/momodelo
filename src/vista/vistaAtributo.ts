@@ -5,8 +5,8 @@ import {VistaEditorMER} from "./vistaEditorMER.ts";
 import {VistaElementoMER} from "./vistaElementoMER.ts";
 
 export class VistaAtributo extends VistaElementoMER<Atributo> {
-    private _entidad: Entidad;
-    private _elementoDom: HTMLElement;
+    private readonly _entidad: Entidad;
+    private readonly _elementoDom: HTMLElement;
     private _campoNombre!: HTMLInputElement;
     private _linea!: SVGLineElement;
 

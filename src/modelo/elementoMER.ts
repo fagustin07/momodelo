@@ -3,7 +3,7 @@ import {Posicion} from "../posicion.ts";
 export abstract class ElementoMER {
     private _posicion: Posicion;
 
-    constructor(posicion: Posicion) {
+    protected constructor(posicion: Posicion) {
         this._posicion = posicion;
     }
 
