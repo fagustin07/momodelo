@@ -3,25 +3,30 @@ import {coordenada, Posicion} from "./posicion.ts";
 
 export function hacerArrastrable(
     elementoArrastrable: HTMLElement,
-    {alAgarrar, alArrastrar, alSoltar}: {
+    {alAgarrar, alArrastrar, alSoltar, esArrastrable}: {
         alAgarrar?: () => void,
         alArrastrar?: (cursorPosition: Posicion, delta: Posicion) => void,
         alSoltar?: () => void,
+        esArrastrable?: () => boolean,
     },
 ) {
     elementoArrastrable.classList.add("arrastrable");
 
-    function grab(pointerId: number, grabPosition: Posicion) {
+    elementoArrastrable.addEventListener("pointerdown", (evento: PointerEvent) => {
+        if (evento.target !== elementoArrastrable) return;
+        if (!(esArrastrable?.() ?? true)) return;
+
+        evento.preventDefault();
         alAgarrar?.();
-        elementoArrastrable.setPointerCapture(pointerId);
+        elementoArrastrable.setPointerCapture(evento.pointerId);
         elementoArrastrable.classList.add("agarrando");
 
         const dejarDeArrastar = new AbortController();
 
-        let ultimaPosicion: Posicion = grabPosition;
+        let ultimaPosicion: Posicion = posicionDelClienteDe(evento);
 
         elementoArrastrable.addEventListener("pointermove", (event: PointerEvent) => {
-            if (event.pointerId !== pointerId) return;
+            if (event.pointerId !== evento.pointerId) return;
 
             const nuevaPosicion = posicionDelClienteDe(event);
             const delta = ultimaPosicion.desplazamientoHacia(nuevaPosicion);
@@ -32,7 +37,7 @@ export function hacerArrastrable(
         }, {signal: dejarDeArrastar.signal});
 
         const endDrag = (event: PointerEvent) => {
-            if (event.pointerId !== pointerId) return;
+            if (event.pointerId !== evento.pointerId) return;
 
             alSoltar?.();
             elementoArrastrable.classList.remove("agarrando");
@@ -41,17 +46,10 @@ export function hacerArrastrable(
 
         elementoArrastrable.addEventListener("pointerup", endDrag, {signal: dejarDeArrastar.signal});
         elementoArrastrable.addEventListener("pointercancel", endDrag, {signal: dejarDeArrastar.signal});
-        elementoArrastrable.addEventListener("pointerdown", () => { dejarDeArrastar.abort() }, {signal: dejarDeArrastar.signal});
-    }
-
-    elementoArrastrable.addEventListener("pointerdown", (evento: PointerEvent) => {
-        if (evento.target !== elementoArrastrable) return;
-
-        evento.preventDefault();
-        grab(evento.pointerId, posicionDelClienteDe(evento));
+        elementoArrastrable.addEventListener("pointerdown", () => {
+            dejarDeArrastar.abort()
+        }, {signal: dejarDeArrastar.signal});
     });
-
-    return grab;
 }
 
 

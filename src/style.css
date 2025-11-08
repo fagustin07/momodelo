@@ -7,9 +7,37 @@ body {
   overflow: hidden;
 }
 
-.accion-en-curso {
+.diagrama-mer.accion-en-curso {
   .entidad, svg {
     pointer-events: none;
+  }
+  input {
+    pointer-events: none;
+  }
+
+  .entidad button {
+    display: none;
+  }
+}
+
+.diagrama-mer:not(.accion-en-curso) {
+  .arrastrable {
+    cursor: grab;
+
+    &.agarrando {
+      cursor: grabbing;
+    }
+  }
+  .agarrando, .agarrando .atributo {
+    box-shadow: 5px 5px 0 0 rgba(0, 0, 0, 0.5);
+  }
+
+  .entidad:hover button {
+      display: inline;
+  }
+
+  .entidad button {
+    display: none;
   }
 }
 
@@ -18,14 +46,8 @@ body {
   padding: 1em;
   background: white;
   position: absolute;
-  &:hover {
-    button {
-      display: inline;
-    }
-  }
 
   button {
-    display: none;
     position: absolute;
     right: 1em;
   }
@@ -59,18 +81,6 @@ body {
       field-sizing: content;
     }
   }
-}
-
-.arrastrable {
-  cursor: grab;
-
-  &.agarrando {
-    cursor: grabbing;
-  }
-}
-
-.agarrando, .agarrando .atributo {
-  box-shadow: 5px 5px 0 0 rgba(0, 0, 0, 0.5);
 }
 
 #topbar {

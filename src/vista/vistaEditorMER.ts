@@ -127,6 +127,10 @@ export class VistaEditorMER {
         return this._interaccionEnProceso === InteraccionEnProceso.CrearEntidad;
     }
 
+    sePuedeArrastrar() {
+        return this._interaccionEnProceso === InteraccionEnProceso.SinInteracciones;
+    }
+
     entidadCreada(entidad: Entidad) {
         if (!this._entidadesVisuales.has(entidad)) {
             this._crearVistaEntidad(entidad);
