@@ -222,6 +222,8 @@ export class VistaEditorMER {
         this._interaccionEnProceso = interaccionAComenzar;
         this._elementoRaíz.classList.add("accion-en-curso");
 
+        this._elementoRaíz.dataset.interaccionEnCurso = this._interaccionEnProceso;
+
         if (interaccionAComenzar === InteraccionEnProceso.CrearRelacion || interaccionAComenzar === InteraccionEnProceso.Borrado) {
             this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
                 .forEach(e => e.style.pointerEvents = "auto");
@@ -236,6 +238,7 @@ export class VistaEditorMER {
         this._interaccionEnProceso = InteraccionEnProceso.SinInteracciones;
         this._entidadSeleccionada = null;
         this._elementoRaíz.classList.remove("accion-en-curso");
+        this._elementoRaíz.dataset.interaccionEnCurso = this._interaccionEnProceso;
 
         this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
             .forEach(e => e.style.pointerEvents = "auto");

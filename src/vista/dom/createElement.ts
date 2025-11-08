@@ -57,7 +57,8 @@ type SVGAttributesMap = {
         stroke: string,
         'stroke-width': number,
         'pointer-events': string,
-        points: string
+        points: string,
+        class: string
     }
 };
 

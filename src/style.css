@@ -7,10 +7,22 @@ body {
   overflow: hidden;
 }
 
+.diagrama-mer[data-interaccion-en-curso='Borrado'] {
+  .entidad:not(:has(.atributo:hover)), .atributo, .rombo-relacion {
+    &:hover {
+      cursor: pointer;
+      box-shadow: 0 0 5px rgba(245, 19, 19, 0.5);
+      filter: drop-shadow(0 0 5px rgba(245, 19, 19, 0.5));
+      user-select: none;
+    }
+  }
+}
+
 .diagrama-mer.accion-en-curso {
   .entidad, svg {
     pointer-events: none;
   }
+
   input {
     pointer-events: none;
   }
@@ -28,12 +40,13 @@ body {
       cursor: grabbing;
     }
   }
+
   .agarrando, .agarrando .atributo {
     box-shadow: 5px 5px 0 0 rgba(0, 0, 0, 0.5);
   }
 
   .entidad:hover button {
-      display: inline;
+    display: inline;
   }
 
   .entidad button {
@@ -56,6 +69,7 @@ body {
     &:hover {
       border-bottom-color: gray;
     }
+
     border: none;
     border-bottom: 1px solid transparent;
     text-align: center;
@@ -83,6 +97,12 @@ body {
   }
 }
 
+.rombo-relacion {
+    fill: white;
+    stroke: gray;
+    stroke-width: 1;
+}
+
 #topbar {
   position: fixed;
   top: 0;
@@ -93,10 +113,11 @@ body {
   border-radius: 0 0 8px 8px;
   padding: 8px 16px;
   z-index: 9999;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   gap: 12px;
 }
+
 #topbar button {
   padding: 6px 12px;
   border: none;
@@ -105,6 +126,7 @@ body {
   border-radius: 4px;
   cursor: pointer;
 }
+
 #topbar button:hover {
   background-color: #0056b3;
 }
