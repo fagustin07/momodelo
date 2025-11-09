@@ -1,10 +1,18 @@
-body {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  background: whitesmoke;
+html, body {
   margin: 0;
-  overflow: hidden;
+  padding: 0;
+  border: 0;
+}
+
+main {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  margin: 0;
+  background: whitesmoke;
+  overflow: clip;
 }
 
 .diagrama-mer[data-interaccion-en-curso='Borrado'] {
@@ -56,6 +64,8 @@ body {
 .diagrama-mer:not(.accion-en-curso) {
   .arrastrable {
     cursor: grab;
+    touch-action: none;
+    user-select: none;
 
     &.agarrando {
       cursor: grabbing;
@@ -125,17 +135,22 @@ body {
 }
 
 #topbar {
-  position: fixed;
+  position: absolute;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #fafafa;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  max-width: fit-content;
+  background: rgba(250, 250, 250, 0.8);
   border: 1px solid #ccc;
   border-radius: 0 0 8px 8px;
   padding: 8px 16px;
   z-index: 9999;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
   gap: 12px;
 }
 

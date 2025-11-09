@@ -4,6 +4,7 @@ import {Atributo} from "./modelo/atributo.ts";
 import {coordenada} from "./posicion.ts";
 import {init} from "./vista.ts";
 import {Relacion} from "./modelo/relacion.ts";
+import {createElement} from "./vista/dom/createElement.ts";
 
 const entidades: Entidad[] = [
     new Entidad("CLIENTE", [
@@ -28,4 +29,7 @@ const relaciones: Relacion[] = [
     new Relacion("CONTIENE", entidades[1], entidades[2], coord),
 ]
 
-init(document.body, entidades, relaciones);
+const elementoRaíz = createElement("main");
+document.body.append(elementoRaíz);
+
+init(elementoRaíz, entidades, relaciones);

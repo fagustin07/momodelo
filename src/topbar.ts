@@ -24,23 +24,7 @@ export function generarBarraDeInteracciones(vistaEditorMER: VistaEditorMER, elem
         }
     });
 
-    return createElement("div", {
-        id: "topbar",
-        style: {
-            position: "fixed",
-            top: "0",
-            left: "50%",
-            transform: "translateX(-50%)",
-            background: "#fafafa",
-            border: "1px solid #ccc",
-            borderRadius: "0 0 8px 8px",
-            padding: "8px 16px",
-            zIndex: "9999",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            display: "flex",
-            gap: "12px"
-        }
-    }, [
+    return createElement("div", {id: "topbar"}, [
         createElement("button", botonCrearEntidad(vistaEditorMER)),
         createElement("button", botonCrearRelacion(elementoRaiz, vistaEditorMER)),
         createElement("button", botonBorrar(vistaEditorMER)),

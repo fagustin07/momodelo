@@ -26,7 +26,7 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
     const vistaEditorMER = new VistaEditorMER(new Modelador(entidadesEnModelo, relaciones), elementoRaiz, svg);
     const topbar = generarBarraDeInteracciones(vistaEditorMER, elementoRaiz);
 
-    elementoRaiz.append(topbar);
+    elementoRaiz.prepend(topbar);
 
     let posicionActualVista = coordenada(0, 0);
 
