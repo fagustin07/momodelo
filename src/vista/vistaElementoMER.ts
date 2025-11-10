@@ -24,7 +24,7 @@ export abstract class VistaElementoMER<E extends ElementoMER> {
                 this.posicionarElemento(elementoDom);
                 this._vistaEditorMER.reposicionarElementosSVG();
             },
-            esArrastrable: () => this._vistaEditorMER.sePuedeArrastrar()
+            esArrastrable: () => !this._vistaEditorMER.hayUnaInteraccionEnProceso()
         });
     }
 
