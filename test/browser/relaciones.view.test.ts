@@ -78,6 +78,16 @@ describe("[MER] Vista Relaciones", () => {
         expect(vistaEditorMER.modelador.relaciones[0].nombre()).toBe("IMITA");
     });
 
+    it("Se puede crear más de una relación", async () => {
+        const [elementoPersonaje, elementoHumorista] = getElementoEntidades();
+        const elementoRelacionRepresenta = realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista, "REPRESENTA");
+        const elementoRelacionAma = realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista, "AMA");
+
+        expect(elementoRelacionRepresenta).toBeInTheDocument();
+        expect(elementoRelacionAma).toBeInTheDocument();
+        expect(vistaEditorMER.modelador.relaciones.length).toBe(2);
+    });
+
     it("Al eliminar una relacion, entonces no queda referencia de la misma, tanto en la vista como en el modelo", async () => {
         const [elementoPersonaje, elementoHumorista] = getElementoEntidades();
         realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista);
@@ -97,6 +107,7 @@ describe("[MER] Vista Relaciones", () => {
 
         fireEvent.click(elementoRelacionAma);
 
+        expect(elementoRelacionRepresenta).not.toBeInTheDocument();
         expect(elementoRelacionAma).toBeInTheDocument();
         expect(vistaEditorMER.modelador.relaciones.length).toBe(1);
     });

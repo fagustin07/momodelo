@@ -4,6 +4,8 @@ import {importar} from "./servicios/importador.ts";
 import {renderizarToast} from "./componentes/toast.ts";
 import {VistaEditorMER} from "./vista/vistaEditorMER.ts";
 
+let botonActivo: HTMLButtonElement | null = null;
+
 export function generarBarraDeInteracciones(vistaEditorMER: VistaEditorMER, elementoRaiz: HTMLElement) {
     const inputJson = createElement("input", {
         type: "file",
@@ -24,41 +26,79 @@ export function generarBarraDeInteracciones(vistaEditorMER: VistaEditorMER, elem
         }
     });
 
+    elementoRaiz.addEventListener("fin-interaccion-mer", () => {
+        if (botonActivo !== null) {
+            botonActivo.classList.remove("boton-activo");
+            botonActivo = null;
+
+            if (document.activeElement instanceof HTMLButtonElement) {
+                document.activeElement.blur();
+            }
+        }
+    });
+
     return createElement("div", {id: "topbar"}, [
         createElement("button", botonCrearEntidad(vistaEditorMER)),
         createElement("button", botonCrearRelacion(elementoRaiz, vistaEditorMER)),
         createElement("button", botonBorrar(vistaEditorMER)),
         createElement("button", botonDeExportar(vistaEditorMER)),
-        createElement("button", botonImportar(inputJson)),
+        createElement("button", botonImportar(inputJson, vistaEditorMER)),
         inputJson
     ]);
+}
+
+function handlearBotonPresionado(boton: HTMLButtonElement, vistaEditorMER: VistaEditorMER, callbackAlPresionarBotonn: () => void) {
+    if (botonActivo === boton) {
+        boton.classList.remove("boton-activo");
+        vistaEditorMER.cancelarInteracción();
+        botonActivo = null;
+        return;
+    }
+
+    if (botonActivo) botonActivo.classList.remove("boton-activo");
+
+    vistaEditorMER.cancelarInteracción();
+
+    boton.classList.add("boton-activo");
+    botonActivo = boton;
+    callbackAlPresionarBotonn();
+}
+
+function resetearInteracciones(vistaEditorMER: VistaEditorMER) {
 }
 
 function botonCrearEntidad(vistaEditorMER: VistaEditorMER) {
     return {
         textContent: "+Entidad",
-        onclick: () => {
-            vistaEditorMER.solicitudCrearEntidad();
-        }
+        onclick: (evento: PointerEvent) =>
+            handlearBotonPresionado(evento.currentTarget as HTMLButtonElement, vistaEditorMER,
+                () => vistaEditorMER.solicitudCrearEntidad(),
+            ),
     };
 }
 
 function botonCrearRelacion(elementoRaiz: HTMLElement, vistaEditorMER: VistaEditorMER) {
     return {
         textContent: "+Relacion",
-        onclick: () => {
-            vistaEditorMER.solicitudCrearRelacion();
-            renderizarToast(elementoRaiz, "Hacé click en las entidades de origen y destino para generar una nueva relación", {duracion: 3000});
-        }
+        onclick: (evento: PointerEvent) =>
+            handlearBotonPresionado(evento.currentTarget as HTMLButtonElement, vistaEditorMER, () => {
+                vistaEditorMER.solicitudCrearRelacion();
+                renderizarToast(
+                    elementoRaiz,
+                    "Hacé click en las entidades de origen y destino para generar una nueva relación",
+                    { duracion: 3000 }
+                );
+            }),
     };
 }
 
 function botonBorrar(vistaEditorMER: VistaEditorMER) {
     return {
         textContent: "Borrar",
-        onclick: () => {
-            vistaEditorMER.solicitudDeBorrado();
-        }
+        onclick: (evento: PointerEvent) =>
+            handlearBotonPresionado(evento.currentTarget as HTMLButtonElement, vistaEditorMER, () =>
+                vistaEditorMER.solicitudDeBorrado()
+            ),
     };
 }
 
@@ -66,6 +106,7 @@ function botonDeExportar(vistaEditorMER: VistaEditorMER) {
     return {
         textContent: "Exportar",
         onclick: () => {
+            vistaEditorMER.cancelarInteracción();
             const json = exportar(vistaEditorMER.modelador);
             const blob = new Blob([JSON.stringify(json, null, 2)], {type: "application/json"});
             const url = URL.createObjectURL(blob);
@@ -89,9 +130,12 @@ function botonDeExportar(vistaEditorMER: VistaEditorMER) {
     };
 }
 
-function botonImportar(inputJson: HTMLAnchorElement | HTMLElement | HTMLAreaElement | HTMLAudioElement | HTMLBaseElement | HTMLQuoteElement | HTMLBodyElement | HTMLBRElement | HTMLButtonElement | HTMLCanvasElement | HTMLTableCaptionElement | HTMLTableColElement | HTMLDataElement | HTMLDataListElement | HTMLModElement | HTMLDetailsElement | HTMLDialogElement | HTMLDivElement | HTMLDListElement | HTMLEmbedElement | HTMLFieldSetElement | HTMLFormElement | HTMLHeadingElement | HTMLHeadElement | HTMLHRElement | HTMLHtmlElement | HTMLIFrameElement | HTMLImageElement | HTMLInputElement | HTMLLabelElement | HTMLLegendElement | HTMLLIElement | HTMLLinkElement | HTMLMapElement | HTMLMenuElement | HTMLMetaElement | HTMLMeterElement | HTMLObjectElement | HTMLOListElement | HTMLOptGroupElement | HTMLOptionElement | HTMLOutputElement | HTMLParagraphElement | HTMLPictureElement | HTMLPreElement | HTMLProgressElement | HTMLScriptElement | HTMLSelectElement | HTMLSlotElement | HTMLSourceElement | HTMLSpanElement | HTMLStyleElement | HTMLTableElement | HTMLTableSectionElement | HTMLTableCellElement | HTMLTemplateElement | HTMLTextAreaElement | HTMLTimeElement | HTMLTitleElement | HTMLTableRowElement | HTMLTrackElement | HTMLUListElement | HTMLVideoElement) {
+function botonImportar(inputJson: HTMLInputElement, vistaEditorMER: VistaEditorMER) {
     return {
         textContent: "Importar",
-        onclick: () => inputJson.click()
+        onclick: () => {
+            vistaEditorMER.cancelarInteracción();
+            inputJson.click();
+        }
     };
 }
