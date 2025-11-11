@@ -64,9 +64,6 @@ function handlearBotonPresionado(boton: HTMLButtonElement, vistaEditorMER: Vista
     callbackAlPresionarBotonn();
 }
 
-function resetearInteracciones(vistaEditorMER: VistaEditorMER) {
-}
-
 function botonCrearEntidad(vistaEditorMER: VistaEditorMER) {
     return {
         textContent: "+Entidad",

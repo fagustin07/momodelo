@@ -54,9 +54,9 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
             this._campoNombre = createElement("input", {
                 value: this._atributo.nombre(),
                 title: "Nombre de atributo",
-                size: this._tamañoDeCampoParaTexto(this._atributo.nombre()),
+                size: this.tamañoDeCampoParaTexto(this._atributo.nombre()),
                 oninput: () => {
-                    this._campoNombre.size = this._tamañoDeCampoParaTexto(this._campoNombre.value);
+                    this._campoNombre.size = this.tamañoDeCampoParaTexto(this._campoNombre.value);
                     this._actualizarLinea();
                     this._cambiarNombreEnModelo();
                 }
@@ -67,10 +67,6 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
         this.hacerArrastrable(elementoDom);
 
         return elementoDom;
-    }
-
-    private _tamañoDeCampoParaTexto(texto: string) {
-        return Math.max(1, texto.length);
     }
 
     private _cambiarNombreEnModelo() {

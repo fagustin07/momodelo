@@ -17,6 +17,7 @@ export abstract class VistaElementoMER<E extends ElementoMER> {
     protected hacerArrastrable(elementoDom: HTMLElement) {
         hacerArrastrable(elementoDom, {
             alAgarrar: () => {
+                this._vistaEditorMER.cancelarInteracción();
                 elementoDom.parentElement?.append(elementoDom);
             },
             alArrastrar: (_, delta) => {
@@ -35,5 +36,9 @@ export abstract class VistaElementoMER<E extends ElementoMER> {
     protected calcularCentroBasadoEn(elementoDom: HTMLElement, posición: Posicion) {
         const boundingBox = elementoDom.getBoundingClientRect();
         return posición.plus(coordenada(boundingBox.width / 2, boundingBox.height / 2));
+    }
+
+    protected tamañoDeCampoParaTexto(texto: string) {
+        return Math.max(1, texto.length);
     }
 }

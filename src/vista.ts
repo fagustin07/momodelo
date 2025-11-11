@@ -37,6 +37,7 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
 
     hacerArrastrable(svg as any, {
         alArrastrar(_posicionCursor, delta) {
+            vistaEditorMER.cancelarInteracción();
             posicionActualVista = posicionActualVista.plus(delta);
             for (const elementoHijo of elementoRaiz.children) {
                 if (elementoHijo instanceof HTMLElement && elementoHijo.classList.contains("entidad")) {

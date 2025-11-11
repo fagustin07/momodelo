@@ -47,7 +47,9 @@ export class VistaEntidad extends VistaElementoMER<Entidad> {
         return createElement("input", {
             title: "Nombre Entidad",
             value: this._entidad.nombre(),
+            size: this.tamañoDeCampoParaTexto(this._entidad.nombre()),
             oninput: () => {
+                this._campoNombre.size = this.tamañoDeCampoParaTexto(this._entidad.nombre());
                 this._vistaEditorMER.renombrarEntidad(this._campoNombre.value, this._entidad);
             },
         }, []);

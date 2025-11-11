@@ -15,7 +15,7 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
     private _input!: HTMLInputElement;
     private _grupoElementos!: SVGGElement;
 
-    private _ancho = 200;
+    private _ancho = 140;
     private _alto = 100;
 
     constructor(vistaEntidadOrigen: Entidad, vistaEntidadDestino: Entidad, relacion: Relacion, vistaEditorMER: VistaEditorMER) {
@@ -92,15 +92,10 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
         }, [
             this._rombo = createSvgElement("polygon", {
                 "pointer-events": "all",
-                points: [
-                    `${this._ancho / 2},${0}`,
-                    `${this._ancho},${this._alto / 2}`,
-                    `${this._ancho / 2},${this._alto}`,
-                    `${0},${this._alto / 2}`,
-                ].join(" ")
             }),
             createSvgElement("foreignObject", {
                 width: this._ancho,
+                class: 'rombo-foreign-object',
                 height: this._alto
             }, [
                 this._input = createElement("input", {
@@ -116,6 +111,7 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
                         left: "50%",
                         top: "50%"
                     },
+                    oninput: () => this._actualizarInputRelacion()
                 })
             ])
         ]);
@@ -132,8 +128,9 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
             "pointer-events": "none",
         });
 
+        this._actualizarInputRelacion();
         this._input.addEventListener("input", () => {
-            const nombre = this._input.value.trim() || "RELACION";
+            const nombre = this._input.value || "";
             this._vistaEditorMER.renombrarRelacion(nombre, this._relacion);
         });
 
@@ -145,4 +142,56 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
             this._vistaEditorMER.emitirSeleccionDeRelacion(this._relacion);
         });
     }
+
+    private _actualizarInputRelacion() {
+        const anchoTexto = this._medirTexto(this._input.value || "");
+        const anchoFinal = Math.max(40, anchoTexto + 10);
+
+        this._input.style.width = `${anchoFinal}px`;
+
+        this._input.style.left = "50%";
+        this._input.style.transform = "translate(-50%, -50%)";
+
+        const nombre = this._input.value || "";
+        this._vistaEditorMER.renombrarRelacion(nombre, this._relacion);
+
+        this._ajustarRombo(anchoFinal);
+    }
+
+    private _medirTexto(texto: string): number {
+        const ctx = document.createElement("canvas").getContext("2d")!;
+        ctx.font = "14px sans-serif";
+        return ctx.measureText(texto).width;
+    }
+
+    private _ajustarRombo(anchoTexto: number) {
+        const anchoMinimo = 120;
+        const anchoDeseado = anchoTexto + 60;
+
+        const nuevoAncho = Math.max(anchoMinimo, anchoDeseado);
+        const nuevoAlto = nuevoAncho * 0.7;
+
+        if (Math.abs(nuevoAncho - this._ancho) > 1) {
+            this._ancho = nuevoAncho;
+            this._alto = nuevoAlto;
+
+            this._rombo.setAttribute("points", this._getPuntosDelRombo());
+
+            const fo = this._grupoElementos.getElementsByClassName("rombo-foreign-object")[0]!;
+            fo.setAttribute("width", this._ancho.toString());
+            fo.setAttribute("height",this._alto.toString());
+
+            this.reposicionarRelacion();
+        }
+    }
+
+    private _getPuntosDelRombo() {
+        return [
+            `${this._ancho / 2},${0}`,
+            `${this._ancho},${this._alto / 2}`,
+            `${this._ancho / 2},${this._alto}`,
+            `${0},${this._alto / 2}`,
+        ].join(" ");
+    }
+
 }

@@ -149,6 +149,7 @@ export class VistaEditorMER {
 
     entidadRenombrada(entidad: Entidad) {
         this._entidadesVisuales.get(entidad)?.actualizarNombre?.();
+        this.reposicionarElementosSVG();
     }
 
     entidadEliminada(entidad: Entidad, relacionesEliminadas: Relacion[]) {
@@ -245,6 +246,10 @@ export class VistaEditorMER {
 
 
     private _finalizarInteracción() {
+        if (!this.seEstáCreandoUnElemento() && document.activeElement instanceof HTMLInputElement) {
+            document.activeElement.blur();
+        }
+
         this._interacciónEnProceso = InteraccionEnProceso.SinInteracciones;
         this._entidadSeleccionada = null;
         this._elementoRaíz.classList.remove("accion-en-curso");
@@ -253,6 +258,11 @@ export class VistaEditorMER {
 
         this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
             .forEach(e => e.style.pointerEvents = "auto");
+    }
+
+    private seEstáCreandoUnElemento() {
+        return this._interacciónEnProceso === InteraccionEnProceso.CrearEntidad ||
+            this._interacciónEnProceso === InteraccionEnProceso.CrearRelacion;
     }
 
     private notificarFinalizaciónDeInteracción() {

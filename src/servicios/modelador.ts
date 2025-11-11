@@ -35,7 +35,7 @@ export class Modelador {
     // ========= ENTIDADES =========
 
     generarEntidadUbicadaEn(posicion: Posicion): Entidad {
-        const nueva = new Entidad("Entidad", [], posicion);
+        const nueva = new Entidad("ENTIDAD", [], posicion);
         this.entidades.push(nueva);
         this._vista?.entidadCreada(nueva);
         return nueva;

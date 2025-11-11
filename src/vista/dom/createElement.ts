@@ -41,6 +41,7 @@ type SVGAttributesMap = {
         width: number,
         height: number,
         x: number,
+        class: string,
         y: number,
     },
     "line": {
