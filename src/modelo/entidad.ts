@@ -19,8 +19,8 @@ export class Entidad extends ElementoMER {
         this._nombre = nuevoNombre;
     }
 
-    agregarAtributo(nombreDeNuevoAtributo: string) {
-        const nuevoAtributo = new Atributo(nombreDeNuevoAtributo, this.posicion().plus(coordenada(0, 20)));
+    agregarAtributo(nombreDeNuevoAtributo: string, posicion: Posicion = coordenada(0,0)) {
+        const nuevoAtributo = new Atributo(nombreDeNuevoAtributo, posicion);
         this._atributos.push(nuevoAtributo);
         return nuevoAtributo;
     }

@@ -93,8 +93,8 @@ export class Modelador {
     }
 
 
-    agregarAtributoPara(entidad: Entidad, nombreAtributo: string = "Atributo") {
-        const nuevo = entidad.agregarAtributo(nombreAtributo);
+    agregarAtributoPara(entidad: Entidad, nombreAtributo: string = "Atributo", posicion: Posicion) {
+        const nuevo = entidad.agregarAtributo(nombreAtributo, posicion);
         this._vista?.atributoCreado(entidad, nuevo);
     }
 

@@ -149,7 +149,7 @@ export class VistaEditorMER {
     }
 
     emitirCreacionDeAtributoEn(entidad: Entidad, nombreAtributo: string = "Atributo"): void {
-        this.modelador.agregarAtributoPara(entidad, nombreAtributo);
+        this.modelador.agregarAtributoPara(entidad, nombreAtributo, coordenada(12,-75));
     }
 
     emitirSeleccionDeEntidad(entidad: Entidad): void {
