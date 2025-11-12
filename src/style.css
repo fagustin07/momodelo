@@ -43,6 +43,15 @@ main {
   }
 }
 
+
+.diagrama-mer[data-interaccion-en-curso='Crear Entidad'] {
+    cursor: pointer;
+
+  .entidad, .atributo, .relacion, line {
+    filter: blur(3px);
+  }
+}
+
 .atributo, .relacion, line {
   transition: filter 0.2s;
 }
@@ -152,18 +161,25 @@ main {
   stroke-width: 1;
 }
 
-#topbar {
+.contenedor-barra {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  margin: 0 auto;
+  z-index: 9999;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#topbar {
+  pointer-events: auto;
   max-width: fit-content;
   background: rgba(250, 250, 250, 0.8);
   border: 1px solid #ccc;
   border-radius: 0 0 8px 8px;
   padding: 8px 16px;
-  z-index: 9999;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-wrap: wrap;
@@ -179,18 +195,31 @@ main {
   color: white;
   border-radius: 4px;
   cursor: pointer;
-}
 
-#topbar button:hover {
-  background-color: #0056b3;
-}
+  &:hover {
+    background-color: #0056b3;
+  }
 
-#topbar button.boton-activo {
-  background-color: #0056b3;
-  color: white;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+  &.boton-activo {
+    background-color: #02468f;
+    color: white;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+  }
 }
 
 #topbar button {
   transition: background-color 0.1s, transform 0.1s, box-shadow 0.1s;
+}
+
+.texto-sugerencia {
+  font-family: sans-serif;
+  font-style: italic;
+  font-size: 16px;
+  color: #3a3535;
+  margin-top: 0.5rem;
+  visibility: hidden;
+
+  &:not(:empty) {
+    visibility: visible;
+  }
 }

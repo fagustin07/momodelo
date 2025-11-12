@@ -3,7 +3,6 @@ import {coordenada} from "./posicion.ts";
 import {Modelador} from "./servicios/modelador.ts";
 import {generarBarraDeInteracciones} from "./topbar.ts";
 import {Relacion} from "./modelo/relacion.ts";
-import {renderizarToast} from "./componentes/toast.ts";
 import {hacerArrastrable} from "./arrastrable.ts";
 import {VistaEditorMER} from "./vista/vistaEditorMER.ts";
 
@@ -50,13 +49,11 @@ export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], re
 
     elementoRaiz.addEventListener("click", evento => {
         if (evento.target !== elementoRaiz) return;
-        if (!vistaEditorMER.puedoCrearUnaEntidad()) {
-            renderizarToast(elementoRaiz, "Hacé clic en “+Entidad” y luego en el diagrama para crear Entidades.");
-            return;
+        if (vistaEditorMER.puedoCrearUnaEntidad()) {
+            const posicion = coordenada(evento.offsetX, evento.offsetY);
+            vistaEditorMER.solicitudCrearEntidad();
+            vistaEditorMER.agregarEntidadEn(posicion, posicionActualVista);
         }
-        const posicion = coordenada(evento.offsetX, evento.offsetY);
-        vistaEditorMER.solicitudCrearEntidad();
-        vistaEditorMER.agregarEntidadEn(posicion, posicionActualVista);
     });
 
     const resizeObserver = new ResizeObserver(() => actualizarViewBoxSvg());

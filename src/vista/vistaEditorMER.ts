@@ -30,7 +30,7 @@ export class VistaEditorMER {
 
         this.modelador.conectarVista(this);
 
-        this._elementoRaíz.addEventListener('keydown', (evento: KeyboardEvent) => {
+        document.addEventListener('keydown', (evento: KeyboardEvent) => {
             if (evento.key === "Escape") {
                 this._finalizarInteracción();
             }
@@ -94,14 +94,20 @@ export class VistaEditorMER {
 
     solicitudCrearEntidad(): void {
         this._iniciarInteracción(InteraccionEnProceso.CrearEntidad);
+        const evento = new CustomEvent("momodelo-crear-entidad");
+        this._elementoRaíz.dispatchEvent(evento);
     }
 
     solicitudDeBorrado(): void {
         this._iniciarInteracción(InteraccionEnProceso.Borrado);
+        const evento = new CustomEvent("momodelo-borrar-elemento");
+        this._elementoRaíz.dispatchEvent(evento);
     }
 
     solicitudCrearRelacion(): void {
         this._iniciarInteracción(InteraccionEnProceso.CrearRelacion);
+        const evento = new CustomEvent("momodelo-relacion-origen");
+        this._elementoRaíz.dispatchEvent(evento);
     }
 
     emitirSeleccionDeRelacion(relacion: Relacion): void {
@@ -196,6 +202,8 @@ export class VistaEditorMER {
         if (this._interacciónEnProceso === InteraccionEnProceso.CrearRelacion) {
             if (!this._entidadSeleccionada) {
                 this._entidadSeleccionada = entidad;
+                const evento = new CustomEvent("momodelo-relacion-destino");
+                this._elementoRaíz.dispatchEvent(evento);
             } else {
                 try {
                     this.modelador.crearRelacion(this._entidadSeleccionada, entidad);

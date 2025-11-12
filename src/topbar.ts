@@ -1,12 +1,16 @@
 import {createElement} from "./vista/dom/createElement.ts";
 import {exportar} from "./servicios/exportador.ts";
 import {importar} from "./servicios/importador.ts";
-import {renderizarToast} from "./componentes/toast.ts";
 import {VistaEditorMER} from "./vista/vistaEditorMER.ts";
 
 let botonActivo: HTMLButtonElement | null = null;
 
 export function generarBarraDeInteracciones(vistaEditorMER: VistaEditorMER, elementoRaiz: HTMLElement) {
+    const textoSugerencia = createElement("span", {
+        className: "texto-sugerencia",
+        textContent: "",
+    });
+
     const inputJson = createElement("input", {
         type: "file",
         accept: ".json",
@@ -30,6 +34,7 @@ export function generarBarraDeInteracciones(vistaEditorMER: VistaEditorMER, elem
         if (botonActivo !== null) {
             botonActivo.classList.remove("boton-activo");
             botonActivo = null;
+            setSugerencia("");
 
             if (document.activeElement instanceof HTMLButtonElement) {
                 document.activeElement.blur();
@@ -37,12 +42,29 @@ export function generarBarraDeInteracciones(vistaEditorMER: VistaEditorMER, elem
         }
     });
 
-    return createElement("div", {id: "topbar"}, [
+    elementoRaiz.addEventListener("momodelo-relacion-origen",
+        () => setSugerencia("Seleccioná la Entidad  Origen (ESC para cancelar)"));
+
+    elementoRaiz.addEventListener("momodelo-relacion-destino",
+        () => setSugerencia("Ahora la Entidad Destino (ESC para cancelar)"));
+
+    elementoRaiz.addEventListener("momodelo-crear-entidad",
+        () => setSugerencia("Clickeá sobre el diagrama para crear una Entidad (ESC para cancelar)"));
+
+    elementoRaiz.addEventListener("momodelo-borrar-elemento",
+        () => setSugerencia("Seleccioná el elemento (ESC para cancelar)"));
+
+    const topbar = createElement("div", {id: "topbar"}, [
         createElement("button", botonCrearEntidad(vistaEditorMER)),
         createElement("button", botonCrearRelacion(elementoRaiz, vistaEditorMER)),
         createElement("button", botonBorrar(vistaEditorMER)),
         createElement("button", botonDeExportar(vistaEditorMER)),
         createElement("button", botonImportar(inputJson, vistaEditorMER)),
+    ]);
+
+    return createElement("div", {className: "contenedor-barra"}, [
+        topbar,
+        textoSugerencia,
         inputJson
     ]);
 }
@@ -80,11 +102,6 @@ function botonCrearRelacion(elementoRaiz: HTMLElement, vistaEditorMER: VistaEdit
         onclick: (evento: PointerEvent) =>
             handlearBotonPresionado(evento.currentTarget as HTMLButtonElement, vistaEditorMER, () => {
                 vistaEditorMER.solicitudCrearRelacion();
-                renderizarToast(
-                    elementoRaiz,
-                    "Hacé click en las entidades de origen y destino para generar una nueva relación",
-                    { duracion: 3000 }
-                );
             }),
     };
 }
@@ -135,4 +152,8 @@ function botonImportar(inputJson: HTMLInputElement, vistaEditorMER: VistaEditorM
             inputJson.click();
         }
     };
+}
+
+function setSugerencia(texto: string) {
+    document.getElementsByClassName("texto-sugerencia")[0].textContent = texto;
 }
