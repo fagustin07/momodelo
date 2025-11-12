@@ -284,11 +284,13 @@ export class VistaEditorMER {
 
     private reiniciarDiccionarios() {
         this._entidadesVisuales.clear();
+        this._atributosVisuales.clear();
         this._relacionesVisuales.clear();
     }
 
     private reiniciarVisual() {
         this._entidadesVisuales.forEach(entVisual => entVisual.borrarse());
+        this._atributosVisuales.forEach(atrVisual => atrVisual.borrarse());
         this._relacionesVisuales.forEach(relVisual => relVisual.borrarse());
     }
 }
