@@ -1,7 +1,7 @@
 import {Entidad} from "../modelo/entidad";
 import {Atributo} from "../modelo/atributo";
 import {Relacion} from "../modelo/relacion";
-import {Posicion} from "../posicion";
+import {coordenada, Posicion} from "../posicion";
 import {Modelador} from "../servicios/modelador";
 import {InteraccionEnProceso} from "../servicios/accionEnProceso";
 import {VistaEntidad} from "./vistaEntidad";
@@ -9,13 +9,14 @@ import {VistaRelacion} from "./vistaRelacion";
 import {VistaAtributo} from "./vistaAtributo";
 import {renderizarToast} from "../componentes/toast";
 import {RelacionRecursivaError} from "../servicios/errores";
+import {hacerArrastrable} from "../arrastrable.ts";
 
 export class VistaEditorMER {
     readonly modelador: Modelador;
 
     private _interacciónEnProceso: InteraccionEnProceso = InteraccionEnProceso.SinInteracciones;
     private _entidadSeleccionada: Entidad | null = null;
-
+    private _posicionActualVista = coordenada(0, 0);
     private readonly _elementoRaíz: HTMLElement;
     private readonly _elementoSvg: SVGElement;
 
@@ -38,6 +39,29 @@ export class VistaEditorMER {
 
         this.modelador.entidades.forEach(e => this._crearVistaEntidad(e));
         this.modelador.relaciones.forEach(r => this._crearVistaRelacion(r));
+
+        elementoRaiz.classList.add("diagrama-mer");
+        elementoRaiz.prepend(this._elementoSvg);
+
+        hacerArrastrable(this._elementoSvg as any, {
+            alArrastrar: (_posicionCursor, delta) => {
+                this.cancelarInteracción();
+                this._cambiarPosiciónActual(this._posicionActualVista.plus(delta));
+            }
+        });
+
+        elementoRaiz.addEventListener("click", (evento: PointerEvent) => {
+            if (evento.target !== elementoRaiz) return;
+            if (!this.puedoCrearUnaEntidad()) {
+                return;
+            }
+            const posicion = coordenada(evento.offsetX, evento.offsetY);
+            this.solicitudCrearEntidad();
+            this.agregarEntidadEn(posicion, this._posicionActualVista);
+        });
+
+        const resizeObserver = new ResizeObserver(() => this._actualizarViewBoxSvg());
+        resizeObserver.observe(this._elementoSvg);
 
         if (document.activeElement instanceof HTMLInputElement) {
             document.activeElement.blur();
@@ -205,6 +229,22 @@ export class VistaEditorMER {
     }
 
     // =================== PRIVATE ===================
+
+    private _cambiarPosiciónActual(nuevaPosición: Posicion) {
+        this._posicionActualVista = nuevaPosición;
+        for (const elementoHijo of this._elementoRaíz.children) {
+            if (elementoHijo instanceof HTMLElement && elementoHijo.classList.contains("entidad")) {
+                elementoHijo.style.transform = `translate(${this._posicionActualVista.x}px, ${this._posicionActualVista.y}px)`
+            }
+        }
+        this._actualizarViewBoxSvg();
+    }
+
+    private _actualizarViewBoxSvg() {
+        const svgBoundingBox = this._elementoSvg.getBoundingClientRect();
+        this._elementoSvg.setAttribute("viewBox", `${-this._posicionActualVista.x} ${-this._posicionActualVista.y} ${svgBoundingBox.width} ${svgBoundingBox.height}`);
+    }
+
     private seleccionarEntidad(entidad: Entidad): void {
         if (this._interacciónEnProceso === InteraccionEnProceso.CrearRelacion) {
             if (!this._entidadSeleccionada) {
@@ -299,5 +339,6 @@ export class VistaEditorMER {
         this._entidadesVisuales.forEach(entVisual => entVisual.borrarse());
         this._atributosVisuales.forEach(atrVisual => atrVisual.borrarse());
         this._relacionesVisuales.forEach(relVisual => relVisual.borrarse());
+        this._cambiarPosiciónActual(coordenada(0,0));
     }
 }
