@@ -1,5 +1,5 @@
 export class RelacionRecursivaError extends Error {
     constructor() {
-        super("No se puede crear una relación recursiva");
+        super("La creación de relaciones recursivas aún no está disponible.");
     }
 }
