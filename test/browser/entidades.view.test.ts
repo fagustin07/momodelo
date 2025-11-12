@@ -37,8 +37,8 @@ function agregarAtributoEn(elementoEntidad: HTMLElement, nombreAtributoNuevo: st
     return nuevoAtributo;
 }
 
-function realizarGestoParaAgregarEntidad(nombreEntidad: string, elementoRaiz: HTMLElement, posicion: Posicion) {
-    const botonAgregarEntidad = screen.getByRole('button', { name: /\+entidad/i });
+function realizarGestoParaAgregarEntidadEn(elementoRaiz: HTMLElement, posicion: Posicion) {
+    const botonAgregarEntidad = screen.getByRole('button', {name: /\+entidad/i});
 
     botonAgregarEntidad.click();
 
@@ -47,6 +47,11 @@ function realizarGestoParaAgregarEntidad(nombreEntidad: string, elementoRaiz: HT
     const entidades = getElementoEntidades();
     const nuevaEntidad = entidades[entidades.length - 1];
     const campoNombre = within(nuevaEntidad).getByTitle<HTMLInputElement>("Nombre Entidad");
+    return {nuevaEntidad, campoNombre};
+}
+
+function realizarGestoParaAgregarEntidadLlamadaEn(nombreEntidad: string, elementoRaiz: HTMLElement, posicion: Posicion) {
+    const {nuevaEntidad, campoNombre} = realizarGestoParaAgregarEntidadEn(elementoRaiz, posicion);
     fireEvent.input(campoNombre, { target: { value: nombreEntidad } });
 
     return nuevaEntidad;
@@ -88,7 +93,7 @@ describe("[MER] Vista Modelo tests", () => {
     });
 
     it("Cuando se escribe un nombre en la entidad creada, el modelo se actualiza correctamente", async () => {
-        realizarGestoParaAgregarEntidad("Marinero", elementoRaiz, coordenada(100, 100));
+        realizarGestoParaAgregarEntidadLlamadaEn("Marinero", elementoRaiz, coordenada(100, 100));
         const elementoEntidades = getElementoEntidades();
         expect(elementoEntidades.length).toBe(2);
         const nuevaEntidad = elementoEntidades[1];
@@ -100,7 +105,7 @@ describe("[MER] Vista Modelo tests", () => {
     });
 
     it("Cuando se crea una entidad, se puede escribir el nombre en ella inmediatamente", async () => {
-        realizarGestoParaAgregarEntidad("Marinero", elementoRaiz, coordenada(100, 100));
+        realizarGestoParaAgregarEntidadLlamadaEn("Marinero", elementoRaiz, coordenada(100, 100));
         const elementoEntidad = getElementoEntidades()[1];
 
         const campoAtributo = within(elementoEntidad).getByTitle<HTMLButtonElement>("Nombre Entidad");
@@ -108,7 +113,7 @@ describe("[MER] Vista Modelo tests", () => {
     });
 
     it("Cuando se crea una entidad, se puede escribir el nombre en ella inmediatamente y reemplaza el texto por defecto", async () => {
-        fireEvent.dblClick(elementoRaiz, {clientX: 100, clientY: 100});
+        realizarGestoParaAgregarEntidadEn(elementoRaiz, coordenada(100, 100));
         const campoNombre = document.activeElement as HTMLInputElement;
 
         await userEvent.type(campoNombre, "Capitán", {
@@ -133,7 +138,7 @@ describe("[MER] Vista Modelo tests", () => {
     it("Cuando se realiza el gesto de borrar sobre una entidad y luego se clickea en otra, entonces solo se borra la primer entidad", () => {
         const elementoEntidades = getElementoEntidades();
         const [elementoEntidad] = elementoEntidades;
-        const elementoEntidadBarco = realizarGestoParaAgregarEntidad("BARCO", elementoRaiz, coordenada(100, 100));
+        const elementoEntidadBarco = realizarGestoParaAgregarEntidadLlamadaEn("BARCO", elementoRaiz, coordenada(100, 100));
         realizarGestoEliminarSobre(elementoEntidad);
 
         fireEvent.click(elementoEntidadBarco);
