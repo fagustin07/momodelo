@@ -30,7 +30,7 @@ export class VistaEditorMER {
 
         this.modelador.conectarVista(this);
 
-        document.addEventListener('keydown', (evento: KeyboardEvent) => {
+        this._elementoRaíz.addEventListener('keydown', (evento: KeyboardEvent) => {
             if (evento.key === "Escape") {
                 this._finalizarInteracción();
             }
@@ -38,11 +38,18 @@ export class VistaEditorMER {
 
         this.modelador.entidades.forEach(e => this._crearVistaEntidad(e));
         this.modelador.relaciones.forEach(r => this._crearVistaRelacion(r));
+
+        if (document.activeElement instanceof HTMLInputElement) {
+            document.activeElement.blur();
+        }
     }
 
     reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[]): void {
         this.limpiarVistaDelUsuario();
         this.modelador.reemplazarModelo(nuevasEntidades, nuevasRelaciones);
+        if (document.activeElement instanceof HTMLInputElement) {
+            document.activeElement.blur();
+        }
     }
 
     cancelarInteracción() {
