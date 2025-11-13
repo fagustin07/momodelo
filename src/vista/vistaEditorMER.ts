@@ -31,7 +31,7 @@ export class VistaEditorMER {
 
         this.modelador.conectarVista(this);
 
-        this._elementoRaíz.addEventListener('keydown', (evento: KeyboardEvent) => {
+        document.addEventListener('keydown', (evento: KeyboardEvent) => {
             if (evento.key === "Escape") {
                 this._finalizarInteracción();
             }
