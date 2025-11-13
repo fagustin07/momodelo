@@ -83,6 +83,7 @@ export class VistaEditorMER {
     agregarEntidadEn(posicion: Posicion, posicionActualVista: Posicion): void {
         if (this._interacciónEnProceso === InteraccionEnProceso.CrearEntidad) {
             const entidadNueva = this.modelador.generarEntidadUbicadaEn(posicion.minus(posicionActualVista));
+            this._crearVistaEntidad(entidadNueva);
 
             this._entidadesVisuales.get(entidadNueva)!.elementoDom()
                 .style.transform = `translate(${posicionActualVista.x}px, ${posicionActualVista.y}px)`;
@@ -149,7 +150,7 @@ export class VistaEditorMER {
     }
 
     emitirCreacionDeAtributoEn(entidad: Entidad, nombreAtributo: string = "Atributo"): void {
-        this.modelador.agregarAtributoPara(entidad, nombreAtributo, coordenada(12,-75));
+        this.modelador.agregarAtributoPara(entidad, nombreAtributo, coordenada(12, -75));
     }
 
     emitirSeleccionDeEntidad(entidad: Entidad): void {
@@ -179,9 +180,7 @@ export class VistaEditorMER {
     }
 
     entidadCreada(entidad: Entidad) {
-        if (!this._entidadesVisuales.has(entidad)) {
-            this._crearVistaEntidad(entidad);
-        }
+        this._crearVistaEntidad(entidad);
     }
 
     entidadRenombrada(entidad: Entidad) {
@@ -192,13 +191,13 @@ export class VistaEditorMER {
     entidadEliminada(entidad: Entidad, relacionesEliminadas: Relacion[]) {
         const vistaEntidadElementoMER = this._entidadesVisuales.get(entidad);
         vistaEntidadElementoMER?.borrarse();
-        entidad.atributos().forEach( atr => this.modelador.eliminarAtributo(atr, entidad));
+        entidad.atributos().forEach(atr => this.modelador.eliminarAtributo(atr, entidad));
         this._entidadesVisuales.delete(entidad);
         relacionesEliminadas.forEach(rel => this.relacionEliminada(rel));
     }
 
     atributoCreado(entidad: Entidad, atributo: Atributo) {
-        if (!this._atributosVisuales.has(atributo)){
+        if (!this._atributosVisuales.has(atributo)) {
             const vistaEntidad = this._entidadesVisuales.get(entidad)!;
             const atrVisual = new VistaAtributo(atributo, this, entidad);
             atrVisual.representarseEn(vistaEntidad.contenedorDeAtributos());
@@ -339,6 +338,6 @@ export class VistaEditorMER {
         this._entidadesVisuales.forEach(entVisual => entVisual.borrarse());
         this._atributosVisuales.forEach(atrVisual => atrVisual.borrarse());
         this._relacionesVisuales.forEach(relVisual => relVisual.borrarse());
-        this._cambiarPosiciónActual(coordenada(0,0));
+        this._cambiarPosiciónActual(coordenada(0, 0));
     }
 }
