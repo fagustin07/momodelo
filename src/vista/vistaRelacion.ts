@@ -13,6 +13,7 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
     private _lineaOrigen!: SVGLineElement;
     private _lineaDestino!: SVGLineElement;
     private _input!: HTMLInputElement;
+    private _foreignObject!: SVGForeignObjectElement;
     private _grupoElementos!: SVGGElement;
 
     private _ancho = 140;
@@ -80,6 +81,7 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
         this._lineaDestino.remove();
         this._rombo.remove();
         this._input.remove();
+        this._foreignObject.remove();
     }
 
     actualizarNombre() {
@@ -93,7 +95,7 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
             this._rombo = createSvgElement("polygon", {
                 "pointer-events": "all",
             }),
-            createSvgElement("foreignObject", {
+            this._foreignObject = createSvgElement("foreignObject", {
                 width: this._ancho,
                 class: 'rombo-foreign-object',
                 height: this._alto
