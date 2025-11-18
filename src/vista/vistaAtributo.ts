@@ -43,6 +43,10 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
         this._actualizarLinea();
     }
 
+    protected elementoDOM(): HTMLElement | SVGElement {
+        return this._elementoDom;
+    }
+
     private _crearElementoDom() {
         let elementoDom = createElement("div", {
             className: "atributo",

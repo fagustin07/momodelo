@@ -16,19 +16,23 @@ function getInputRelaciones(): HTMLInputElement[] {
 }
 
 function realizarGestoParaRelacionarA(elementoOrigen: HTMLElement, elementoDestino: HTMLElement, nombreRelacion: string = "RELACION") {
-    const botonCrearRelacion = screen.getByRole('button', { name: /\+relacion/i });
+    const botonCrearRelacion = screen.getByRole('button', {name: /\+relacion/i});
     fireEvent.click(botonCrearRelacion);
     fireEvent.click(elementoOrigen);
     fireEvent.click(elementoDestino);
 
     const nuevaRelacion = getInputRelaciones()[getInputRelaciones().length - 1];
-    fireEvent.input(nuevaRelacion, { target: { value: nombreRelacion } });
+    fireEvent.input(nuevaRelacion, {target: {value: nombreRelacion}});
 
     return nuevaRelacion;
 }
 
+function getGrupoRelacionDe(inputRelacion: HTMLInputElement): SVGGElement {
+    return inputRelacion.closest("g.relacion")!;
+}
+
 function realizarGestoEliminarSobre(elemento: HTMLElement) {
-    const botonBorrar = screen.getByRole('button', { name: /borrar/i });
+    const botonBorrar = screen.getByRole('button', {name: /borrar/i});
     fireEvent.click(botonBorrar);
     fireEvent.click(elemento);
 }
@@ -126,12 +130,24 @@ describe("[MER] Vista Relaciones", () => {
     it("No se puede crear una relación recursiva", async () => {
         const [elementoPersonaje] = getElementoEntidades();
 
-        const botonCrearRelacion = screen.getByRole('button', { name: /\+relacion/i });
+        const botonCrearRelacion = screen.getByRole('button', {name: /\+relacion/i});
         fireEvent.click(botonCrearRelacion);
         fireEvent.click(elementoPersonaje);
         fireEvent.click(elementoPersonaje);
 
         expect(getInputRelaciones().length).toBe(0);
         expect(vistaEditorMER.modelador.relaciones.length).toBe(0);
+    });
+
+    it("Al seleccionar una relación sin interacciones en proceso, entonces dicha relación queda seleccionada", async () => {
+        const [elementoPersonaje, elementoHumorista] = getElementoEntidades();
+        const inputRelacionRepresenta = realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista, "REPRESENTA");
+        const inputRelacionAma = realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista, "AMA");
+
+        fireEvent.click(inputRelacionAma);
+
+        expect(vistaEditorMER.hayUnaInteraccionEnProceso()).toBeFalsy;
+        expect(getGrupoRelacionDe(inputRelacionRepresenta)).not.toHaveClass("seleccionado");
+        expect(getGrupoRelacionDe(inputRelacionAma)).toHaveClass("seleccionado");
     });
 });

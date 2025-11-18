@@ -10,12 +10,13 @@ import {VistaAtributo} from "./vistaAtributo";
 import {renderizarToast} from "../componentes/toast";
 import {RelacionRecursivaError} from "../servicios/errores";
 import {hacerArrastrable} from "../arrastrable.ts";
+import {ElementoMER} from "../modelo/elementoMER.ts";
 
 export class VistaEditorMER {
     readonly modelador: Modelador;
 
     private _interacciónEnProceso: InteraccionEnProceso = InteraccionEnProceso.SinInteracciones;
-    private _entidadSeleccionada: Entidad | null = null;
+    private _elementoSeleccionado: ElementoMER | null = null;
     private _posicionActualVista = coordenada(0, 0);
     private readonly _elementoRaíz: HTMLElement;
     private readonly _elementoSvg: SVGElement;
@@ -142,10 +143,14 @@ export class VistaEditorMER {
         this._elementoRaíz.dispatchEvent(evento);
     }
 
-    emitirSeleccionDeRelacion(relacion: Relacion): void {
+    emitirSeleccionDeRelacion(relación: Relacion): void {
         if (this._interacciónEnProceso === InteraccionEnProceso.Borrado) {
-            this.modelador.eliminarRelacion(relacion);
+            this.modelador.eliminarRelacion(relación);
             this._finalizarInteracción();
+        }
+        if (this._interacciónEnProceso === InteraccionEnProceso.SinInteracciones) {
+            this._elementoSeleccionado = relación;
+            this._notificarSelección(relación);
         }
     }
 
@@ -162,12 +167,21 @@ export class VistaEditorMER {
         if (this._interacciónEnProceso === InteraccionEnProceso.CrearRelacion) {
             this.seleccionarEntidad(entidad);
         }
+        if (this._interacciónEnProceso === InteraccionEnProceso.SinInteracciones) {
+            this._elementoSeleccionado = entidad;
+            this._notificarSelección(entidad);
+
+        }
     }
 
     emitirSeleccionDeAtributo(entidad: Entidad, atributo: Atributo): void {
         if (this._interacciónEnProceso === InteraccionEnProceso.Borrado) {
             this.modelador.eliminarAtributo(atributo, entidad);
             this._finalizarInteracción();
+        }
+        if (this._interacciónEnProceso === InteraccionEnProceso.SinInteracciones) {
+            this._elementoSeleccionado = atributo;
+            this._notificarSelección(atributo);
         }
     }
 
@@ -246,13 +260,13 @@ export class VistaEditorMER {
 
     private seleccionarEntidad(entidad: Entidad): void {
         if (this._interacciónEnProceso === InteraccionEnProceso.CrearRelacion) {
-            if (!this._entidadSeleccionada) {
-                this._entidadSeleccionada = entidad;
+            if (this._elementoSeleccionado === null) {
+                this._elementoSeleccionado = entidad;
                 const evento = new CustomEvent("momodelo-relacion-destino");
                 this._elementoRaíz.dispatchEvent(evento);
             } else {
                 try {
-                    this.modelador.crearRelacion(this._entidadSeleccionada, entidad);
+                    this.relacionCreada(this.modelador.crearRelacion(this._elementoSeleccionado as Entidad, entidad));
                 } catch (error) {
                     if (error instanceof RelacionRecursivaError) {
                         renderizarToast(this._elementoRaíz, error.message, {variante: "error"});
@@ -281,6 +295,7 @@ export class VistaEditorMER {
         const vista = new VistaRelacion(entidadOrigen, entidadDestino, relacion, this);
         vista.representarse();
         this._relacionesVisuales.set(relacion, vista);
+        this._seleccionarA(relacion);
     }
 
     private _iniciarInteracción(interacciónAComenzar: InteraccionEnProceso) {
@@ -298,14 +313,13 @@ export class VistaEditorMER {
         }
     }
 
-
     private _finalizarInteracción() {
         if (!this.seEstáCreandoUnElemento() && document.activeElement instanceof HTMLInputElement) {
             document.activeElement.blur();
         }
 
         this._interacciónEnProceso = InteraccionEnProceso.SinInteracciones;
-        this._entidadSeleccionada = null;
+        this._deseleccionar();
         this._elementoRaíz.classList.remove("accion-en-curso");
         this._elementoRaíz.dataset.interaccionEnCurso = this._interacciónEnProceso;
         this.notificarFinalizaciónDeInteracción();
@@ -339,5 +353,26 @@ export class VistaEditorMER {
         this._atributosVisuales.forEach(atrVisual => atrVisual.borrarse());
         this._relacionesVisuales.forEach(relVisual => relVisual.borrarse());
         this._cambiarPosiciónActual(coordenada(0, 0));
+    }
+
+    private _deseleccionar() {
+        this._seleccionarA(null);
+    }
+
+    private _seleccionarA(relacion: ElementoMER | null) {
+        this._elementoSeleccionado = relacion;
+        this._notificarSelección(relacion);
+    }
+
+    private _notificarSelección(elementoMER: ElementoMER | null) {
+        this._todasLasVistas().forEach(v => v.actualizarSelección(elementoMER));
+    }
+
+    private _todasLasVistas() {
+        return [
+            ...this._entidadesVisuales.values(),
+            ...this._relacionesVisuales.values(),
+            ...this._atributosVisuales.values(),
+        ];
     }
 }

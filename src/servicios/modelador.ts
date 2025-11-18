@@ -73,7 +73,7 @@ export class Modelador {
         }
         const nuevaRelacion = new Relacion(nombre, entidadOrigen, entidadDestino, coordenada(pos.x, pos.y));
         this.relaciones.push(nuevaRelacion);
-        this._vista?.relacionCreada(nuevaRelacion);
+        return nuevaRelacion;
     }
 
     posicionarRelacionEn(relacion: Relacion, centro: { x: number; y: number }) {

@@ -88,6 +88,10 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
         this._input.value = this._relacion.nombre();
     }
 
+    protected elementoDOM(): HTMLElement | SVGElement {
+        return this._grupoElementos;
+    }
+
     private _crearElementoDom() {
         this._grupoElementos = createSvgElement("g", {
             class: "relacion",
@@ -195,5 +199,4 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
             `${0},${this._alto / 2}`,
         ].join(" ");
     }
-
 }

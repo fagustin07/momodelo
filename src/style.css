@@ -15,6 +15,20 @@ main {
   overflow: clip;
 }
 
+.entidad.seleccionado, .atributo.seleccionado {
+  --color-resaltado: #3b82f6;
+  outline: 3px solid var(--color-resaltado);
+  filter: drop-shadow(0 0 6px var(--color-resaltado));
+  border-radius: 4px;
+}
+
+.relacion.seleccionado polygon {
+  --color-resaltado: #3b82f6;
+  stroke: var(--color-resaltado);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 6px var(--color-resaltado));
+}
+
 .diagrama-mer[data-interaccion-en-curso='Borrado'] {
   .entidad:not(:has(.atributo:hover)), .atributo, .relacion polygon {
     &:hover {

@@ -31,6 +31,26 @@ export class VistaEntidad extends VistaElementoMER<Entidad> {
         this._campoNombre.value = this._entidad.nombre();
     }
 
+    borrarse() {
+        this._eliminarEntidad();
+    }
+
+    entidad() {
+        return this._entidad;
+    }
+
+    contenedorDeAtributos() {
+        return this._contenedorDeAtributos;
+    }
+
+    elementoDom() {
+        return this._elementoDom;
+    }
+
+    protected elementoDOM(): HTMLElement | SVGElement {
+        return this._elementoDom;
+    }
+
     private _crearElementoDom() {
         this._contenedorDeAtributos = createElement("div");
         this._campoNombre = this._crearInputCampoNombre();
@@ -74,23 +94,7 @@ export class VistaEntidad extends VistaElementoMER<Entidad> {
         ]);
     }
 
-    borrarse() {
-        this._eliminarEntidad();
-    }
-
     private _eliminarEntidad() {
         this._elementoDom.remove();
-    }
-
-    entidad() {
-        return this._entidad;
-    }
-
-    contenedorDeAtributos() {
-        return this._contenedorDeAtributos;
-    }
-
-    elementoDom() {
-        return this._elementoDom;
     }
 }

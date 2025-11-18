@@ -191,4 +191,25 @@ describe("[MER] Vista Modelo tests", () => {
         expect(entidad.atributos()).toHaveLength(1);
         expect(atributoApellido).toBeInTheDocument();
     });
+
+    it("Al seleccionar una entidad, entonces la misma queda seleccionada", async () => {
+        const [elementoPirata] = getElementoEntidades();
+
+        fireEvent.click(elementoPirata);
+
+        expect(vistaEditorMER.hayUnaInteraccionEnProceso()).toBeFalsy;
+        expect(elementoPirata).toHaveClass("seleccionado");
+    });
+
+    it("Cuando se clickea en un atributo, entonces el mismo queda seleccionado", () => {
+        const [elementoEntidad] = getElementoEntidades();
+        const atributoNombre = agregarAtributoEn(elementoEntidad, "nombre");
+        const atributoApellido = agregarAtributoEn(elementoEntidad, "apellido");
+
+        fireEvent.click(atributoApellido);
+
+        expect(vistaEditorMER.hayUnaInteraccionEnProceso()).toBeFalsy;
+        expect(atributoNombre.parentElement!).not.toHaveClass("seleccionado");
+        expect(atributoApellido.parentElement!).toHaveClass("seleccionado");
+    });
 });

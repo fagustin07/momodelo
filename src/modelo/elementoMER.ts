@@ -18,4 +18,8 @@ export abstract class ElementoMER {
     posicionarseEn(posicion: Posicion) {
         this._posicion = posicion;
     }
+
+    representaUnaEntidad() {
+        return false;
+    }
 }

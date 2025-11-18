@@ -44,5 +44,9 @@ export class Entidad extends ElementoMER {
     eliminarAtributo(atributoAEliminar: Atributo) {
         this._atributos = this._atributos.filter(atributo => atributoAEliminar !== atributo);
     }
+
+    representaUnaEntidad() {
+        return true;
+    }
 }
 

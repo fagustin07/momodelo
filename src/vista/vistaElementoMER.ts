@@ -14,6 +14,18 @@ export abstract class VistaElementoMER<E extends ElementoMER> {
 
     abstract centro(): Posicion;
 
+    protected abstract elementoDOM(): HTMLElement | SVGElement;
+
+    actualizarSelección(elementoSeleccionado: ElementoMER | null) {
+        const elementoDOM = this.elementoDOM();
+
+        if (elementoSeleccionado === this._elemento) {
+            elementoDOM.classList.add("seleccionado");
+        } else {
+            elementoDOM.classList.remove("seleccionado");
+        }
+    }
+
     protected hacerArrastrable(elementoDom: HTMLElement) {
         hacerArrastrable(elementoDom, {
             alAgarrar: () => {
