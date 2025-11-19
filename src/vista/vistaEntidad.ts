@@ -2,6 +2,8 @@ import {Entidad} from "../modelo/entidad";
 import {createElement} from "./dom/createElement";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
 import {VistaElementoMER} from "./vistaElementoMER.ts";
+import {VistaAtributo} from "./vistaAtributo.ts";
+import {Atributo} from "../modelo/atributo.ts";
 
 export class VistaEntidad extends VistaElementoMER<Entidad> {
     private readonly _elementoDom: HTMLElement;
@@ -15,6 +17,12 @@ export class VistaEntidad extends VistaElementoMER<Entidad> {
 
     private get _entidad() {
         return this._elemento;
+    }
+
+    generarVistaPara(atributo: Atributo) {
+        const atrVisual = new VistaAtributo(atributo, this._vistaEditorMER, this._entidad);
+        atrVisual.representarseEn(this.contenedorDeAtributos());
+        return atrVisual;
     }
 
     representarseEn(contenedor: HTMLElement) {
@@ -86,7 +94,8 @@ export class VistaEntidad extends VistaElementoMER<Entidad> {
             createElement("button", {
                 textContent: "+",
                 title: "Agregar atributo",
-                onclick: () => {
+                onclick: (evento: PointerEvent) => {
+                    evento.stopPropagation();
                     this._vistaEditorMER.emitirCreacionDeAtributoEn(this._entidad);
                 }
             }, []),

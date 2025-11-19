@@ -7,6 +7,8 @@ export abstract class ElementoMER {
         this._posicion = posicion;
     }
 
+    abstract nombre(): string;
+
     posicion() {
         return this._posicion;
     }
