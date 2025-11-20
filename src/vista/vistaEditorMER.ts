@@ -11,6 +11,7 @@ import {renderizarToast} from "../componentes/toast";
 import {RelacionRecursivaError} from "../servicios/errores";
 import {hacerArrastrable} from "../arrastrable.ts";
 import {ElementoMER} from "../modelo/elementoMER.ts";
+import {InteracciónMER, CreandoEntidad, SinInteracción} from "./interacciones";
 
 export class VistaEditorMER {
     readonly modelador: Modelador;
@@ -24,6 +25,7 @@ export class VistaEditorMER {
     private _entidadesVisuales: Map<Entidad, VistaEntidad> = new Map();
     private _relacionesVisuales: Map<Relacion, VistaRelacion> = new Map();
     private _atributosVisuales: Map<Atributo, VistaAtributo> = new Map();
+    private _interacción: InteracciónMER;
 
     constructor(modelador: Modelador, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
         this.modelador = modelador;
@@ -34,11 +36,11 @@ export class VistaEditorMER {
 
         document.addEventListener('keydown', (evento: KeyboardEvent) => {
             if (evento.key === "Escape") {
-                this._finalizarInteracción();
+                this.finalizarInteracción();
             }
         });
 
-        this.modelador.entidades.forEach(e => this._crearVistaEntidad(e));
+        this.modelador.entidades.forEach(e => this.crearVistaEntidad(e));
         this.modelador.relaciones.forEach(r => this._crearVistaRelacion(r));
 
         elementoRaiz.classList.add("diagrama-mer");
@@ -67,51 +69,16 @@ export class VistaEditorMER {
         if (document.activeElement instanceof HTMLInputElement) {
             document.activeElement.blur();
         }
+
+        this._interacción = new SinInteracción(this);
     }
 
-    reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[]): void {
-        this.limpiarVistaDelUsuario();
-        this.modelador.reemplazarModelo(nuevasEntidades, nuevasRelaciones);
-        if (document.activeElement instanceof HTMLInputElement) {
-            document.activeElement.blur();
-        }
+    hayUnaInteraccionEnProceso() {
+        return this._interacciónEnProceso !== InteraccionEnProceso.SinInteracciones;
     }
 
-    cancelarInteracción() {
-        this._finalizarInteracción();
-    }
-
-    agregarEntidadEn(posicion: Posicion, posicionActualVista: Posicion): void {
-        if (this._interacciónEnProceso === InteraccionEnProceso.CrearEntidad) {
-            const entidadNueva = this.modelador.generarEntidadUbicadaEn(posicion.minus(posicionActualVista));
-            this._crearVistaEntidad(entidadNueva);
-
-            this._entidadesVisuales.get(entidadNueva)!.elementoDom()
-                .style.transform = `translate(${posicionActualVista.x}px, ${posicionActualVista.y}px)`;
-            this._finalizarInteracción();
-            this._seleccionarA(entidadNueva);
-        }
-    }
-
-    renombrarEntidad(nuevoNombre: string, entidad: Entidad): void {
-        this.modelador.renombrarEntidad(nuevoNombre, entidad);
-    }
-
-    renombrarAtributo(nuevoNombre: string, atributoExistente: Atributo, entidad: Entidad): void {
-        this.modelador.renombrarAtributo(nuevoNombre, atributoExistente, entidad);
-    }
-
-    posicionarRelacionEn(relacion: Relacion, centro: { x: number; y: number }): void {
-        this.modelador.posicionarRelacionEn(relacion, centro);
-    }
-
-    renombrarRelacion(nuevoNombre: string, relacion: Relacion): void {
-        this.modelador.renombrarRelacion(nuevoNombre, relacion);
-    }
-
-    reposicionarElementosSVG(): void {
-        this._relacionesVisuales.forEach(relVisual => relVisual.reposicionarRelacion());
-        this._atributosVisuales.forEach(atrVisual => atrVisual.reposicionarConexión());
+    puedoCrearUnaEntidad(): boolean {
+        return this._interacciónEnProceso === InteraccionEnProceso.CrearEntidad;
     }
 
     centroDeEntidad(entidad: Entidad): Posicion {
@@ -126,46 +93,64 @@ export class VistaEditorMER {
         elementos.forEach(elemento => this._elementoSvg.appendChild(elemento));
     }
 
-    solicitudCrearEntidad(): void {
-        this._iniciarInteracción(InteraccionEnProceso.CrearEntidad);
-        const evento = new CustomEvent("momodelo-crear-entidad");
-        this._elementoRaíz.dispatchEvent(evento);
+    agregarEntidadEn(posicion: Posicion, posicionActualVista: Posicion): void {
+        this._interacción.clickEnDiagrama(this, posicion, posicionActualVista);
     }
 
-    solicitudDeBorrado(): void {
-        this._iniciarInteracción(InteraccionEnProceso.Borrado);
-        const evento = new CustomEvent("momodelo-borrar-elemento");
-        this._elementoRaíz.dispatchEvent(evento);
+    atributoEliminado(_entidad: Entidad, atributo: Atributo) {
+        this._atributosVisuales.get(atributo)!.borrarse();
+        this._atributosVisuales.delete(atributo);
     }
 
-    solicitudCrearRelacion(): void {
-        this._iniciarInteracción(InteraccionEnProceso.CrearRelacion);
-        const evento = new CustomEvent("momodelo-relacion-origen");
-        this._elementoRaíz.dispatchEvent(evento);
+    cancelarInteracción() {
+        this.finalizarInteracción();
     }
 
-    emitirSeleccionDeRelacion(relación: Relacion): void {
-        if (this._interacciónEnProceso === InteraccionEnProceso.Borrado) {
-            this.modelador.eliminarRelacion(relación);
-            this._finalizarInteracción();
-        }
-        if (this._interacciónEnProceso === InteraccionEnProceso.SinInteracciones) {
-            this._elementoSeleccionado = relación;
-            this._actualizarSelección(relación);
-        }
+    crearVistaEntidad(entidad: Entidad) {
+        const vista = new VistaEntidad(entidad, this);
+        vista.representarseEn(this._elementoRaíz);
+        this._entidadesVisuales.set(entidad, vista);
+
+        entidad.atributos().forEach((atr) => {
+            this._atributoCreado(entidad, atr)
+        });
+
+        this._entidadesVisuales.get(entidad)!.elementoDom()
+            .style.transform = `translate(${this._posicionActualVista.x}px, ${this._posicionActualVista.y}px)`;
+    }
+
+    deseleccionar() {
+        this._elementoSeleccionado = null;
+        this._actualizarSelección(null);
+    }
+
+    desplegarEvento(nombreEvento: string) {
+        const evento = new CustomEvent(nombreEvento);
+        this._elementoRaíz.dispatchEvent(evento);
     }
 
     emitirCreacionDeAtributoEn(entidad: Entidad, nombreAtributo: string = "Atributo"): void {
         const nuevo = this.modelador.agregarAtributoPara(entidad, nombreAtributo, coordenada(12, -75));
         this._atributoCreado(entidad, nuevo);
-        this._deseleccionar();
+        this.deseleccionar();
         this.emitirSeleccionDeAtributo(entidad, nuevo);
+    }
+
+    emitirSeleccionDeAtributo(entidad: Entidad, atributo: Atributo): void {
+        if (this._interacciónEnProceso === InteraccionEnProceso.Borrado) {
+            this.modelador.eliminarAtributo(atributo, entidad);
+            this.finalizarInteracción();
+        }
+        if (this._interacciónEnProceso === InteraccionEnProceso.SinInteracciones) {
+            this._elementoSeleccionado = atributo;
+            this._actualizarSelección(atributo);
+        }
     }
 
     emitirSeleccionDeEntidad(entidad: Entidad): void {
         if (this._interacciónEnProceso === InteraccionEnProceso.Borrado) {
             this.modelador.eliminarEntidad(entidad);
-            this._finalizarInteracción();
+            this.finalizarInteracción();
             return;
         }
         if (this._interacciónEnProceso === InteraccionEnProceso.CrearRelacion) {
@@ -176,32 +161,19 @@ export class VistaEditorMER {
         }
     }
 
-    emitirSeleccionDeAtributo(entidad: Entidad, atributo: Atributo): void {
+    emitirSeleccionDeRelacion(relación: Relacion): void {
         if (this._interacciónEnProceso === InteraccionEnProceso.Borrado) {
-            this.modelador.eliminarAtributo(atributo, entidad);
-            this._finalizarInteracción();
+            this.modelador.eliminarRelacion(relación);
+            this.finalizarInteracción();
         }
         if (this._interacciónEnProceso === InteraccionEnProceso.SinInteracciones) {
-            this._elementoSeleccionado = atributo;
-            this._actualizarSelección(atributo);
+            this._elementoSeleccionado = relación;
+            this._actualizarSelección(relación);
         }
-    }
-
-    puedoCrearUnaEntidad(): boolean {
-        return this._interacciónEnProceso === InteraccionEnProceso.CrearEntidad;
-    }
-
-    hayUnaInteraccionEnProceso() {
-        return this._interacciónEnProceso !== InteraccionEnProceso.SinInteracciones;
     }
 
     entidadCreada(entidad: Entidad) {
-        this._crearVistaEntidad(entidad);
-    }
-
-    entidadRenombrada(entidad: Entidad) {
-        this._entidadesVisuales.get(entidad)?.actualizarNombre?.();
-        this.reposicionarElementosSVG();
+        this.crearVistaEntidad(entidad);
     }
 
     entidadEliminada(entidad: Entidad, relacionesEliminadas: Relacion[]) {
@@ -212,13 +184,60 @@ export class VistaEditorMER {
         relacionesEliminadas.forEach(rel => this.relacionEliminada(rel));
     }
 
-    atributoEliminado(_entidad: Entidad, atributo: Atributo) {
-        this._atributosVisuales.get(atributo)!.borrarse();
-        this._atributosVisuales.delete(atributo);
+    entidadRenombrada(entidad: Entidad) {
+        this._entidadesVisuales.get(entidad)?.actualizarNombre?.();
+        this.reposicionarElementosSVG();
     }
 
-    relacionCreada(relacion: Relacion) {
-        this._crearVistaRelacion(relacion);
+    generarEntidadUbicadaEn(posicion: Posicion) {
+        return this.modelador.generarEntidadUbicadaEn(posicion);
+    }
+
+    finalizarInteracción() {
+        if (!this.seEstáCreandoUnElemento() && document.activeElement instanceof HTMLInputElement) {
+            document.activeElement.blur();
+        }
+
+        this._interacciónEnProceso = InteraccionEnProceso.SinInteracciones;
+        this._elementoRaíz.classList.remove("accion-en-curso");
+        this._elementoRaíz.dataset.interaccionEnCurso = this._interacciónEnProceso;
+        this.notificarFinalizaciónDeInteracción();
+
+        this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
+            .forEach(e => e.style.pointerEvents = "auto");
+    }
+
+    iniciarInteracción(interacciónAComenzar: InteraccionEnProceso) {
+        this._interacciónEnProceso = interacciónAComenzar;
+        this._elementoRaíz.classList.add("accion-en-curso");
+        this._elementoRaíz.dataset.interaccionEnCurso = this._interacciónEnProceso;
+
+        if (interacciónAComenzar === InteraccionEnProceso.CrearRelacion || interacciónAComenzar === InteraccionEnProceso.Borrado) {
+            this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
+                .forEach(e => e.style.pointerEvents = "auto");
+        } else {
+            this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
+                .forEach(e => e.style.pointerEvents = "none");
+        }
+
+        this.deseleccionar();
+    }
+
+    posicionarRelacionEn(relacion: Relacion, centro: { x: number; y: number }): void {
+        this.modelador.posicionarRelacionEn(relacion, centro);
+    }
+
+    reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[]): void {
+        this.limpiarVistaDelUsuario();
+        this.modelador.reemplazarModelo(nuevasEntidades, nuevasRelaciones);
+        if (document.activeElement instanceof HTMLInputElement) {
+            document.activeElement.blur();
+        }
+    }
+
+    relacionEliminada(relacion: Relacion) {
+        this._relacionesVisuales.get(relacion)?.borrarse();
+        this._relacionesVisuales.delete(relacion);
     }
 
     relacionRenombrada(relacion: Relacion) {
@@ -229,12 +248,66 @@ export class VistaEditorMER {
         this._relacionesVisuales.get(relacion)?.reposicionarRelacion();
     }
 
-    relacionEliminada(relacion: Relacion) {
-        this._relacionesVisuales.get(relacion)?.borrarse();
-        this._relacionesVisuales.delete(relacion);
+    renombrarAtributo(nuevoNombre: string, atributoExistente: Atributo, entidad: Entidad): void {
+        this.modelador.renombrarAtributo(nuevoNombre, atributoExistente, entidad);
+    }
+
+    renombrarEntidad(nuevoNombre: string, entidad: Entidad): void {
+        this.modelador.renombrarEntidad(nuevoNombre, entidad);
+    }
+
+    renombrarRelacion(nuevoNombre: string, relacion: Relacion): void {
+        this.modelador.renombrarRelacion(nuevoNombre, relacion);
     }
 
     // =================== PRIVATE ===================
+    reposicionarElementosSVG(): void {
+        this._relacionesVisuales.forEach(relVisual => relVisual.reposicionarRelacion());
+        this._atributosVisuales.forEach(atrVisual => atrVisual.reposicionarConexión());
+    }
+
+    seleccionarA(elementoMER: ElementoMER) {
+        this._elementoSeleccionado = elementoMER;
+        this._actualizarSelección(elementoMER);
+    }
+
+    solicitudCrearEntidad(): void {
+        this._interacción = new CreandoEntidad(this);
+    }
+
+    solicitudCrearRelacion(): void {
+        this.iniciarInteracción(InteraccionEnProceso.CrearRelacion);
+        const evento = new CustomEvent("momodelo-relacion-origen");
+        this._elementoRaíz.dispatchEvent(evento);
+    }
+
+    solicitudDeBorrado(): void {
+        this.iniciarInteracción(InteraccionEnProceso.Borrado);
+        const evento = new CustomEvent("momodelo-borrar-elemento");
+        this._elementoRaíz.dispatchEvent(evento);
+    }
+
+    private seEstáCreandoUnElemento() {
+        return this._interacciónEnProceso === InteraccionEnProceso.CrearEntidad ||
+            this._interacciónEnProceso === InteraccionEnProceso.CrearRelacion;
+    }
+
+    private _todasLasVistas() {
+        return [
+            ...this._entidadesVisuales.values(),
+            ...this._relacionesVisuales.values(),
+            ...this._atributosVisuales.values(),
+        ];
+    }
+
+    private _actualizarSelección(elementoMER: ElementoMER | null) {
+        this._todasLasVistas().forEach(v => v.actualizarSelección(elementoMER));
+    }
+
+    private _actualizarViewBoxSvg() {
+        const svgBoundingBox = this._elementoSvg.getBoundingClientRect();
+        this._elementoSvg.setAttribute("viewBox", `${-this._posicionActualVista.x} ${-this._posicionActualVista.y} ${svgBoundingBox.width} ${svgBoundingBox.height}`);
+    }
 
     private _atributoCreado(entidad: Entidad, atributo: Atributo) {
         this._atributosVisuales.set(
@@ -253,46 +326,6 @@ export class VistaEditorMER {
         this._actualizarViewBoxSvg();
     }
 
-    private _actualizarViewBoxSvg() {
-        const svgBoundingBox = this._elementoSvg.getBoundingClientRect();
-        this._elementoSvg.setAttribute("viewBox", `${-this._posicionActualVista.x} ${-this._posicionActualVista.y} ${svgBoundingBox.width} ${svgBoundingBox.height}`);
-    }
-
-    private seleccionarEntidad(entidad: Entidad): void {
-        try {
-            if (this._interacciónEnProceso === InteraccionEnProceso.CrearRelacion) {
-                if (this._elementoSeleccionado === null) {
-                    this._elementoSeleccionado = entidad;
-                    const evento = new CustomEvent("momodelo-relacion-destino");
-                    this._elementoRaíz.dispatchEvent(evento);
-                } else {
-                    const relacion = this.modelador.crearRelacion(this._elementoSeleccionado as Entidad, entidad);
-                    this._crearVistaRelacion(relacion);
-                    this._finalizarInteracción();
-                    this.emitirSeleccionDeRelacion(relacion);
-                }
-            }
-        } catch (error) {
-            if (error instanceof RelacionRecursivaError) {
-                renderizarToast(this._elementoRaíz, error.message, {variante: "error"});
-                this._finalizarInteracción();
-            } else {
-                throw error;
-            }
-        }
-
-    }
-
-    private _crearVistaEntidad(entidad: Entidad) {
-        const vista = new VistaEntidad(entidad, this);
-        vista.representarseEn(this._elementoRaíz);
-        this._entidadesVisuales.set(entidad, vista);
-
-        entidad.atributos().forEach((atr) => {
-            this._atributoCreado(entidad, atr)
-        });
-    }
-
     private _crearVistaRelacion(relacion: Relacion) {
         const [entidadOrigen, entidadDestino] = relacion.entidades();
 
@@ -301,50 +334,14 @@ export class VistaEditorMER {
         this._relacionesVisuales.set(relacion, vista);
     }
 
-    private _iniciarInteracción(interacciónAComenzar: InteraccionEnProceso) {
-        this._interacciónEnProceso = interacciónAComenzar;
-        this._elementoRaíz.classList.add("accion-en-curso");
-
-        this._elementoRaíz.dataset.interaccionEnCurso = this._interacciónEnProceso;
-
-        if (interacciónAComenzar === InteraccionEnProceso.CrearRelacion || interacciónAComenzar === InteraccionEnProceso.Borrado) {
-            this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
-                .forEach(e => e.style.pointerEvents = "auto");
-        } else {
-            this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
-                .forEach(e => e.style.pointerEvents = "none");
-        }
-
-        this._deseleccionar();
-    }
-
-    private _finalizarInteracción() {
-        if (!this.seEstáCreandoUnElemento() && document.activeElement instanceof HTMLInputElement) {
-            document.activeElement.blur();
-        }
-
-        this._interacciónEnProceso = InteraccionEnProceso.SinInteracciones;
-        this._elementoRaíz.classList.remove("accion-en-curso");
-        this._elementoRaíz.dataset.interaccionEnCurso = this._interacciónEnProceso;
-        this.notificarFinalizaciónDeInteracción();
-
-        this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
-            .forEach(e => e.style.pointerEvents = "auto");
-    }
-
-    private seEstáCreandoUnElemento() {
-        return this._interacciónEnProceso === InteraccionEnProceso.CrearEntidad ||
-            this._interacciónEnProceso === InteraccionEnProceso.CrearRelacion;
+    private limpiarVistaDelUsuario() {
+        this.reiniciarVisual();
+        this.reiniciarDiccionarios();
     }
 
     private notificarFinalizaciónDeInteracción() {
         this._elementoRaíz.dispatchEvent(new CustomEvent("fin-interaccion-mer"));
-        this._deseleccionar();
-    }
-
-    private limpiarVistaDelUsuario() {
-        this.reiniciarVisual();
-        this.reiniciarDiccionarios();
+        this.deseleccionar();
     }
 
     private reiniciarDiccionarios() {
@@ -360,25 +357,27 @@ export class VistaEditorMER {
         this._cambiarPosiciónActual(coordenada(0, 0));
     }
 
-    private _deseleccionar() {
-        this._elementoSeleccionado = null;
-        this._actualizarSelección(null);
-    }
-
-    private _seleccionarA(elementoMER: ElementoMER) {
-        this._elementoSeleccionado = elementoMER;
-        this._actualizarSelección(elementoMER);
-    }
-
-    private _actualizarSelección(elementoMER: ElementoMER | null) {
-        this._todasLasVistas().forEach(v => v.actualizarSelección(elementoMER));
-    }
-
-    private _todasLasVistas() {
-        return [
-            ...this._entidadesVisuales.values(),
-            ...this._relacionesVisuales.values(),
-            ...this._atributosVisuales.values(),
-        ];
+    private seleccionarEntidad(entidad: Entidad): void {
+        try {
+            if (this._interacciónEnProceso === InteraccionEnProceso.CrearRelacion) {
+                if (this._elementoSeleccionado === null) {
+                    this._elementoSeleccionado = entidad;
+                    const evento = new CustomEvent("momodelo-relacion-destino");
+                    this._elementoRaíz.dispatchEvent(evento);
+                } else {
+                    const relacion = this.modelador.crearRelacion(this._elementoSeleccionado as Entidad, entidad);
+                    this._crearVistaRelacion(relacion);
+                    this.finalizarInteracción();
+                    this.emitirSeleccionDeRelacion(relacion);
+                }
+            }
+        } catch (error) {
+            if (error instanceof RelacionRecursivaError) {
+                renderizarToast(this._elementoRaíz, error.message, {variante: "error"});
+                this.finalizarInteracción();
+            } else {
+                throw error;
+            }
+        }
     }
 }
