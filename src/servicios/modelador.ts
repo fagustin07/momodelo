@@ -81,7 +81,7 @@ export class Modelador {
         this._vista?.relacionReposicionada(relacion);
     }
 
-    eliminarRelacion(relacion: Relacion) {
+    eliminarRelación(relacion: Relacion) {
         this.relaciones = this.relaciones.filter(rel => rel !== relacion);
         this._vista?.relacionEliminada(relacion);
     }
