@@ -45,6 +45,10 @@ export class VistaEditorMER {
         elementoRaiz.prepend(this._elementoSvg);
 
         hacerArrastrable(this._elementoSvg as any, {
+            alAgarrar: () => {
+                this.cancelarInteracción();
+                this.desenfocarElementoInput();
+            },
             alArrastrar: (_posicionCursor, delta) => {
                 this.cancelarInteracción();
                 this._cambiarPosiciónActual(this._posicionActualVista.plus(delta));
@@ -119,6 +123,12 @@ export class VistaEditorMER {
     deseleccionar() {
         this._elementoSeleccionado = null;
         this._actualizarSelección(null);
+    }
+
+    desenfocarElementoInput() {
+        if (document.activeElement instanceof HTMLInputElement) {
+            document.activeElement.blur();
+        }
     }
 
     desplegarEvento(nombreEvento: string) {
