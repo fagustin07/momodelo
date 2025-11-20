@@ -27,7 +27,6 @@ export class BorrandoElemento extends InteracciónMER {
         vistaEditorMER.finalizarInteracción();
     }
 
-
     clickEnAtributo(entidad: Entidad, atributo: Atributo, vistaEditorMER: VistaEditorMER) {
         vistaEditorMER.borrarAtributo(atributo, entidad);
         vistaEditorMER.finalizarInteracción();

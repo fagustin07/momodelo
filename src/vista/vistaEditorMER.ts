@@ -171,14 +171,10 @@ export class VistaEditorMER {
     }
 
     finalizarInteracción() {
-        if (!this.seEstáCreandoUnElemento() && document.activeElement instanceof HTMLInputElement) {
-            document.activeElement.blur();
-        }
-
         this._interacciónEnProceso = InteraccionEnProceso.SinInteracciones;
         this._elementoRaíz.classList.remove("accion-en-curso");
         this._elementoRaíz.dataset.interaccionEnCurso = this._interacciónEnProceso;
-        this._notificarFinalizaciónDeInteracción();
+        this._elementoRaíz.dispatchEvent(new CustomEvent("fin-interaccion-mer"));
 
         this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
             .forEach(e => e.style.pointerEvents = "auto");
@@ -268,11 +264,6 @@ export class VistaEditorMER {
         this._interacción = new BorrandoElemento(this);
     }
 
-    private seEstáCreandoUnElemento() {
-        return this._interacciónEnProceso === InteraccionEnProceso.CrearEntidad ||
-            this._interacciónEnProceso === InteraccionEnProceso.CrearRelacion;
-    }
-
     private _todasLasVistas() {
         return [
             ...this._entidadesVisuales.values(),
@@ -324,11 +315,6 @@ export class VistaEditorMER {
     private _limpiarVistaDelUsuario() {
         this._reiniciarVisual();
         this._reiniciarDiccionarios();
-    }
-
-    private _notificarFinalizaciónDeInteracción() {
-        this._elementoRaíz.dispatchEvent(new CustomEvent("fin-interaccion-mer"));
-        this.deseleccionar();
     }
 
     private _reiniciarDiccionarios() {
