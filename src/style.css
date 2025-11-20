@@ -99,12 +99,22 @@ main {
     box-shadow: 5px 5px 0 0 rgba(0, 0, 0, 0.5);
   }
 
-  .entidad:hover button {
-    display: inline;
+  .entidad:hover {
+    input {
+      cursor: pointer;
+    }
+
+    button {
+      display: inline;
+    }
   }
 
   .entidad button {
     display: none;
+  }
+
+  .relacion:hover input {
+    cursor: pointer;
   }
 }
 
