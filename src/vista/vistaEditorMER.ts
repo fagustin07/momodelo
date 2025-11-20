@@ -14,7 +14,7 @@ import {ElementoMER} from "../modelo/elementoMER.ts";
 import {InteracciónMER, CreandoEntidad, SinInteracción} from "./interacciones";
 
 export class VistaEditorMER {
-    readonly modelador: Modelador;
+    modelador: Modelador;
 
     private _interacciónEnProceso: InteraccionEnProceso = InteraccionEnProceso.SinInteracciones;
     private _elementoSeleccionado: ElementoMER | null = null;
@@ -32,7 +32,6 @@ export class VistaEditorMER {
         this._elementoRaíz = elementoRaiz;
         this._elementoSvg = elementoSvg;
 
-        this.modelador.conectarVista(this);
 
         document.addEventListener('keydown', (evento: KeyboardEvent) => {
             if (evento.key === "Escape") {
@@ -40,8 +39,7 @@ export class VistaEditorMER {
             }
         });
 
-        this.modelador.entidades.forEach(e => this.crearVistaEntidad(e));
-        this.modelador.relaciones.forEach(r => this._crearVistaRelacion(r));
+        this._dibujarModelo();
 
         elementoRaiz.classList.add("diagrama-mer");
         elementoRaiz.prepend(this._elementoSvg);
@@ -229,7 +227,9 @@ export class VistaEditorMER {
 
     reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[]): void {
         this.limpiarVistaDelUsuario();
-        this.modelador.reemplazarModelo(nuevasEntidades, nuevasRelaciones);
+        this.modelador = new Modelador(nuevasEntidades, nuevasRelaciones);
+        this._dibujarModelo();
+
         if (document.activeElement instanceof HTMLInputElement) {
             document.activeElement.blur();
         }
@@ -332,6 +332,12 @@ export class VistaEditorMER {
         const vista = new VistaRelacion(entidadOrigen, entidadDestino, relacion, this);
         vista.representarse();
         this._relacionesVisuales.set(relacion, vista);
+    }
+
+    private _dibujarModelo() {
+        this.modelador.conectarVista(this);
+        this.modelador.entidades.forEach(e => this.crearVistaEntidad(e));
+        this.modelador.relaciones.forEach(r => this._crearVistaRelacion(r));
     }
 
     private limpiarVistaDelUsuario() {
