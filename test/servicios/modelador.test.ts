@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Entidad } from "../../src/modelo/entidad.ts";
 import { coordenada } from "../../src/posicion.ts";
 import {Modelador} from "../../src/servicios/modelador.ts";
-import {RelacionRecursivaError} from "../../src/servicios/errores.ts";
+import {RelaciónExistenteError, RelaciónRecursivaError} from "../../src/servicios/errores.ts";
 
 describe("[MER] Modelador", () => {
 
@@ -37,9 +37,35 @@ describe("[MER] Modelador", () => {
 
         expect(() => {
             modelador.crearRelacion(entidad, entidad);
-        }).toThrow(RelacionRecursivaError);
+        }).toThrow(RelaciónRecursivaError);
 
         expect(modelador.relaciones.length).toEqual(0);
+    });
+
+    it("Aún no es posible crear una relación recursiva", () => {
+        modelador = new Modelador();
+
+        const entidad = crearEntidadLlamada("Pirata");
+
+        expect(() => {
+            modelador.crearRelacion(entidad, entidad);
+        }).toThrow(RelaciónRecursivaError);
+
+        expect(modelador.relaciones.length).toEqual(0);
+    });
+
+
+    it("Aún no es posible crear dos relaciones con las mismas entidades", () => {
+        modelador = new Modelador();
+        const entidad = crearEntidadLlamada("Pirata");
+        const entidad2 = crearEntidadLlamada("Capitán");
+        modelador.crearRelacion(entidad, entidad2);
+
+        expect(() => {
+            modelador.crearRelacion(entidad, entidad2);
+        }).toThrow(RelaciónExistenteError);
+
+        expect(modelador.relaciones.length).toEqual(1);
     });
 
     function crearEntidadLlamada(nombreEntidad: string): Entidad {

@@ -1,9 +1,9 @@
 import {Entidad} from "../modelo/entidad";
 import {Atributo} from "../modelo/atributo";
 import {Relacion} from "../modelo/relacion";
-import {coordenada, Posicion} from "../posicion";
+import {coordenada, coordenadaInicial, Posicion} from "../posicion";
 import type {VistaEditorMER} from "../vista/vistaEditorMER";
-import {RelacionRecursivaError} from "./errores";
+import {RelaciónExistenteError, RelaciónRecursivaError} from "./errores";
 
 export class Modelador {
     entidades: Entidad[] = [];
@@ -21,16 +21,6 @@ export class Modelador {
     conectarVista(vistaEditorMER: VistaEditorMER) {
         this._vista = vistaEditorMER;
     }
-
-    reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[]) {
-        this.entidades = [];
-        this.relaciones = [];
-        nuevasEntidades.forEach(ent => this._registrarEntidad(ent));
-        nuevasRelaciones.forEach(rel =>
-            this.crearRelacion(rel.entidades()[0], rel.entidades()[1], rel.nombre(), rel.posicion())
-        );
-    }
-
 
     // ========= ENTIDADES =========
 
@@ -67,11 +57,9 @@ export class Modelador {
 
     // ========= RELACIONES =========
 
-    crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string = "RELACION", pos: { x: number; y: number } = {x: 0, y: 0}) {
-        if (entidadOrigen === entidadDestino) {
-            throw new RelacionRecursivaError();
-        }
-        const nuevaRelacion = new Relacion(nombre, entidadOrigen, entidadDestino, coordenada(pos.x, pos.y));
+    crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string = "RELACION", posicion: Posicion = coordenadaInicial()) {
+        this._realizarValidacionesParaCrearRelaciónEntre(entidadOrigen, entidadDestino);
+        const nuevaRelacion = new Relacion(nombre, entidadOrigen, entidadDestino, coordenada(posicion.x, posicion.y));
         this.relaciones.push(nuevaRelacion);
         return nuevaRelacion;
     }
@@ -91,9 +79,13 @@ export class Modelador {
         this._vista?.relacionRenombrada(relacion);
     }
 
-
     agregarAtributoPara(entidad: Entidad, nombreAtributo: string = "Atributo", posicion: Posicion) {
         return entidad.agregarAtributo(nombreAtributo, posicion);
+    }
+
+    private _realizarValidacionesParaCrearRelaciónEntre(entidadOrigen: Entidad, entidadDestino: Entidad) {
+        this._validarSiEsRelaciónRecursiva(entidadOrigen, entidadDestino);
+        this._validarSiExisteRelaciónEntre(entidadOrigen, entidadDestino);
     }
 
     private _registrarEntidad(entidad: Entidad) {
@@ -114,8 +106,25 @@ export class Modelador {
         this.entidades = this.entidades.filter(e => e !== entidad);
     }
 
+    private _existeRelaciónEntre(entidadOrigen: Entidad, entidadDestino: Entidad) {
+        return this.relaciones.some(rel => rel.contieneA(entidadOrigen) && rel.contieneA(entidadDestino));
+    }
+
+
     private _notificarEliminacionEntidad(entidad: Entidad, relacionesEliminadas: Relacion[]): void {
         this._vista?.entidadEliminada(entidad, relacionesEliminadas);
+    }
+
+    private _validarSiEsRelaciónRecursiva(entidadOrigen: Entidad, entidadDestino: Entidad) {
+        if (entidadOrigen === entidadDestino) {
+            throw new RelaciónRecursivaError();
+        }
+    }
+
+    private _validarSiExisteRelaciónEntre(entidadOrigen: Entidad, entidadDestino: Entidad) {
+        if (this._existeRelaciónEntre(entidadOrigen, entidadDestino)) {
+            throw new RelaciónExistenteError();
+        }
     }
 
 }

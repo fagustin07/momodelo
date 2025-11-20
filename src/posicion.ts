@@ -36,3 +36,7 @@ export class Posicion {
 export function coordenada(x: number, y: number) {
     return new Posicion(x, y);
 }
+
+export function coordenadaInicial() {
+    return new Posicion(0,0);
+}

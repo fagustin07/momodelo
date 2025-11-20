@@ -8,7 +8,7 @@ import {VistaEntidad} from "./vistaEntidad";
 import {VistaRelacion} from "./vistaRelacion";
 import {VistaAtributo} from "./vistaAtributo";
 import {renderizarToast} from "../componentes/toast";
-import {RelacionRecursivaError} from "../servicios/errores";
+import {MomodeloErrorImplementaciónPlanificada} from "../servicios/errores";
 import {hacerArrastrable} from "../arrastrable.ts";
 import {ElementoMER} from "../modelo/elementoMER.ts";
 import {BorrandoElemento, CreandoEntidad, InteracciónMER, SinInteracción} from "./interacciones";
@@ -345,8 +345,8 @@ export class VistaEditorMER {
                 }
             }
         } catch (error) {
-            if (error instanceof RelacionRecursivaError) {
-                renderizarToast(this._elementoRaíz, error.message, {variante: "error"});
+            if (error instanceof MomodeloErrorImplementaciónPlanificada) {
+                renderizarToast(this._elementoRaíz, error.message);
                 this.finalizarInteracción();
             } else {
                 throw error;

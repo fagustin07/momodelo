@@ -2,10 +2,22 @@ import {beforeEach, describe, expect, it} from "vitest";
 import userEvent from "@testing-library/user-event";
 import {init} from "../../src/vista";
 import {Entidad} from "../../src/modelo/entidad";
-import {coordenada} from "../../src/posicion";
+import {coordenada, Posicion} from "../../src/posicion";
 import "../../src/style.css";
-import {fireEvent, screen} from "@testing-library/dom";
+import {fireEvent, screen, within} from "@testing-library/dom";
 import {VistaEditorMER} from "../../src/vista/vistaEditorMER.ts";
+
+function agregarEntidadVisualEn(elementoRaiz: HTMLElement, posicion: Posicion) {
+    const botonAgregarEntidad = screen.getByRole('button', {name: /\+entidad/i});
+
+    botonAgregarEntidad.click();
+
+    fireEvent.click(elementoRaiz, posicion);
+
+    const entidades = getElementoEntidades();
+    const nuevaEntidad = entidades[entidades.length - 1];
+    return within(nuevaEntidad).getByTitle<HTMLInputElement>("Nombre Entidad");
+}
 
 function getElementoEntidades() {
     return [...document.querySelectorAll<HTMLElement>(".entidad")];
@@ -42,17 +54,18 @@ describe("[MER] Vista Relaciones", () => {
     let humorista: Entidad;
     let entidades: Entidad[];
     let vistaEditorMER: VistaEditorMER;
+    let elementoRaíz: HTMLElement;
 
     beforeEach(() => {
         document.body.innerHTML = "";
-        const raiz = document.createElement("div");
-        document.body.appendChild(raiz);
+        elementoRaíz = document.createElement("div");
+        document.body.appendChild(elementoRaíz);
 
         personaje = new Entidad("PERSONAJE", [], coordenada(100, 100));
         humorista = new Entidad("HUMORISTA", [], coordenada(300, 500));
         entidades = [personaje, humorista];
 
-        vistaEditorMER = init(raiz, entidades, []);
+        vistaEditorMER = init(elementoRaíz, entidades, []);
     });
 
     it("Dado dos entidades, cuando se seleccionan ambas, entonces se crea una relación entre ellas", async () => {
@@ -84,8 +97,9 @@ describe("[MER] Vista Relaciones", () => {
 
     it("Se puede crear más de una relación", async () => {
         const [elementoPersonaje, elementoHumorista] = getElementoEntidades();
+        const elementoNuevaEntidad = agregarEntidadVisualEn(elementoRaíz, coordenada(100, 200));
         const elementoRelacionRepresenta = realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista, "REPRESENTA");
-        const elementoRelacionAma = realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista, "AMA");
+        const elementoRelacionAma = realizarGestoParaRelacionarA(elementoNuevaEntidad, elementoHumorista, "AMA");
 
         expect(elementoRelacionRepresenta).toBeInTheDocument();
         expect(elementoRelacionAma).toBeInTheDocument();
@@ -105,7 +119,8 @@ describe("[MER] Vista Relaciones", () => {
 
     it("Al eliminar una relacion y clickear en otra, solo se elimina la primer relacion", async () => {
         const [elementoPersonaje, elementoHumorista] = getElementoEntidades();
-        const elementoRelacionRepresenta = realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista, "REPRESENTA");
+        const elementoNuevaEntidad = agregarEntidadVisualEn(elementoRaíz, coordenada(100, 200));
+        const elementoRelacionRepresenta = realizarGestoParaRelacionarA(elementoNuevaEntidad, elementoHumorista, "REPRESENTA");
         const elementoRelacionAma = realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista, "AMA");
         realizarGestoEliminarSobre(elementoRelacionRepresenta);
 
@@ -141,7 +156,8 @@ describe("[MER] Vista Relaciones", () => {
 
     it("Al seleccionar una relación sin interacciones en proceso, entonces dicha relación queda seleccionada", async () => {
         const [elementoPersonaje, elementoHumorista] = getElementoEntidades();
-        const inputRelacionRepresenta = realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista, "REPRESENTA");
+        const elementoNuevaEntidad = agregarEntidadVisualEn(elementoRaíz, coordenada(100, 200));
+        const inputRelacionRepresenta = realizarGestoParaRelacionarA(elementoPersonaje, elementoNuevaEntidad, "REPRESENTA");
         const inputRelacionAma = realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista, "AMA");
 
         fireEvent.click(inputRelacionAma);
