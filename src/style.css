@@ -19,6 +19,10 @@ main {
   --color-resaltado: #3b82f6;
   outline: 3px solid var(--color-resaltado);
   filter: drop-shadow(0 0 6px var(--color-resaltado));
+
+  input {
+    cursor: none !important;
+  }
   border-radius: 4px;
 }
 
@@ -27,6 +31,10 @@ main {
   stroke: var(--color-resaltado);
   stroke-width: 3;
   filter: drop-shadow(0 0 6px var(--color-resaltado));
+}
+
+.relacion.seleccionado input {
+  cursor: none !important;
 }
 
 .diagrama-mer[data-interaccion-en-curso='Borrado'] {
@@ -153,6 +161,7 @@ main {
 
     field-sizing: content;
     min-width: 50px;
+    outline: none;
     text-align: center;
     border: none;
   }
@@ -177,6 +186,14 @@ main {
       field-sizing: content;
     }
   }
+}
+
+.relacion input {
+  outline: none;
+}
+
+.rombo-foreign-object {
+  cursor: auto;
 }
 
 .relacion polygon {
