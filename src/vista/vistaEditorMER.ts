@@ -210,6 +210,10 @@ export class VistaEditorMER {
             .forEach(e => e.style.pointerEvents = "auto");
     }
 
+    marcarEntidadOrigen(entidad: Entidad) {
+        this._elementoSeleccionado = entidad;
+    }
+
     ignorarEventosDesdeEntidadesVisuales() {
         this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
             .forEach(e => e.style.pointerEvents = "none");
@@ -269,9 +273,7 @@ export class VistaEditorMER {
     }
 
     solicitudCrearRelacion(): void {
-        this.iniciarInteracción(InteraccionEnProceso.CrearRelacion);
-        const evento = new CustomEvent("momodelo-relacion-origen");
-        this._elementoRaíz.dispatchEvent(evento);
+        this._interacción = new SeleccionandoEntidadOrigenRelación(this);
     }
 
     solicitudDeBorrado(): void {
@@ -348,9 +350,7 @@ export class VistaEditorMER {
         try {
             if (this._interacciónEnProceso === InteraccionEnProceso.CrearRelacion) {
                 if (this._elementoSeleccionado === null) {
-                    this._elementoSeleccionado = entidad;
-                    const evento = new CustomEvent("momodelo-relacion-destino");
-                    this._elementoRaíz.dispatchEvent(evento);
+                    this._interacción.clickEnEntidad(entidad, this);
                 } else {
                     const relacion = this.modelador.crearRelacion(this._elementoSeleccionado as Entidad, entidad);
                     this._crearVistaRelacion(relacion);
