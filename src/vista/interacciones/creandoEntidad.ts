@@ -31,7 +31,7 @@ export class CreandoEntidad extends InteracciónMER {
         return posiciónModelo.minus(posiciónVistaUsuario);
     }
 
-    nombre(): string {
+    nombre() {
         return "Crear Entidad";
     }
 }

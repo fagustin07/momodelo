@@ -23,7 +23,7 @@ export class SeleccionandoEntidadOrigenRelación extends InteracciónMER {
 
     clickEnAtributo(_entidad: Entidad, _atributo: Atributo, _vistaEditorMER: VistaEditorMER) { }
 
-    nombre(): string {
+    nombre() {
         return "Crear Relacion";
     }
 }

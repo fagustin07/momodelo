@@ -31,7 +31,7 @@ export class BorrandoElemento extends InteracciónMER {
         vistaEditorMER.finalizarInteracción();
     }
 
-    nombre(): string {
+    nombre() {
         return "Borrado";
     }
 }

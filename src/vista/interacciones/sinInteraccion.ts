@@ -25,11 +25,11 @@ export class SinInteracción extends InteracciónMER {
         vistaEditorMER.seleccionarA(atributo);
     }
 
-    estáEnProceso(): boolean {
+    estáEnProceso() {
         return false;
     }
 
-    nombre(): string {
+    nombre() {
         return "Sin Interacciones";
     }
 }
