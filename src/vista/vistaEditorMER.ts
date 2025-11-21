@@ -3,12 +3,10 @@ import {Atributo} from "../modelo/atributo";
 import {Relacion} from "../modelo/relacion";
 import {coordenada, Posicion} from "../posicion";
 import {Modelador} from "../servicios/modelador";
-import {InteraccionEnProceso} from "../servicios/accionEnProceso";
 import {VistaEntidad} from "./vistaEntidad";
 import {VistaRelacion} from "./vistaRelacion";
 import {VistaAtributo} from "./vistaAtributo";
 import {renderizarToast} from "../componentes/toast";
-import {MomodeloErrorImplementaciónPlanificada} from "../servicios/errores";
 import {hacerArrastrable} from "../arrastrable.ts";
 import {ElementoMER} from "../modelo/elementoMER.ts";
 import {InteracciónMER} from "./interacciones/interaccion.ts";
@@ -21,8 +19,6 @@ import {handlearError} from "../servicios/handlearError.ts";
 
 export class VistaEditorMER {
     modelador: Modelador;
-
-    private _interacciónEnProceso: InteraccionEnProceso = InteraccionEnProceso.SinInteracciones;
     private _elementoSeleccionado: ElementoMER | null = null;
     private _posicionActualVista = coordenada(0, 0);
     private readonly _elementoRaíz: HTMLElement;
@@ -77,7 +73,7 @@ export class VistaEditorMER {
     }
 
     hayUnaInteraccionEnProceso() {
-        return this._interacciónEnProceso !== InteraccionEnProceso.SinInteracciones;
+        return this._interacción.estáEnProceso();
     }
 
     centroDeEntidad(entidad: Entidad): Posicion {
@@ -150,8 +146,7 @@ export class VistaEditorMER {
     }
 
     notificarInteracción(nombreInteracción: string) {
-        const evento = new CustomEvent(nombreInteracción);
-        this._elementoRaíz.dispatchEvent(evento);
+        this._elementoRaíz.dispatchEvent(new CustomEvent(nombreInteracción));
     }
 
     emitirCreacionDeAtributoEn(entidad: Entidad, nombreAtributo: string = "Atributo"): void {
@@ -199,24 +194,18 @@ export class VistaEditorMER {
     }
 
     finalizarInteracción() {
-        this._interacciónEnProceso = InteraccionEnProceso.SinInteracciones;
         this._elementoRaíz.classList.remove("accion-en-curso");
-        this._elementoRaíz.dataset.interaccionEnCurso = this._interacciónEnProceso;
-        this._elementoRaíz.dispatchEvent(new CustomEvent("fin-interaccion-mer"));
+        this._elementoRaíz.dataset.interaccionEnCurso = this._interacción.nombre();
+        this.notificarInteracción("fin-interaccion-mer")
 
         this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
             .forEach(e => e.style.pointerEvents = "auto");
         this._interacción = new SinInteracción(this);
     }
 
-    iniciarInteracción(interacciónAComenzar: InteraccionEnProceso) {
-        this._interacciónEnProceso = interacciónAComenzar;
+    iniciarInteracción() {
         this._elementoRaíz.classList.add("accion-en-curso");
-        this._elementoRaíz.dataset.interaccionEnCurso = this._interacciónEnProceso;
-
-        if (interacciónAComenzar === InteraccionEnProceso.CrearRelacion) {
-            this.capturarEventosDesdeEntidadesVisuales();
-        }
+        this._elementoRaíz.dataset.interaccionEnCurso = this._interacción.nombre();
     }
 
     capturarEventosDesdeEntidadesVisuales() {

@@ -1,5 +1,4 @@
 import {VistaEditorMER} from "../vistaEditorMER.ts";
-import {InteraccionEnProceso} from "../../servicios/accionEnProceso.ts";
 import {Posicion} from "../../posicion.ts";
 import {InteracciónMER} from "./interaccion.ts";
 import {Entidad} from "../../modelo/entidad.ts";
@@ -11,7 +10,7 @@ export class CreandoEntidad extends InteracciónMER {
     protected inicializarsePara(vistaEditorMER: VistaEditorMER) {
         vistaEditorMER.deseleccionar();
         vistaEditorMER.ignorarEventosDesdeEntidadesVisuales();
-        vistaEditorMER.iniciarInteracción(InteraccionEnProceso.CrearEntidad);
+        vistaEditorMER.iniciarInteracción();
         vistaEditorMER.notificarInteracción("momodelo-crear-entidad");
     }
 
@@ -30,5 +29,9 @@ export class CreandoEntidad extends InteracciónMER {
 
     private calcularPosiciónEnDiagrama(posiciónModelo: Posicion, posiciónVistaUsuario: Posicion) {
         return posiciónModelo.minus(posiciónVistaUsuario);
+    }
+
+    nombre(): string {
+        return "Crear Entidad";
     }
 }

@@ -24,4 +24,12 @@ export class SinInteracción extends InteracciónMER {
     clickEnAtributo(_entidad: Entidad, atributo: Atributo, vistaEditorMER: VistaEditorMER): void {
         vistaEditorMER.seleccionarA(atributo);
     }
+
+    estáEnProceso(): boolean {
+        return false;
+    }
+
+    nombre(): string {
+        return "Sin Interacciones";
+    }
 }

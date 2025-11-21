@@ -2,7 +2,6 @@ import {InteracciónMER} from "./interaccion.ts";
 import {VistaEditorMER} from "../vistaEditorMER.ts";
 import {Posicion} from "../../posicion.ts";
 import {Entidad} from "../../modelo/entidad.ts";
-import {InteraccionEnProceso} from "../../servicios/accionEnProceso.ts";
 import {Atributo} from "../../modelo/atributo.ts";
 import {Relacion} from "../../modelo/relacion.ts";
 
@@ -10,7 +9,7 @@ export class BorrandoElemento extends InteracciónMER {
 
     protected inicializarsePara(vistaEditorMER: VistaEditorMER) {
         vistaEditorMER.deseleccionar();
-        vistaEditorMER.iniciarInteracción(InteraccionEnProceso.Borrado);
+        vistaEditorMER.iniciarInteracción();
         vistaEditorMER.notificarInteracción("momodelo-borrar-elemento");
         vistaEditorMER.capturarEventosDesdeEntidadesVisuales();
     }
@@ -30,5 +29,9 @@ export class BorrandoElemento extends InteracciónMER {
     clickEnAtributo(entidad: Entidad, atributo: Atributo, vistaEditorMER: VistaEditorMER) {
         vistaEditorMER.borrarAtributo(atributo, entidad);
         vistaEditorMER.finalizarInteracción();
+    }
+
+    nombre(): string {
+        return "Borrado";
     }
 }

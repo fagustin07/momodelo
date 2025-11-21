@@ -11,6 +11,8 @@ export abstract class InteracciónMER {
         this.inicializarsePara(vista);
     }
 
+    abstract nombre(): string;
+
     abstract clickEnDiagrama(vistaEditorMER: VistaEditorMER, posiciónDiagrama: Posicion, posiciónVistaUsuario: Posicion): void;
 
     abstract clickEnEntidad(entidad: Entidad, vistaEditorMER: VistaEditorMER): void;
@@ -20,4 +22,8 @@ export abstract class InteracciónMER {
     abstract clickEnAtributo(entidad: Entidad, atributo: Atributo, vistaEditorMER: VistaEditorMER): void;
 
     protected abstract inicializarsePara(vistaEditorMER: VistaEditorMER): void;
+
+    estáEnProceso() {
+        return true;
+    }
 }
