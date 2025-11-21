@@ -1,22 +1,23 @@
 import {InteracciónMER} from "./interaccion.ts";
+import {Posicion} from "../../posicion.ts";
 import {Entidad} from "../../modelo/entidad.ts";
+import {Relacion} from "../../modelo/relacion.ts";
 import {Atributo} from "../../modelo/atributo.ts";
 import {VistaEditorMER} from "../vistaEditorMER.ts";
-import {Posicion} from "../../posicion.ts";
-import {Relacion} from "../../modelo/relacion.ts";
-import {InteraccionEnProceso} from "../../servicios/accionEnProceso.ts";
 
-export class SeleccionandoEntidadOrigenRelación extends InteracciónMER {
+export class SeleccionandoEntidadDestinoRelación extends InteracciónMER {
 
     protected inicializarsePara(vistaEditorMER: VistaEditorMER) {
-        vistaEditorMER.iniciarInteracción(InteraccionEnProceso.CrearRelacion);
-        vistaEditorMER.notificarInteracción("momodelo-relacion-origen");
+        vistaEditorMER.notificarInteracción("momodelo-relacion-destino");
     }
 
     clickEnDiagrama(_vistaEditorMER: VistaEditorMER, _posiciónDiagrama: Posicion, _posiciónVistaUsuario: Posicion) { }
 
     clickEnEntidad(entidad: Entidad, vistaEditorMER: VistaEditorMER) {
-        vistaEditorMER.marcarEntidadOrigen(entidad);
+        const nuevaRelación = vistaEditorMER.crearRelaciónConDestinoEn(entidad);
+        vistaEditorMER.crearVistaRelación(nuevaRelación);
+        vistaEditorMER.finalizarInteracción();
+        vistaEditorMER.emitirSeleccionDeRelación(nuevaRelación);
     }
 
     clickEnRelación(_relación: Relacion, _vistaEditorMER: VistaEditorMER) { }

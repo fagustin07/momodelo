@@ -14,8 +14,9 @@ import {ElementoMER} from "../modelo/elementoMER.ts";
 import {InteracciónMER} from "./interacciones/interaccion.ts";
 import {SinInteracción} from "./interacciones/sinInteraccion.ts";
 import {CreandoEntidad} from "./interacciones/creandoEntidad.ts";
-import {SeleccionandoEntidadOrigenRelación} from "./interacciones/seleccionandoEntidadOrigenRelación.ts";
 import {BorrandoElemento} from "./interacciones/borrandoElemento.ts";
+import {SeleccionandoEntidadOrigenRelación} from "./interacciones/seleccionandoEntidadOrigenRelación.ts";
+import {SeleccionandoEntidadDestinoRelación} from "./interacciones/seleccionandoEntidadDestinoRelación.ts";
 
 export class VistaEditorMER {
     modelador: Modelador;
@@ -124,6 +125,18 @@ export class VistaEditorMER {
             .style.transform = `translate(${this._posicionActualVista.x}px, ${this._posicionActualVista.y}px)`;
     }
 
+    crearVistaRelación(relación: Relacion) {
+        const [entidadOrigen, entidadDestino] = relación.entidades();
+
+        const vista = new VistaRelacion(entidadOrigen, entidadDestino, relación, this);
+        vista.representarse();
+        this._relacionesVisuales.set(relación, vista);
+    }
+
+    crearRelaciónConDestinoEn(entidad: Entidad) {
+        return this.modelador.crearRelacion(this._elementoSeleccionado as Entidad, entidad);
+    }
+
     deseleccionar() {
         this._elementoSeleccionado = null;
         this._actualizarSelección(null);
@@ -152,14 +165,19 @@ export class VistaEditorMER {
     }
 
     emitirSeleccionDeEntidad(entidad: Entidad): void {
-        if (this._interacciónEnProceso === InteraccionEnProceso.CrearRelacion) {
-            this._seleccionarEntidadCreandoRelación(entidad);
-        } else {
+        try {
             this._interacción.clickEnEntidad(entidad, this);
+        } catch (error) {
+            if (error instanceof MomodeloErrorImplementaciónPlanificada) {
+                renderizarToast(this._elementoRaíz, error.message);
+                this.finalizarInteracción();
+            } else {
+                throw error;
+            }
         }
     }
 
-    emitirSeleccionDeRelacion(relación: Relacion): void {
+    emitirSeleccionDeRelación(relación: Relacion): void {
         this._interacción.clickEnRelación(relación, this);
     }
 
@@ -212,6 +230,7 @@ export class VistaEditorMER {
 
     marcarEntidadOrigen(entidad: Entidad) {
         this._elementoSeleccionado = entidad;
+        this._interacción = new SeleccionandoEntidadDestinoRelación(this);
     }
 
     ignorarEventosDesdeEntidadesVisuales() {
@@ -314,18 +333,10 @@ export class VistaEditorMER {
         this._actualizarViewBoxSvg();
     }
 
-    private _crearVistaRelacion(relacion: Relacion) {
-        const [entidadOrigen, entidadDestino] = relacion.entidades();
-
-        const vista = new VistaRelacion(entidadOrigen, entidadDestino, relacion, this);
-        vista.representarse();
-        this._relacionesVisuales.set(relacion, vista);
-    }
-
     private _dibujarModelo() {
         this.modelador.conectarVista(this);
         this.modelador.entidades.forEach(e => this.crearVistaEntidad(e));
-        this.modelador.relaciones.forEach(r => this._crearVistaRelacion(r));
+        this.modelador.relaciones.forEach(r => this.crearVistaRelación(r));
     }
 
     private _limpiarVistaDelUsuario() {
@@ -344,27 +355,5 @@ export class VistaEditorMER {
         this._atributosVisuales.forEach(atrVisual => atrVisual.borrarse());
         this._relacionesVisuales.forEach(relVisual => relVisual.borrarse());
         this._cambiarPosiciónActual(coordenada(0, 0));
-    }
-
-    private _seleccionarEntidadCreandoRelación(entidad: Entidad): void {
-        try {
-            if (this._interacciónEnProceso === InteraccionEnProceso.CrearRelacion) {
-                if (this._elementoSeleccionado === null) {
-                    this._interacción.clickEnEntidad(entidad, this);
-                } else {
-                    const relacion = this.modelador.crearRelacion(this._elementoSeleccionado as Entidad, entidad);
-                    this._crearVistaRelacion(relacion);
-                    this.finalizarInteracción();
-                    this.emitirSeleccionDeRelacion(relacion);
-                }
-            }
-        } catch (error) {
-            if (error instanceof MomodeloErrorImplementaciónPlanificada) {
-                renderizarToast(this._elementoRaíz, error.message);
-                this.finalizarInteracción();
-            } else {
-                throw error;
-            }
-        }
     }
 }

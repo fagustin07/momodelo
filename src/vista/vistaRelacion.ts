@@ -141,11 +141,11 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
         });
 
         this._input.addEventListener("click", () => {
-            this._vistaEditorMER.emitirSeleccionDeRelacion(this._relacion);
+            this._vistaEditorMER.emitirSeleccionDeRelación(this._relacion);
         });
 
         this._rombo.addEventListener("click", () => {
-            this._vistaEditorMER.emitirSeleccionDeRelacion(this._relacion);
+            this._vistaEditorMER.emitirSeleccionDeRelación(this._relacion);
         });
     }
 
