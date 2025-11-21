@@ -17,6 +17,7 @@ import {CreandoEntidad} from "./interacciones/creandoEntidad.ts";
 import {BorrandoElemento} from "./interacciones/borrandoElemento.ts";
 import {SeleccionandoEntidadOrigenRelación} from "./interacciones/seleccionandoEntidadOrigenRelación.ts";
 import {SeleccionandoEntidadDestinoRelación} from "./interacciones/seleccionandoEntidadDestinoRelación.ts";
+import {handlearError} from "../servicios/handlearError.ts";
 
 export class VistaEditorMER {
     modelador: Modelador;
@@ -168,12 +169,7 @@ export class VistaEditorMER {
         try {
             this._interacción.clickEnEntidad(entidad, this);
         } catch (error) {
-            if (error instanceof MomodeloErrorImplementaciónPlanificada) {
-                renderizarToast(this._elementoRaíz, error.message);
-                this.finalizarInteracción();
-            } else {
-                throw error;
-            }
+            handlearError(error, this);
         }
     }
 
@@ -231,6 +227,11 @@ export class VistaEditorMER {
     marcarEntidadOrigen(entidad: Entidad) {
         this._elementoSeleccionado = entidad;
         this._interacción = new SeleccionandoEntidadDestinoRelación(this);
+    }
+
+    mostrarMensajeDeError(mensaje: string) {
+        this.finalizarInteracción();
+        renderizarToast(this._elementoRaíz, mensaje);
     }
 
     ignorarEventosDesdeEntidadesVisuales() {
