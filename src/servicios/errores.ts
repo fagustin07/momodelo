@@ -1,5 +1,5 @@
 export abstract class MomodeloErrorImplementaciónPlanificada extends Error {
-    constructor(mensaje: string) {
+    protected constructor(mensaje: string) {
         super(mensaje);
     }
 }

@@ -93,21 +93,25 @@ export class VistaEditorMER {
         elementos.forEach(elemento => this._elementoSvg.appendChild(elemento));
     }
 
-    atributoEliminado(_entidad: Entidad, atributo: Atributo) {
+    atributoEliminado(entidad: Entidad, atributo: Atributo) {
+        this.modelador.eliminarAtributo(atributo, entidad);
         this._atributosVisuales.get(atributo)!.borrarse();
         this._atributosVisuales.delete(atributo);
     }
 
     borrarEntidad(entidad: Entidad) {
-        this.modelador.eliminarEntidad(entidad);
+        const relacionesAfectadas = this.modelador.eliminarEntidad(entidad);
+        this.entidadEliminada(entidad, relacionesAfectadas);
     }
 
     borrarAtributo(atributo: Atributo, entidad: Entidad) {
-        this.modelador.eliminarAtributo(atributo, entidad);
+        this.atributoEliminado(entidad, atributo);
     }
 
     borrarRelación(relación: Relacion) {
         this.modelador.eliminarRelación(relación);
+        this._relacionesVisuales.get(relación)?.borrarse();
+        this._relacionesVisuales.delete(relación);
     }
 
     cancelarInteracción() {
@@ -184,7 +188,7 @@ export class VistaEditorMER {
     entidadEliminada(entidad: Entidad, relacionesEliminadas: Relacion[]) {
         const vistaEntidadElementoMER = this._entidadesVisuales.get(entidad);
         vistaEntidadElementoMER?.borrarse();
-        entidad.atributos().forEach(atr => this.modelador.eliminarAtributo(atr, entidad));
+        entidad.atributos().forEach(atr => this.atributoEliminado(entidad, atr));
         this._entidadesVisuales.delete(entidad);
         relacionesEliminadas.forEach(rel => this.relacionEliminada(rel));
     }
@@ -235,6 +239,7 @@ export class VistaEditorMER {
 
     posicionarRelacionEn(relacion: Relacion, centro: { x: number; y: number }): void {
         this.modelador.posicionarRelacionEn(relacion, centro);
+        this.relacionReposicionada(relacion);
     }
 
     reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[]): void {
@@ -266,10 +271,12 @@ export class VistaEditorMER {
 
     renombrarEntidad(nuevoNombre: string, entidad: Entidad): void {
         this.modelador.renombrarEntidad(nuevoNombre, entidad);
+        this.entidadRenombrada(entidad);
     }
 
     renombrarRelacion(nuevoNombre: string, relacion: Relacion): void {
         this.modelador.renombrarRelacion(nuevoNombre, relacion);
+        this.relacionRenombrada(relacion);
     }
 
     reposicionarElementosSVG(): void {
@@ -329,7 +336,6 @@ export class VistaEditorMER {
     }
 
     private _dibujarModelo() {
-        this.modelador.conectarVista(this);
         this.modelador.entidades.forEach(e => this.crearVistaEntidad(e));
         this.modelador.relaciones.forEach(r => this.crearVistaRelación(r));
     }
