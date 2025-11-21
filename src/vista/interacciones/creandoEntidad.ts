@@ -10,7 +10,7 @@ export class CreandoEntidad extends InteracciónMER {
     protected inicializarsePara(vistaEditorMER: VistaEditorMER) {
         vistaEditorMER.deseleccionar();
         vistaEditorMER.ignorarEventosDesdeEntidadesVisuales();
-        vistaEditorMER.iniciarInteracción();
+        vistaEditorMER.iniciarInteracciónPara(this);
         vistaEditorMER.notificarInteracción("momodelo-crear-entidad");
     }
 

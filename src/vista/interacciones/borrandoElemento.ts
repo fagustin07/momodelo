@@ -9,9 +9,9 @@ export class BorrandoElemento extends InteracciónMER {
 
     protected inicializarsePara(vistaEditorMER: VistaEditorMER) {
         vistaEditorMER.deseleccionar();
-        vistaEditorMER.iniciarInteracción();
-        vistaEditorMER.notificarInteracción("momodelo-borrar-elemento");
         vistaEditorMER.capturarEventosDesdeEntidadesVisuales();
+        vistaEditorMER.iniciarInteracciónPara(this);
+        vistaEditorMER.notificarInteracción("momodelo-borrar-elemento");
     }
 
     clickEnDiagrama(_vistaEditorMER: VistaEditorMER, _posiciónModelo: Posicion, _posiciónVistaUsuario: Posicion) { }

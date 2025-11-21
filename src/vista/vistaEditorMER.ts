@@ -194,18 +194,18 @@ export class VistaEditorMER {
     }
 
     finalizarInteracción() {
+        this._interacción = new SinInteracción(this);
         this._elementoRaíz.classList.remove("accion-en-curso");
         this._elementoRaíz.dataset.interaccionEnCurso = this._interacción.nombre();
         this.notificarInteracción("fin-interaccion-mer")
 
         this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
             .forEach(e => e.style.pointerEvents = "auto");
-        this._interacción = new SinInteracción(this);
     }
 
-    iniciarInteracción() {
+    iniciarInteracciónPara(interacciónInicializando: InteracciónMER) {
         this._elementoRaíz.classList.add("accion-en-curso");
-        this._elementoRaíz.dataset.interaccionEnCurso = this._interacción.nombre();
+        this._elementoRaíz.dataset.interaccionEnCurso = interacciónInicializando.nombre();
     }
 
     capturarEventosDesdeEntidadesVisuales() {

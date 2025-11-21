@@ -8,7 +8,7 @@ import {Relacion} from "../../modelo/relacion.ts";
 export class SeleccionandoEntidadOrigenRelación extends InteracciónMER {
 
     protected inicializarsePara(vistaEditorMER: VistaEditorMER) {
-        vistaEditorMER.iniciarInteracción();
+        vistaEditorMER.iniciarInteracciónPara(this);
         vistaEditorMER.capturarEventosDesdeEntidadesVisuales();
         vistaEditorMER.notificarInteracción("momodelo-relacion-origen");
     }
