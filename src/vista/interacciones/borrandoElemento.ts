@@ -11,7 +11,7 @@ export class BorrandoElemento extends InteracciónMER {
     protected inicializarsePara(vistaEditorMER: VistaEditorMER) {
         vistaEditorMER.deseleccionar();
         vistaEditorMER.iniciarInteracción(InteraccionEnProceso.Borrado);
-        vistaEditorMER.desplegarEvento("momodelo-borrar-elemento");
+        vistaEditorMER.notificarInteracción("momodelo-borrar-elemento");
         vistaEditorMER.capturarEventosDesdeEntidadesVisuales();
     }
 

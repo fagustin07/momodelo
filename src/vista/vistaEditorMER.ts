@@ -135,8 +135,8 @@ export class VistaEditorMER {
         }
     }
 
-    desplegarEvento(nombreEvento: string) {
-        const evento = new CustomEvent(nombreEvento);
+    notificarInteracción(nombreInteracción: string) {
+        const evento = new CustomEvent(nombreInteracción);
         this._elementoRaíz.dispatchEvent(evento);
     }
 

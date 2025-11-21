@@ -12,7 +12,7 @@ export class CreandoEntidad extends InteracciónMER {
         vistaEditorMER.deseleccionar();
         vistaEditorMER.ignorarEventosDesdeEntidadesVisuales();
         vistaEditorMER.iniciarInteracción(InteraccionEnProceso.CrearEntidad);
-        vistaEditorMER.desplegarEvento("momodelo-crear-entidad");
+        vistaEditorMER.notificarInteracción("momodelo-crear-entidad");
     }
 
     clickEnDiagrama(vistaEditorMER: VistaEditorMER, posiciónModelo: Posicion, posiciónVistaUsuario: Posicion) {
