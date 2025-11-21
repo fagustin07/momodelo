@@ -11,7 +11,11 @@ import {renderizarToast} from "../componentes/toast";
 import {MomodeloErrorImplementaciónPlanificada} from "../servicios/errores";
 import {hacerArrastrable} from "../arrastrable.ts";
 import {ElementoMER} from "../modelo/elementoMER.ts";
-import {BorrandoElemento, CreandoEntidad, InteracciónMER, SinInteracción} from "./interacciones";
+import {InteracciónMER} from "./interacciones/interaccion.ts";
+import {SinInteracción} from "./interacciones/sinInteraccion.ts";
+import {CreandoEntidad} from "./interacciones/creandoEntidad.ts";
+import {SeleccionandoEntidadOrigenRelación} from "./interacciones/seleccionandoEntidadOrigenRelación.ts";
+import {BorrandoElemento} from "./interacciones/borrandoElemento.ts";
 
 export class VistaEditorMER {
     modelador: Modelador;
