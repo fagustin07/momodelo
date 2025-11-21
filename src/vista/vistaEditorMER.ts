@@ -16,6 +16,7 @@ import {BorrandoElemento} from "./interacciones/borrandoElemento.ts";
 import {SeleccionandoEntidadOrigenRelación} from "./interacciones/seleccionandoEntidadOrigenRelación.ts";
 import {SeleccionandoEntidadDestinoRelación} from "./interacciones/seleccionandoEntidadDestinoRelación.ts";
 import {handlearError} from "../servicios/handlearError.ts";
+import {generarBarraDeInteracciones} from "../topbar.ts";
 
 export class VistaEditorMER {
     modelador: Modelador;
@@ -68,6 +69,10 @@ export class VistaEditorMER {
         if (document.activeElement instanceof HTMLInputElement) {
             document.activeElement.blur();
         }
+
+        const topbar = generarBarraDeInteracciones(this, this._elementoRaíz);
+
+        elementoRaiz.prepend(topbar);
 
         this._interacción = new SinInteracción(this);
     }

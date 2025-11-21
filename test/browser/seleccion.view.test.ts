@@ -4,6 +4,7 @@ import {Entidad} from "../../src/modelo/entidad.ts";
 import {fireEvent, screen, within} from "@testing-library/dom";
 import {coordenada} from "../../src/posicion.ts";
 import {init} from "../../src/vista.ts";
+import "../../src/style.css";
 
 function getEntidadesDOM() {
     return [...document.querySelectorAll<HTMLElement>(".entidad")];
