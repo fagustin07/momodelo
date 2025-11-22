@@ -43,6 +43,10 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
         this._actualizarLinea();
     }
 
+    actualizarNombre() {
+        this._campoNombre.value = this._atributo.nombre();
+    }
+
     protected elementoDOM(): HTMLElement | SVGElement {
         return this._elementoDom;
     }
@@ -74,7 +78,7 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
     }
 
     private _cambiarNombreEnModelo() {
-        this._vistaEditorMER.renombrarAtributo(this._valorCampoNombre(), this._atributo, this._entidad);
+        this._vistaEditorMER.renombrarAtributo(this._valorCampoNombre(), this._atributo);
     }
 
     private _valorCampoNombre() {

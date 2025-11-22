@@ -17,11 +17,13 @@ import {SeleccionandoEntidadOrigenRelación} from "./interacciones/seleccionando
 import {SeleccionandoEntidadDestinoRelación} from "./interacciones/seleccionandoEntidadDestinoRelación.ts";
 import {handlearError} from "../servicios/handlearError.ts";
 import {generarBarraDeInteracciones} from "../topbar.ts";
+import {InspectorElementos} from "./inspectorElementos.ts";
 
 export class VistaEditorMER {
     modelador: Modelador;
     private _elementoSeleccionado: ElementoMER | null = null;
     private _posicionActualVista = coordenada(0, 0);
+    private _inspector: InspectorElementos;
     private readonly _elementoRaíz: HTMLElement;
     private readonly _elementoSvg: SVGElement;
 
@@ -34,11 +36,12 @@ export class VistaEditorMER {
         this.modelador = modelador;
         this._elementoRaíz = elementoRaiz;
         this._elementoSvg = elementoSvg;
-
+        this._inspector = new InspectorElementos(this._elementoRaíz, this);
 
         document.addEventListener('keydown', (evento: KeyboardEvent) => {
             if (evento.key === "Escape") {
                 this.finalizarInteracción();
+                this.desenfocarElementoInput();
             }
         });
 
@@ -66,9 +69,7 @@ export class VistaEditorMER {
         const resizeObserver = new ResizeObserver(() => this._actualizarViewBoxSvg());
         resizeObserver.observe(this._elementoSvg);
 
-        if (document.activeElement instanceof HTMLInputElement) {
-            document.activeElement.blur();
-        }
+        this.desenfocarElementoInput();
 
         const topbar = generarBarraDeInteracciones(this, this._elementoRaíz);
 
@@ -181,21 +182,12 @@ export class VistaEditorMER {
         this._interacción.clickEnRelación(relación, this);
     }
 
-    entidadCreada(entidad: Entidad) {
-        this.crearVistaEntidad(entidad);
-    }
-
     entidadEliminada(entidad: Entidad, relacionesEliminadas: Relacion[]) {
         const vistaEntidadElementoMER = this._entidadesVisuales.get(entidad);
         vistaEntidadElementoMER?.borrarse();
         entidad.atributos().forEach(atr => this.atributoEliminado(entidad, atr));
         this._entidadesVisuales.delete(entidad);
         relacionesEliminadas.forEach(rel => this.relacionEliminada(rel));
-    }
-
-    entidadRenombrada(entidad: Entidad) {
-        this._entidadesVisuales.get(entidad)?.actualizarNombre?.();
-        this.reposicionarElementosSVG();
     }
 
     generarEntidadUbicadaEn(posicion: Posicion) {
@@ -246,10 +238,7 @@ export class VistaEditorMER {
         this._limpiarVistaDelUsuario();
         this.modelador = new Modelador(nuevasEntidades, nuevasRelaciones);
         this._dibujarModelo();
-
-        if (document.activeElement instanceof HTMLInputElement) {
-            document.activeElement.blur();
-        }
+        this.desenfocarElementoInput();
     }
 
     relacionEliminada(relacion: Relacion) {
@@ -257,26 +246,23 @@ export class VistaEditorMER {
         this._relacionesVisuales.delete(relacion);
     }
 
-    relacionRenombrada(relacion: Relacion) {
-        this._relacionesVisuales.get(relacion)?.actualizarNombre?.();
-    }
-
     relacionReposicionada(relacion: Relacion) {
         this._relacionesVisuales.get(relacion)?.reposicionarRelacion();
     }
 
-    renombrarAtributo(nuevoNombre: string, atributoExistente: Atributo, entidad: Entidad): void {
-        this.modelador.renombrarAtributo(nuevoNombre, atributoExistente, entidad);
+    renombrarAtributo(nuevoNombre: string, atributoExistente: Atributo): void {
+        this.modelador.renombrarAtributo(nuevoNombre, atributoExistente, this._getEntidadDelAtributo(atributoExistente));
+        this._atributoRenombrado(atributoExistente);
     }
 
     renombrarEntidad(nuevoNombre: string, entidad: Entidad): void {
         this.modelador.renombrarEntidad(nuevoNombre, entidad);
-        this.entidadRenombrada(entidad);
+        this._entidadRenombrada(entidad);
     }
 
     renombrarRelacion(nuevoNombre: string, relacion: Relacion): void {
         this.modelador.renombrarRelacion(nuevoNombre, relacion);
-        this.relacionRenombrada(relacion);
+        this._relacionRenombrada(relacion);
     }
 
     reposicionarElementosSVG(): void {
@@ -311,6 +297,7 @@ export class VistaEditorMER {
 
     private _actualizarSelección(elementoMER: ElementoMER | null) {
         this._todasLasVistas().forEach(v => v.actualizarSelección(elementoMER));
+        this._inspector.mostrar(elementoMER);
     }
 
     private _actualizarViewBoxSvg() {
@@ -323,6 +310,11 @@ export class VistaEditorMER {
             atributo,
             this._entidadesVisuales.get(entidad)!.generarVistaPara(atributo)
         );
+    }
+
+    private _atributoRenombrado(atributoExistente: Atributo) {
+        this._atributosVisuales.get(atributoExistente)!.actualizarNombre();
+        this._inspector.actualizarInput(atributoExistente.nombre());
     }
 
     private _cambiarPosiciónActual(nuevaPosición: Posicion) {
@@ -338,6 +330,16 @@ export class VistaEditorMER {
     private _dibujarModelo() {
         this.modelador.entidades.forEach(e => this.crearVistaEntidad(e));
         this.modelador.relaciones.forEach(r => this.crearVistaRelación(r));
+    }
+
+    private _entidadRenombrada(entidad: Entidad) {
+        this._entidadesVisuales.get(entidad)?.actualizarNombre?.();
+        this.reposicionarElementosSVG();
+        this._inspector.actualizarInput(entidad.nombre());
+    }
+
+    private _getEntidadDelAtributo(atributo: Atributo): Entidad {
+        return [...this._entidadesVisuales.keys()].find(entidad => entidad.posee(atributo))!;
     }
 
     private _limpiarVistaDelUsuario() {
@@ -356,5 +358,10 @@ export class VistaEditorMER {
         this._atributosVisuales.forEach(atrVisual => atrVisual.borrarse());
         this._relacionesVisuales.forEach(relVisual => relVisual.borrarse());
         this._cambiarPosiciónActual(coordenada(0, 0));
+    }
+
+    private _relacionRenombrada(relacion: Relacion) {
+        this._relacionesVisuales.get(relacion)?.actualizarNombre?.();
+        this._inspector.actualizarInput(relacion.nombre());
     }
 }

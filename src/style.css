@@ -291,3 +291,21 @@ main {
   word-break: break-word;
   font-family: Roboto, sans-serif;
 }
+
+#panel-inspector {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 20vw;
+  height: 100vh;
+
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(6px);
+  border-left: 1px solid #e5e7eb;
+  padding: 1.2rem;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+
+  display: none;
+  z-index: 1000;
+  font-family: Inter, system-ui, sans-serif;
+}

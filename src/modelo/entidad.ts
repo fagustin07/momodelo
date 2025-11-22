@@ -48,5 +48,9 @@ export class Entidad extends ElementoMER {
     representaUnaEntidad() {
         return true;
     }
+
+    posee(atributo: Atributo) {
+        return this._atributos.includes(atributo);
+    }
 }
 

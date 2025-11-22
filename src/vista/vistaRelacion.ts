@@ -86,6 +86,7 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
 
     actualizarNombre() {
         this._input.value = this._relacion.nombre();
+        this._actualizarInputRelacion();
     }
 
     protected elementoDOM(): HTMLElement | SVGElement {
@@ -117,7 +118,7 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
                         left: "50%",
                         top: "50%"
                     },
-                    oninput: () => this._actualizarInputRelacion()
+                    oninput: () => this._actualizarInputRelacionNotificando()
                 })
             ])
         ]);
@@ -134,7 +135,7 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
             "pointer-events": "none",
         });
 
-        this._actualizarInputRelacion();
+        this._actualizarInputRelacionNotificando();
         this._input.addEventListener("input", () => {
             const nombre = this._input.value || "";
             this._vistaEditorMER.renombrarRelacion(nombre, this._relacion);
@@ -158,10 +159,12 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
         this._input.style.left = "50%";
         this._input.style.transform = "translate(-50%, -50%)";
 
-        const nombre = this._input.value || "";
-        this._vistaEditorMER.renombrarRelacion(nombre, this._relacion);
-
         this._ajustarRombo(anchoFinal);
+    }
+
+    private _actualizarInputRelacionNotificando() {
+        this._actualizarInputRelacion();
+        this._vistaEditorMER.renombrarRelacion(this._input.value || "", this._relacion);
     }
 
     private _medirTexto(texto: string): number {
@@ -185,7 +188,7 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
 
             const fo = this._grupoElementos.getElementsByClassName("rombo-foreign-object")[0]!;
             fo.setAttribute("width", this._ancho.toString());
-            fo.setAttribute("height",this._alto.toString());
+            fo.setAttribute("height", this._alto.toString());
 
             this.reposicionarRelacion();
         }
