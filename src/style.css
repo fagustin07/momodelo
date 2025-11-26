@@ -139,7 +139,8 @@ main {
   button {
     position: absolute;
     right: 1em;
-    top: -10px;
+    top: 0;
+    translate: 0 -50%;
     border-radius: 50%;
     background: #007bff;
     color: white;
