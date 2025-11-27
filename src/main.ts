@@ -5,6 +5,7 @@ import {coordenada} from "./posicion.ts";
 import {init} from "./vista.ts";
 import {Relacion} from "./modelo/relacion.ts";
 import {createElement} from "./vista/dom/createElement.ts";
+import {initMR} from "./mr/vistaMR.ts";
 
 const entidades: Entidad[] = [
     new Entidad("CLIENTE", [
@@ -29,7 +30,19 @@ const relaciones: Relacion[] = [
     new Relacion("CONTIENE", entidades[1], entidades[2], coord),
 ]
 
+const path = window.location.pathname;
+
+const route = path.replace("/momodelo", "");
+
 const elementoRaíz = createElement("main");
 document.body.append(elementoRaíz);
 
-init(elementoRaíz, entidades, relaciones);
+
+if (route.startsWith("/mr")) {
+    initMR(elementoRaíz);
+} else {
+    init(elementoRaíz, entidades, relaciones);
+}
+
+
+

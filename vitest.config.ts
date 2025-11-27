@@ -1,6 +1,11 @@
 import {defineConfig} from "vitest/config";
 
 export default defineConfig({
+  server: {
+    fs: {
+      strict: false
+    }
+  },
   test: {
     watch: true,
     projects: [{
