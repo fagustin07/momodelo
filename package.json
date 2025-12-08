@@ -10,10 +10,14 @@
     "test": "vitest"
   },
   "devDependencies": {
-    "@vitest/browser": "^3.2.4",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/user-event": "^14.6.1",
+    "@vitest/browser": "^4.0.15",
+    "@vitest/browser-webdriverio": "^4.0.15",
     "typescript": "^5.9.2",
-    "vite": "^7.1.2",
-    "vitest": "^3.2.4",
-    "webdriverio": "^9.19.2"
+    "vite": "^7.2.6",
+    "vitest": "^4.0.15",
+    "webdriverio": "^9.21.0"
   }
 }

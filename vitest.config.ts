@@ -1,4 +1,5 @@
 import {defineConfig} from "vitest/config";
+import {webdriverio} from "@vitest/browser-webdriverio";
 
 export default defineConfig({
   test: {
@@ -11,17 +12,15 @@ export default defineConfig({
         browser: {
           enabled: true,
           api: {host: "0.0.0.0"},
-          provider: "webdriverio",
-          instances: [
-            {
-              browser: "chrome",
-              capabilities: {
-                "goog:chromeOptions": {
-                  args: ["--remote-debugging-port=9229"],
-                },
+          provider: webdriverio({
+            logLevel: 'info',
+            capabilities: {
+              "goog:chromeOptions": {
+                args: ["--remote-debugging-port=9229"],
               },
             },
-          ],
+          }),
+          instances: [{ browser: "chrome" }],
         },
       },
     }, {

@@ -18,7 +18,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
-    "types": ["@vitest/browser/providers/webdriverio"]
+    "types": ["@testing-library/jest-dom"]
   },
   "include": ["src", "test"]
 }
