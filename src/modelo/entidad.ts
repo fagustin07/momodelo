@@ -8,7 +8,7 @@ export class Entidad extends ElementoMER {
     private _nombre: string;
     private _atributos: Atributo[];
 
-    constructor(nombre: string = 'ENTIDAD', atributos: Atributo[], posicion: Posicion = coordenada(0,0)) {
+    constructor(nombre: string = 'ENTIDAD', atributos: Atributo[]=[], posicion: Posicion = coordenada(0,0)) {
         super(posicion);
         this._nombre = nombre;
         this._atributos = atributos;
@@ -53,4 +53,3 @@ export class Entidad extends ElementoMER {
         return this._atributos.includes(atributo);
     }
 }
-

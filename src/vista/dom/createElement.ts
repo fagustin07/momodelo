@@ -36,6 +36,7 @@ type SVGAttributesMap = {
     "text": {
         x: number,
         y: number,
+        class: string
     },
     "foreignObject": {
         width: number,

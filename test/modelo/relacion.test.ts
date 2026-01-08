@@ -1,26 +1,39 @@
-import { describe, it, expect } from "vitest";
+import {describe, it, expect, beforeEach} from "vitest";
 import { Entidad } from "../../src/modelo/entidad.ts";
 import { coordenada } from "../../src/posicion.ts";
 import {Relacion} from "../../src/modelo/relacion.ts";
 
 describe("[MER] Relación", () => {
+    let entidadPirata: Entidad;
+    let entidadBicho: Entidad;
+    let relacionCombate: Relacion;
+
+    beforeEach(() => {
+        entidadPirata = new Entidad("Pirata");
+        entidadBicho = new Entidad("Bicho Poderoso");
+        relacionCombate = new Relacion("Combate", entidadPirata, entidadBicho, coordenada(50, 50));
+    });
+
     it("Dado dos entidades, cuando se crea una relación, entonces debe conocer su nombre y las entidades asociadas", () => {
-        const entidad1 = new Entidad("Pirata", [], coordenada(0, 0));
-        const entidad2 = new Entidad("Marin", [], coordenada(100, 100));
-
-        const relacion = new Relacion("Combate", entidad1, entidad2, coordenada(50, 50));
-
-        expect(relacion.nombre()).toEqual("Combate");
-        expect(relacion.entidades()).toEqual([entidad1, entidad2]);
+        expect(relacionCombate.nombre()).toEqual("Combate");
+        expect(relacionCombate.entidades()).toEqual([entidadPirata, entidadBicho]);
     });
 
     it("Dada una relacion, cuando se modifica su nombre, entonces se refleja correctamente", () => {
-        const entidad1 = new Entidad("Persona", [], coordenada(0, 0));
-        const entidad2 = new Entidad("Fruta", [], coordenada(100, 100));
-        const relacion = new Relacion("Consume", entidad1, entidad2, coordenada(50, 50));
+        relacionCombate.cambiarNombre("Come")
 
-        relacion.cambiarNombre("Come")
+        expect(relacionCombate.nombre()).toEqual("Come");
+    });
 
-        expect(relacion.nombre()).toEqual("Come");
+    it("Una relación conoce la cardinalidad con la que participa la entidad de origen", () => {
+        relacionCombate.cambiarCardinalidadOrigenA(['1','1']);
+
+        expect(relacionCombate.cardinalidadOrigen()).toEqual(['1','1']);
+    });
+
+    it("Una relación la cardinalidad con la que participa la entidad de destino", () => {
+        relacionCombate.cambiarCardinalidadDestinoA(['1','1']);
+
+        expect(relacionCombate.cardinalidadDestino()).toEqual(['1','1']);
     });
 });

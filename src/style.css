@@ -310,3 +310,9 @@ main {
   z-index: 1000;
   font-family: Inter, system-ui, sans-serif;
 }
+
+.cardinalidad-texto {
+  stroke: whitesmoke;
+  stroke-width: 8px;
+  paint-order: stroke;
+}

@@ -108,6 +108,38 @@ describe("[MER] Inspector de Elementos", () => {
         expect(inspector.innerHTML).toContain("Barco");
     });
 
+    it("Al seleccionar una relación por primera vez, entonces la participación de ambas entidades es la menos restrictiva", () => {
+        const [inputRelacion] = getInputRelaciones();
+        fireEvent.click(inputRelacion);
+
+        const inspector = document.getElementById("panel-inspector")!;
+
+        const contenedorOrigen = within(inspector).getByTestId("Cardinalidad origen");
+        const contenedorDestino = within(inspector).getByTestId("Cardinalidad destino");
+
+        const participaciónMínimaOpcionalOrigen = within(contenedorOrigen).getByLabelText(/Puede/i) as HTMLInputElement;
+        const participaciónMínimaObligatoriaOrigen = within(contenedorOrigen).getByLabelText(/Debe/i) as HTMLInputElement;
+
+        const participaciónMáximaRestringidaOrigen = within(contenedorOrigen).getByLabelText(/Una vez/i) as HTMLInputElement;
+        const participaciónMáximaLibreOrigen = within(contenedorOrigen).getByLabelText(/Muchas/i) as HTMLInputElement;
+
+        const participaciónMínimaOpcionalDestino = within(contenedorDestino).getByLabelText(/Puede/i) as HTMLInputElement;
+        const participaciónMínimaObligatoriaDestino = within(contenedorDestino).getByLabelText(/Debe/i) as HTMLInputElement;
+
+        const participaciónMáximaRestringidaDestino = within(contenedorDestino).getByLabelText(/Una vez/i) as HTMLInputElement;
+        const participaciónMáximaLibreDestino = within(contenedorDestino).getByLabelText(/Muchas/i) as HTMLInputElement;
+
+        expect(participaciónMínimaOpcionalOrigen.checked).toBe(true);
+        expect(participaciónMínimaObligatoriaOrigen.checked).toBe(false);
+        expect(participaciónMáximaLibreOrigen.checked).toBe(true);
+        expect(participaciónMáximaRestringidaOrigen.checked).toBe(false);
+
+        expect(participaciónMínimaOpcionalDestino.checked).toBe(true);
+        expect(participaciónMínimaObligatoriaDestino.checked).toBe(false);
+        expect(participaciónMáximaLibreDestino.checked).toBe(true);
+        expect(participaciónMáximaRestringidaDestino.checked).toBe(false);
+    })
+
     it("Al deseleccionar un elemento, el Inspector se oculta", () => {
         const [elementoPirata] = getElementoEntidades();
         fireEvent.click(elementoPirata);

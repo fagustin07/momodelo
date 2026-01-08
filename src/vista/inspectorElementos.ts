@@ -4,6 +4,7 @@ import {Atributo} from "../modelo/atributo";
 import {Relacion} from "../modelo/relacion";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
 import {createElement} from "./dom/createElement.ts";
+import {Cardinalidad, CardinalidadMinima, CardinalidadMáxima} from "../tipos/tipos";
 
 export class InspectorElementos {
 
@@ -118,16 +119,57 @@ export class InspectorElementos {
         const origen = relacion.entidades()[0].nombre();
         const destino = relacion.entidades()[1].nombre();
 
-        const detalle = createElement("div", {
-            innerHTML: `<strong>${origen}</strong> → <strong>${destino}</strong>`,
-            className: "inspector-detalle-relacion",
-            style: {
-                marginTop: "1rem",
-                fontSize: "1rem",
-                color: "#374151",
-            }
+        const formularioCardinalidadOrigen = this._crearFormularioCardinalidad(
+            "Participación de " + origen + ":",
+            () => relacion.cardinalidadOrigen(),
+            (nuevaCardinalidad: Cardinalidad) => relacion.cambiarCardinalidadOrigenA(nuevaCardinalidad),
+            "Cardinalidad origen"
+        );
+        const formularioCardinalidadDestino = this._crearFormularioCardinalidad(
+            "Participación de " + destino + ":",
+            () => relacion.cardinalidadDestino(),
+            (nuevaCardinalidad: Cardinalidad) => relacion.cambiarCardinalidadDestinoA(nuevaCardinalidad),
+            "Cardinalidad destino"
+        );
+
+        this._contenedor.append(titulo, label, this._inputNombre!, formularioCardinalidadOrigen, formularioCardinalidadDestino);
+    }
+
+    private _crearFormularioCardinalidad(
+        titulo: string,
+        obtenerCardinalidad: () => Cardinalidad,
+        cambiarCardinalidad: (nuevaCardinalidad: Cardinalidad) => void,
+        testId: string,
+    ) {
+        const formulario = createElement("form", {
+            innerHTML: `<fieldset data-testid="${testId}">
+                <legend title="Cardinalidad minima">${titulo}</legend>
+                <label>Puede <input type="radio" name="cardinalidad-minima" value="0" /></label>
+                <label>Debe <input type="radio" name="cardinalidad-minima" value="1" /></label>
+                <br>
+                <label>Una vez <input type="radio" name="cardinalidad-maxima" value="1" /></label>
+                <label>Muchas <input type="radio" name="cardinalidad-maxima" value="N" /></label>
+            </fieldset>`
         });
 
-        this._contenedor.append(titulo, label, this._inputNombre!, detalle);
+        const itemCardinalidadMinima = formulario.elements.namedItem("cardinalidad-minima") as RadioNodeList;
+        itemCardinalidadMinima.value = obtenerCardinalidad()[0];
+        itemCardinalidadMinima.forEach((radioButton) => {
+            radioButton.onchange = () => {
+                const nuevaCardinalidad: Cardinalidad = [radioButton.value as CardinalidadMinima, obtenerCardinalidad()[1]];
+                cambiarCardinalidad(nuevaCardinalidad);
+            };
+        })
+
+        const itemCardinalidadMaxima = formulario.elements.namedItem("cardinalidad-maxima") as RadioNodeList;
+        itemCardinalidadMaxima.value = obtenerCardinalidad()[1];
+        itemCardinalidadMaxima.forEach((radioButton) => {
+            radioButton.onchange = () => {
+                const nuevaCardinalidad: Cardinalidad = [obtenerCardinalidad()[0], radioButton.value as CardinalidadMáxima];
+                cambiarCardinalidad(nuevaCardinalidad);
+            };
+        })
+
+        return formulario;
     }
 }
