@@ -34,11 +34,9 @@ export function importar(json: JsonModelo): { entidades: Entidad[]; relaciones: 
         }
 
         const relacion = new Relacion(
-            relJson.nombre,
-            origen,
-            destino,
-            coordenada(relJson.posicion.x, relJson.posicion.y)
-        );
+            origen, destino, relJson.nombre,
+            relJson.cardinalidadOrigen, relJson.cardinalidadDestino,
+            coordenada(relJson.posicion.x, relJson.posicion.y));
 
         relaciones.push(relacion);
     });

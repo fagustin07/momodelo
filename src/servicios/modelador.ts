@@ -3,6 +3,7 @@ import {Atributo} from "../modelo/atributo";
 import {Relacion} from "../modelo/relacion";
 import {coordenada, coordenadaInicial, Posicion} from "../posicion";
 import {RelaciónExistenteError, RelaciónRecursivaError} from "./errores";
+import {Cardinalidad} from "../tipos/tipos.ts";
 
 export class Modelador {
     entidades: Entidad[] = [];
@@ -10,9 +11,10 @@ export class Modelador {
 
     constructor(entidades: Entidad[] = [], relaciones: Relacion[] = []) {
         entidades.forEach(ent => this._registrarEntidad(ent));
-        relaciones.forEach(rel =>
-            this.crearRelacion(rel.entidadOrigen(), rel.entidadDestino(), rel.nombre(), rel.posicion())
-        );
+        relaciones.forEach(rel => {
+            this._realizarValidacionesParaCrearRelaciónEntre(rel.entidadOrigen(), rel.entidadDestino());
+            this.relaciones.push(rel);
+        });
     }
 
     // ========= ENTIDADES =========
@@ -48,9 +50,16 @@ export class Modelador {
 
     // ========= RELACIONES =========
 
-    crearRelacion(entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string = "RELACION", posicion: Posicion = coordenadaInicial()) {
+    crearRelacion(
+        entidadOrigen: Entidad, entidadDestino: Entidad, nombre: string = "RELACION",
+        cardinalidadOrigen: Cardinalidad = ['0', 'N'], cardinalidadDestino: Cardinalidad = ['0', 'N'],
+        posicion: Posicion = coordenadaInicial()
+    ) {
+
         this._realizarValidacionesParaCrearRelaciónEntre(entidadOrigen, entidadDestino);
-        const nuevaRelacion = new Relacion(nombre, entidadOrigen, entidadDestino, coordenada(posicion.x, posicion.y));
+
+        const nuevaRelacion = new Relacion(entidadOrigen, entidadDestino, nombre, cardinalidadOrigen, cardinalidadDestino, coordenada(posicion.x, posicion.y));
+
         this.relaciones.push(nuevaRelacion);
         return nuevaRelacion;
     }

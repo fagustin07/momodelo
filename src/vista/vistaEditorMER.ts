@@ -1,7 +1,7 @@
 import {Entidad} from "../modelo/entidad";
 import {Atributo} from "../modelo/atributo";
 import {Relacion} from "../modelo/relacion";
-import {coordenada, Posicion} from "../posicion";
+import {coordenada, coordenadaInicial, Posicion} from "../posicion";
 import {Modelador} from "../servicios/modelador";
 import {VistaEntidad} from "./vistaEntidad";
 import {VistaRelacion} from "./vistaRelacion";
@@ -22,7 +22,7 @@ import {InspectorElementos} from "./inspectorElementos.ts";
 export class VistaEditorMER {
     modelador: Modelador;
     private _elementoSeleccionado: ElementoMER | null = null;
-    private _posicionActualVista = coordenada(0, 0);
+    private _posicionActualVista = coordenadaInicial();
     private _inspector: InspectorElementos;
     private readonly _elementoRaíz: HTMLElement;
     private readonly _elementoSvg: SVGElement;
@@ -357,7 +357,7 @@ export class VistaEditorMER {
         this._entidadesVisuales.forEach(entVisual => entVisual.borrarse());
         this._atributosVisuales.forEach(atrVisual => atrVisual.borrarse());
         this._relacionesVisuales.forEach(relVisual => relVisual.borrarse());
-        this._cambiarPosiciónActual(coordenada(0, 0));
+        this._cambiarPosiciónActual(coordenadaInicial());
     }
 
     private _relacionRenombrada(relacion: Relacion) {

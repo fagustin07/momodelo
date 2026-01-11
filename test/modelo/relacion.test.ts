@@ -1,6 +1,5 @@
-import {describe, it, expect, beforeEach} from "vitest";
-import { Entidad } from "../../src/modelo/entidad.ts";
-import { coordenada } from "../../src/posicion.ts";
+import {beforeEach, describe, expect, it} from "vitest";
+import {Entidad} from "../../src/modelo/entidad.ts";
 import {Relacion} from "../../src/modelo/relacion.ts";
 
 describe("[MER] Relación", () => {
@@ -11,7 +10,7 @@ describe("[MER] Relación", () => {
     beforeEach(() => {
         entidadPirata = new Entidad("Pirata");
         entidadBicho = new Entidad("Bicho Poderoso");
-        relacionCombate = new Relacion("Combate", entidadPirata, entidadBicho, coordenada(50, 50));
+        relacionCombate = new Relacion(entidadPirata, entidadBicho, "Combate");
     });
 
     it("Dado dos entidades, cuando se crea una relación, entonces debe conocer su nombre y las entidades asociadas", () => {

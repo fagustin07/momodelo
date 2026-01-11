@@ -1,5 +1,5 @@
 import {Entidad} from "./entidad";
-import {coordenada, Posicion} from "../posicion";
+import {coordenadaInicial, Posicion} from "../posicion";
 import {generadorDeIDs} from "../servicios/generadorDeIDs.ts";
 import {ElementoMER} from "./elementoMER.ts";
 import {Cardinalidad} from "../tipos/tipos.ts";
@@ -14,12 +14,12 @@ export class Relacion extends ElementoMER {
     private _alCambiarCardinalidad: (() => void)[] = [];
 
     constructor(
-        nombre: string,
         entidadOrigen: Entidad,
         entidadDestino: Entidad,
-        posicion: Posicion = coordenada(0, 0),
-        cardinalidadOrigen: Cardinalidad = ['0','N'],
+        nombre: string = "RELACIÓN",
+        cardinalidadOrigen: Cardinalidad = ['0', 'N'],
         cardinalidadDestino: Cardinalidad = ['0', 'N'],
+        posicion: Posicion = coordenadaInicial(),
     ) {
         super(posicion);
         this._nombre = nombre;

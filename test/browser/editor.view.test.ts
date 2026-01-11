@@ -33,7 +33,7 @@ describe("[MER] VistaEditor", () => {
     it("Dado un modelo con relaciones y un vista editor, cuando se inicializa la vista, se renderizan correctamente", () => {
         const cliente = new Entidad("CLIENTE", [], coordenada(100, 100));
         const pedido = new Entidad("PEDIDO", [], coordenada(400, 100));
-        const relacion = new Relacion("REALIZA", cliente, pedido, coordenada(250, 100));
+        const relacion = new Relacion(cliente, pedido, "REALIZA");
 
         modelador = new Modelador([cliente, pedido], [relacion]);
         vistaEditorMER = new VistaEditorMER(modelador, elementoRaiz, elementoSvg);

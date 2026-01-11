@@ -70,7 +70,7 @@ describe("[MER] Inspector de Elementos", () => {
 
         entidadPirata = new Entidad("Pirata", [], coordenada(10, 10));
         entidadBarco = new Entidad("Barco", [], coordenada(300, 10));
-        relacionNavega = new Relacion("Navega", entidadPirata, entidadBarco, coordenada(150, 10));
+        relacionNavega = new Relacion(entidadPirata, entidadBarco, "Navega");
 
         init(elementoRaíz, [entidadPirata, entidadBarco], [relacionNavega]);
     });

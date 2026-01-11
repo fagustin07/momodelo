@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { Entidad } from "../../src/modelo/entidad";
-import { coordenada } from "../../src/posicion";
+import {beforeEach, describe, expect, it} from "vitest";
+import {Entidad} from "../../src/modelo/entidad";
+import {coordenadaInicial} from "../../src/posicion";
 
 describe("Entidad", () => {
     let entidad: Entidad;
 
     beforeEach(() => {
-        entidad = new Entidad("Pirata", [], coordenada(0, 0));
+        entidad = new Entidad("Pirata", [], coordenadaInicial());
     });
 
     it("Dado una entidad inicializada, entonces debería tener un nombre y no atributos", () => {

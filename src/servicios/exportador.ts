@@ -1,4 +1,5 @@
 import {Modelador} from "./modelador.ts";
+import {Cardinalidad} from "../tipos/tipos.ts";
 
 type JsonEntidad = {
     id: number;
@@ -13,6 +14,8 @@ type JsonRelacion = {
     posicion: { x: number; y: number };
     entidadOrigen: number;
     entidadDestino: number;
+    cardinalidadOrigen: Cardinalidad;
+    cardinalidadDestino: Cardinalidad;
 };
 
 type JsonAtributo = {
@@ -48,7 +51,9 @@ export function exportar(modelador: Modelador): JsonModelo {
         nombre: relacion.nombre(),
         posicion: relacion.posicion(),
         entidadOrigen: relacion.entidadOrigen().id(),
-        entidadDestino: relacion.entidadDestino().id()
+        entidadDestino: relacion.entidadDestino().id(),
+        cardinalidadOrigen: relacion.cardinalidadOrigen(),
+        cardinalidadDestino: relacion.cardinalidadDestino()
     }));
 
     return {

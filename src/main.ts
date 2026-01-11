@@ -25,8 +25,8 @@ const entidades: Entidad[] = [
 const coord = coordenada(50,60);
 
 const relaciones: Relacion[] = [
-    new Relacion("REALIZA", entidades[0], entidades[1], coord),
-    new Relacion("CONTIENE", entidades[1], entidades[2], coord),
+    new Relacion(entidades[0], entidades[1], "REALIZA", ['1', '1'], ['0', 'N'], coord),
+    new Relacion(entidades[1], entidades[2], "CONTIENE", ['0', '1'], ['1', 'N'], coord),
 ]
 
 const elementoRaíz = createElement("main");

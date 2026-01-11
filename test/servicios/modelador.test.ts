@@ -1,8 +1,9 @@
-import { describe, it, expect } from "vitest";
-import { Entidad } from "../../src/modelo/entidad.ts";
-import { coordenada } from "../../src/posicion.ts";
+import {describe, expect, it} from "vitest";
+import {Entidad} from "../../src/modelo/entidad.ts";
+import {coordenada} from "../../src/posicion.ts";
 import {Modelador} from "../../src/servicios/modelador.ts";
 import {RelaciónExistenteError, RelaciónRecursivaError} from "../../src/servicios/errores.ts";
+import {Relacion} from "../../src/modelo/relacion.ts";
 
 describe("[MER] Modelador", () => {
 
@@ -66,6 +67,16 @@ describe("[MER] Modelador", () => {
         }).toThrow(RelaciónExistenteError);
 
         expect(modelador.relaciones.length).toEqual(1);
+    });
+
+    it("Un modelo sabe inicializarse con las participaciones de las entidades en una relación", () => {
+        const entidad = crearEntidadLlamada("Pirata");
+        const entidad2 = crearEntidadLlamada("Capitán");
+        const relacion = new Relacion(entidad, entidad2, "PELEA", ['0', '1'], ['1', 'N']);
+
+        modelador = new Modelador([entidad, entidad2], [relacion]);
+
+        expect(modelador.relaciones[0]).toEqual(relacion);
     });
 
     function crearEntidadLlamada(nombreEntidad: string): Entidad {
