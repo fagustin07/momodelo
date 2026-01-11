@@ -60,7 +60,7 @@ main {
     }
   }
 
-  .atributo, .relacion, line {
+  .atributo, .relacion, line, .cardinalidad-texto {
     filter: blur(3px);
   }
 }
@@ -69,7 +69,7 @@ main {
 .diagrama-mer[data-interaccion-en-curso='Crear Entidad'] {
     cursor: pointer;
 
-  .entidad, .atributo, .relacion, line {
+  .entidad, .atributo, .relacion, line, .cardinalidad-texto {
     filter: blur(3px);
   }
 }
