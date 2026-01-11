@@ -74,11 +74,9 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
     borrarse() {
         this._lineaOrigen.remove();
         this._lineaDestino.remove();
-        this._rombo.remove();
-        this._input.remove();
+        this._grupoElementos.remove();
         this._textoCardinalidadOrigen.remove();
         this._textoCardinalidadDestino.remove();
-        this._foreignObject.remove();
     }
 
     actualizarNombre() {
