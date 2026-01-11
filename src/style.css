@@ -315,4 +315,5 @@ main {
   stroke: whitesmoke;
   stroke-width: 8px;
   paint-order: stroke;
+  cursor: pointer;
 }

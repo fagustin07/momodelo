@@ -62,31 +62,10 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
     }
 
     reposicionarRelacion() {
-        const posiciónEntidadOrigen = this._vistaEditorMER.centroDeEntidad(this._entidadOrigen);
-        const posiciónEntidadDestino = this._vistaEditorMER.centroDeEntidad(this._entidadDestino);
         const posiciónRelación = this.centro().round();
 
+        this._reposicionarParticipaciónDeEntidades(posiciónRelación);
         this._relacion.moverseHacia(posiciónRelación);
-        const posicionCardinalidadOrigen = this._calcularPuntoEntreEntidadYRelacion(posiciónEntidadOrigen, posiciónRelación);
-        const posicionCardinalidadDestino = this._calcularPuntoEntreEntidadYRelacion(posiciónEntidadDestino, posiciónRelación);
-
-        this._textoCardinalidadOrigen.setAttribute("x", `${posicionCardinalidadOrigen.x}`);
-        this._textoCardinalidadOrigen.setAttribute("y", `${posicionCardinalidadOrigen.y}`);
-        this._textoCardinalidadOrigen.textContent = this._formatearCardinalidad(this._relacion.cardinalidadOrigen());
-
-        this._textoCardinalidadDestino.setAttribute("x", `${posicionCardinalidadDestino.x}`);
-        this._textoCardinalidadDestino.setAttribute("y", `${posicionCardinalidadDestino.y}`);
-        this._textoCardinalidadDestino.textContent = this._formatearCardinalidad(this._relacion.cardinalidadDestino());
-
-        this._lineaOrigen.setAttribute("x1", `${posiciónEntidadOrigen.x}`);
-        this._lineaOrigen.setAttribute("y1", `${posiciónEntidadOrigen.y}`);
-        this._lineaOrigen.setAttribute("x2", `${posiciónRelación.x}`);
-        this._lineaOrigen.setAttribute("y2", `${posiciónRelación.y}`);
-
-        this._lineaDestino.setAttribute("x1", `${posiciónEntidadDestino.x}`);
-        this._lineaDestino.setAttribute("y1", `${posiciónEntidadDestino.y}`);
-        this._lineaDestino.setAttribute("x2", `${posiciónRelación.x}`);
-        this._lineaDestino.setAttribute("y2", `${posiciónRelación.y}`);
 
         const posicion = posiciónRelación.minus(coordenada(this._ancho / 2, this._alto / 2));
         this._grupoElementos.setAttribute("transform", `translate(${posicion.x},${posicion.y})`);
@@ -112,68 +91,12 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
     }
 
     private _crearElementoDom() {
-        this._textoCardinalidadOrigen = createSvgElement("text", {
-            class: "cardinalidad-texto",
-        });
-
-        this._textoCardinalidadDestino = createSvgElement("text", {
-            class: "cardinalidad-texto",
-        });
-
-        this._grupoElementos = createSvgElement("g", {
-            class: "relacion",
-        }, [
-            this._rombo = createSvgElement("polygon", {
-                "pointer-events": "all",
-            }),
-            this._foreignObject = createSvgElement("foreignObject", {
-                width: this._ancho,
-                class: 'rombo-foreign-object',
-                height: this._alto
-            }, [
-                this._input = createElement("input", {
-                    value: this._relacion.nombre(),
-                    title: "Nombre Relacion",
-                    style: {
-                        position: "absolute",
-                        width: "80px",
-                        border: "none",
-                        textAlign: "center",
-                        background: "transparent",
-                        transform: "translate(-50%, -50%)",
-                        left: "50%",
-                        top: "50%"
-                    },
-                    oninput: () => this._actualizarInputRelacionNotificando()
-                })
-            ])
-        ]);
-
-        this._lineaOrigen = createSvgElement("line", {
-            stroke: "gray",
-            "stroke-width": 1,
-            "pointer-events": "none",
-        });
-
-        this._lineaDestino = createSvgElement("line", {
-            stroke: "gray",
-            "stroke-width": 1,
-            "pointer-events": "none",
-        });
+        this._dibujarElementosDeRelación();
+        this._dibujarParticipaciónDeEntidades();
 
         this._actualizarInputRelacionNotificando();
-        this._input.addEventListener("input", () => {
-            const nombre = this._input.value || "";
-            this._vistaEditorMER.renombrarRelacion(nombre, this._relacion);
-        });
+        this._agregarEventListenersDeElementos();
 
-        this._input.addEventListener("click", () => {
-            this._vistaEditorMER.emitirSeleccionDeRelación(this._relacion);
-        });
-
-        this._rombo.addEventListener("click", () => {
-            this._vistaEditorMER.emitirSeleccionDeRelación(this._relacion);
-        });
     }
 
     private _actualizarInputRelacion() {
@@ -240,5 +163,102 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
             coordenadaEntidad.y + (coordenadaRelación.y - coordenadaEntidad.y) * delta - 10
         )
     };
+
+    private _dibujarElementosDeRelación() {
+        this._grupoElementos = createSvgElement("g", {
+            class: "relacion",
+        }, [
+            this._rombo = createSvgElement("polygon", {
+                "pointer-events": "all",
+            }),
+            this._foreignObject = createSvgElement("foreignObject", {
+                width: this._ancho,
+                class: 'rombo-foreign-object',
+                height: this._alto
+            }, [
+                this._input = createElement("input", {
+                    value: this._relacion.nombre(),
+                    title: "Nombre Relacion",
+                    style: {
+                        position: "absolute",
+                        width: "80px",
+                        border: "none",
+                        textAlign: "center",
+                        background: "transparent",
+                        transform: "translate(-50%, -50%)",
+                        left: "50%",
+                        top: "50%"
+                    },
+                    oninput: () => this._actualizarInputRelacionNotificando()
+                })
+            ])
+        ]);
+    }
+
+    private _dibujarParticipaciónDeEntidades() {
+        this._lineaOrigen = createSvgElement("line", {
+            stroke: "gray",
+            "stroke-width": 1,
+            "pointer-events": "none",
+        });
+
+        this._lineaDestino = createSvgElement("line", {
+            stroke: "gray",
+            "stroke-width": 1,
+            "pointer-events": "none",
+        });
+
+        this._textoCardinalidadOrigen = createSvgElement("text", {
+            class: "cardinalidad-texto",
+        });
+
+        this._textoCardinalidadDestino = createSvgElement("text", {
+            class: "cardinalidad-texto",
+        });
+    }
+
+    private _agregarEventListenersDeElementos() {
+        this._input.addEventListener("input", () => {
+            const nombre = this._input.value || "";
+            this._vistaEditorMER.renombrarRelacion(nombre, this._relacion);
+        });
+
+        this._input.addEventListener("click", () =>
+            this._vistaEditorMER.emitirSeleccionDeRelación(this._relacion));
+
+        this._rombo.addEventListener("click", () =>
+            this._vistaEditorMER.emitirSeleccionDeRelación(this._relacion));
+
+        this._textoCardinalidadOrigen.addEventListener("click",
+            () => this._vistaEditorMER.emitirSeleccionDeRelación(this._relacion));
+
+        this._textoCardinalidadDestino.addEventListener("click",
+            () => this._vistaEditorMER.emitirSeleccionDeRelación(this._relacion));
+    }
+
+    private _reposicionarParticipaciónDeEntidades(posiciónRelación: Posicion) {
+        const posiciónEntidadOrigen = this._vistaEditorMER.centroDeEntidad(this._entidadOrigen);
+        const posiciónEntidadDestino = this._vistaEditorMER.centroDeEntidad(this._entidadDestino);
+        const posicionCardinalidadOrigen = this._calcularPuntoEntreEntidadYRelacion(posiciónEntidadOrigen, posiciónRelación);
+        const posicionCardinalidadDestino = this._calcularPuntoEntreEntidadYRelacion(posiciónEntidadDestino, posiciónRelación);
+
+        this._textoCardinalidadOrigen.setAttribute("x", `${posicionCardinalidadOrigen.x}`);
+        this._textoCardinalidadOrigen.setAttribute("y", `${posicionCardinalidadOrigen.y}`);
+        this._textoCardinalidadOrigen.textContent = this._formatearCardinalidad(this._relacion.cardinalidadOrigen());
+
+        this._textoCardinalidadDestino.setAttribute("x", `${posicionCardinalidadDestino.x}`);
+        this._textoCardinalidadDestino.setAttribute("y", `${posicionCardinalidadDestino.y}`);
+        this._textoCardinalidadDestino.textContent = this._formatearCardinalidad(this._relacion.cardinalidadDestino());
+
+        this._lineaOrigen.setAttribute("x1", `${posiciónEntidadOrigen.x}`);
+        this._lineaOrigen.setAttribute("y1", `${posiciónEntidadOrigen.y}`);
+        this._lineaOrigen.setAttribute("x2", `${posiciónRelación.x}`);
+        this._lineaOrigen.setAttribute("y2", `${posiciónRelación.y}`);
+
+        this._lineaDestino.setAttribute("x1", `${posiciónEntidadDestino.x}`);
+        this._lineaDestino.setAttribute("y1", `${posiciónEntidadDestino.y}`);
+        this._lineaDestino.setAttribute("x2", `${posiciónRelación.x}`);
+        this._lineaDestino.setAttribute("y2", `${posiciónRelación.y}`);
+    }
 
 }
