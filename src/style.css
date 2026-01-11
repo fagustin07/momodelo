@@ -21,7 +21,7 @@ main {
   filter: drop-shadow(0 0 6px var(--color-resaltado));
 
   input {
-    cursor: none !important;
+    cursor: text !important;
   }
   border-radius: 4px;
 }
@@ -34,7 +34,7 @@ main {
 }
 
 .relacion.seleccionado input {
-  cursor: none !important;
+  cursor: text !important;
 }
 
 .diagrama-mer[data-interaccion-en-curso='Borrado'] {
