@@ -22,6 +22,7 @@ type JsonAtributo = {
     id: number;
     nombre: string;
     posicion: { x: number; y: number };
+    esClavePrimaria: boolean;
 };
 
 export type JsonModelo = {
@@ -35,7 +36,8 @@ export function exportar(modelador: Modelador): JsonModelo {
         entidad.atributos().map(atributo => ({
             id: atributo.id(),
             nombre: atributo.nombre(),
-            posicion: atributo.posicion()
+            posicion: atributo.posicion(),
+            esClavePrimaria: atributo.esPK()
         }))
     );
 

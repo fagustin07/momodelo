@@ -48,6 +48,20 @@ export class Modelador {
         entidad.eliminarAtributo(atributo);
     }
 
+    marcarAtributoComoClavePrimaria(entidad: Entidad, atributo: Atributo) {
+        if (!entidad.posee(atributo)) {
+            throw new Error("El atributo no pertenece a la entidad seleccionada.");
+        }
+        entidad.marcarComoParteDeClaveA(atributo);
+    }
+
+    desmarcarAtributoComoClavePrimaria(entidad: Entidad, atributo: Atributo) {
+        if (!entidad.posee(atributo)) {
+            throw new Error("El atributo no pertenece a la entidad seleccionada.");
+        }
+        entidad.desmarcarComoParteDeClaveA(atributo);
+    }
+
     // ========= RELACIONES =========
 
     crearRelacion(
@@ -116,5 +130,4 @@ export class Modelador {
             throw new RelaciónExistenteError();
         }
     }
-
 }

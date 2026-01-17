@@ -8,7 +8,7 @@ export class Entidad extends ElementoMER {
     private _nombre: string;
     private _atributos: Atributo[];
 
-    constructor(nombre: string = 'ENTIDAD', atributos: Atributo[]=[], posicion: Posicion = coordenada(0,0)) {
+    constructor(nombre: string = 'ENTIDAD', atributos: Atributo[] = [], posicion: Posicion = coordenada(0, 0)) {
         super(posicion);
         this._nombre = nombre;
         this._atributos = atributos;
@@ -19,7 +19,7 @@ export class Entidad extends ElementoMER {
         this._nombre = nuevoNombre;
     }
 
-    agregarAtributo(nombreDeNuevoAtributo: string, posicion: Posicion = coordenada(0,0)) {
+    agregarAtributo(nombreDeNuevoAtributo: string, posicion: Posicion = coordenada(0, 0)) {
         const nuevoAtributo = new Atributo(nombreDeNuevoAtributo, posicion);
         this._atributos.push(nuevoAtributo);
         return nuevoAtributo;
@@ -47,6 +47,22 @@ export class Entidad extends ElementoMER {
 
     representaUnaEntidad() {
         return true;
+    }
+
+    marcarComoParteDeClaveA(atributo: Atributo) {
+        if (this.posee(atributo)) {
+            atributo.marcarPK();
+        } else {
+            throw new Error("El atributo no pertenece a esta entidad.");
+        }
+    }
+
+    desmarcarComoParteDeClaveA(atributo: Atributo) {
+        if (this.posee(atributo)) {
+            atributo.desmarcarPK();
+        } else {
+            throw new Error("El atributo no pertenece a esta entidad.");
+        }
     }
 
     posee(atributo: Atributo) {

@@ -15,6 +15,8 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
         this._entidad = entidad;
         this._elementoDom = this._crearElementoDom();
         this._crearLinea();
+
+        atributo.alCambiarLaPK(() => this._actualizarEstiloPK());
     }
 
     private get _atributo() {
@@ -47,6 +49,14 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
         this._campoNombre.value = this._atributo.nombre();
     }
 
+    private _actualizarEstiloPK() {
+        if (this._atributo.esPK()) {
+            this._elementoDom.classList.add("atributo-pk");
+        } else {
+            this._elementoDom.classList.remove("atributo-pk");
+        }
+    }
+
     protected elementoDOM(): HTMLElement | SVGElement {
         return this._elementoDom;
     }
@@ -73,6 +83,10 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
 
         this.posicionarElemento(elementoDom);
         this.hacerArrastrable(elementoDom);
+        
+        if (this._atributo.esPK()) {
+            elementoDom.classList.add("atributo-pk");
+        }
 
         return elementoDom;
     }

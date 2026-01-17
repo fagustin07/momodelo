@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {coordenada} from "../../src/posicion.ts";
+import {coordenada, coordenadaInicial} from "../../src/posicion.ts";
 import {Entidad} from "../../src/modelo/entidad.ts";
 import {exportar} from "../../src/servicios/exportador.ts";
 import {Modelador} from "../../src/servicios/modelador.ts";
@@ -7,10 +7,9 @@ import {Atributo} from "../../src/modelo/atributo.ts";
 import {Relacion} from "../../src/modelo/relacion.ts";
 
 describe("Exportador", () => {
-    const pos = (x: number, y: number) => coordenada(x, y);
 
     it("exporta una entidad sin atributos", () => {
-        const entidad = new Entidad("E", [], pos(10, 20));
+        const entidad = new Entidad("E", [], coordenada(10, 20));
         const modelo = new Modelador([entidad]);
         const json = exportar(modelo);
 
@@ -24,9 +23,9 @@ describe("Exportador", () => {
     });
 
     it("exporta entidad con atributos", () => {
-        const a1 = new Atributo("a", pos(0, 0));
-        const a2 = new Atributo("b", pos(5, 5));
-        const entidad = new Entidad("E", [a1, a2], pos(10, 10));
+        const atributo1 = new Atributo("a", coordenadaInicial());
+        const atributo2 = new Atributo("b", coordenada(5, 5));
+        const entidad = new Entidad("E", [atributo1, atributo2], coordenada(10, 10));
         const modelo = new Modelador([entidad]);
         const json = exportar(modelo);
 
@@ -38,15 +37,15 @@ describe("Exportador", () => {
     });
 
     it("exporta múltiples relaciones con entidades correctas", () => {
-        const e1 = new Entidad("E1", [], pos(0, 0));
-        const e2 = new Entidad("E2", [], pos(100, 100));
-        const e3 = new Entidad("E3", [], pos(200, 200));
-        const r1 = new Relacion(e1, e2, "R1", ['0', '1'], ['1', 'N'], pos(50, 50));
-        const r2 = new Relacion(e2, e3, "R2", ['1', '1'], ['0', 'N'], pos(150, 150));
-        const r3 = new Relacion(e1, e3, "R3", ['1', 'N'], ['1', 'N'], pos(100, 100));
+        const entidad1 = new Entidad("E1", [], coordenadaInicial());
+        const entidad2 = new Entidad("E2", [], coordenada(100, 100));
+        const entidad3 = new Entidad("E3", [], coordenada(200, 200));
+        const relacion1 = new Relacion(entidad1, entidad2, "R1", ['0', '1'], ['1', 'N'], coordenada(50, 50));
+        const relacion2 = new Relacion(entidad2, entidad3, "R2", ['1', '1'], ['0', 'N'], coordenada(150, 150));
+        const relacion3 = new Relacion(entidad1, entidad3, "R3", ['1', 'N'], ['1', 'N'], coordenada(100, 100));
 
-        const relacionesOriginales = [r1, r2, r3];
-        const json = exportar(new Modelador([e1, e2, e3], relacionesOriginales));
+        const relacionesOriginales = [relacion1, relacion2, relacion3];
+        const json = exportar(new Modelador([entidad1, entidad2, entidad3], relacionesOriginales));
 
         expect(json.relaciones).toHaveLength(relacionesOriginales.length);
 
@@ -68,15 +67,26 @@ describe("Exportador", () => {
     });
 
 
-    it("asigna ids únicos y coherentes", () => {
-        const a = new Atributo("a", pos(1, 1));
-        const e = new Entidad("E", [a], pos(0, 0));
-        const modelo = new Modelador([e]);
+    it("asigna ids únicos", () => {
+        const atributo = new Atributo("codigo", coordenadaInicial());
+        const entidad = new Entidad("Producto", [atributo], coordenadaInicial());
+        const modelo = new Modelador([entidad]);
         const json = exportar(modelo);
 
         const entidadId = json.entidades[0].id;
         const atributoId = json.atributos[0].id;
         expect(entidadId).not.toBe(atributoId);
         expect(json.entidades[0].atributos).toContain(atributoId);
+    });
+
+    it("se guardan correctamente los atributos marcados como clave primaria", () => {
+        const atributoPK = new Atributo("codigo", coordenadaInicial());
+        const entidadConPK = new Entidad("Producto", [atributoPK], coordenadaInicial());
+        entidadConPK.marcarComoParteDeClaveA(atributoPK);
+        const modelo = new Modelador([entidadConPK]);
+
+        const json = exportar(modelo);
+
+        expect(json.atributos[0].esClavePrimaria).toBe(true);
     });
 });

@@ -287,6 +287,14 @@ export class VistaEditorMER {
         this._interacción = new BorrandoElemento(this);
     }
 
+    marcarAtributoComoClavePrimaria(atributo: Atributo) {
+        this.modelador.marcarAtributoComoClavePrimaria(this._getEntidadDelAtributo(atributo), atributo);
+    }
+
+    desmarcarAtributoComoClavePrimaria(atributo: Atributo) {
+        this.modelador.desmarcarAtributoComoClavePrimaria(this._getEntidadDelAtributo(atributo), atributo);
+    }
+
     private _todasLasVistas() {
         return [
             ...this._entidadesVisuales.values(),

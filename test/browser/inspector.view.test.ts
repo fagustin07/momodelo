@@ -4,6 +4,7 @@ import {init} from "../../src/vista";
 import {Entidad} from "../../src/modelo/entidad";
 import {coordenada} from "../../src/posicion";
 import {Relacion} from "../../src/modelo/relacion";
+import {Atributo} from "../../src/modelo/atributo.ts";
 import "../../src/style.css";
 
 
@@ -62,6 +63,7 @@ describe("[MER] Inspector de Elementos", () => {
     let entidadPirata: Entidad;
     let entidadBarco: Entidad;
     let relacionNavega: Relacion;
+    let atributoNombre: Atributo;
 
     beforeEach(() => {
         document.body.innerHTML = '';
@@ -71,6 +73,7 @@ describe("[MER] Inspector de Elementos", () => {
         entidadPirata = new Entidad("Pirata", [], coordenada(10, 10));
         entidadBarco = new Entidad("Barco", [], coordenada(300, 10));
         relacionNavega = new Relacion(entidadPirata, entidadBarco, "Navega");
+        atributoNombre = entidadPirata.agregarAtributo("Nombre", coordenada(20, 20));
 
         init(elementoRaíz, [entidadPirata, entidadBarco], [relacionNavega]);
     });
@@ -167,15 +170,16 @@ describe("[MER] Inspector de Elementos", () => {
         const [elementoPirata] = getElementoEntidades();
         const inputAtributo = agregarAtributoEn(elementoPirata, "Parche");
         fireEvent.click(inputAtributo);
+        const posiciónDeAtributoBuscado = entidadPirata.atributos().length - 1;
 
         const inputInspector = getInputInspector();
         const nuevoNombre = "Garfio";
 
         fireEvent.input(inputInspector, { target: { value: nuevoNombre } });
 
-        const atributoPirata = entidadPirata.atributos()[0];
+        const atributoPirata = entidadPirata.atributos()[posiciónDeAtributoBuscado];
 
-        expect(getAtributoInputDe(getAtributoVisualDe(elementoPirata)[0]).value).toBe(nuevoNombre);
+        expect(getAtributoInputDe(getAtributoVisualDe(elementoPirata)[posiciónDeAtributoBuscado]).value).toBe(nuevoNombre);
         expect(atributoPirata.nombre()).toBe(nuevoNombre);
         expect(inputInspector.value).toBe(nuevoNombre);
     });
@@ -197,7 +201,8 @@ describe("[MER] Inspector de Elementos", () => {
     it("Renombrar Atributo desde la Figura actualiza el Modelo y el Inspector", () => {
         const [elementoPirata] = getElementoEntidades();
         agregarAtributoEn(elementoPirata, "Parche");
-        const elementoAtributoVisual = getAtributoVisualDe(elementoPirata)[0];
+        const posiciónDeAtributoBuscado = entidadPirata.atributos().length - 1;
+        const elementoAtributoVisual = getAtributoVisualDe(elementoPirata)[posiciónDeAtributoBuscado];
         fireEvent.click(elementoAtributoVisual);
 
         const inputFigura = getAtributoInputDe(elementoAtributoVisual);
@@ -205,7 +210,7 @@ describe("[MER] Inspector de Elementos", () => {
 
         fireEvent.input(inputFigura, { target: { value: nuevoNombre } });
 
-        const atributoPirata = entidadPirata.atributos()[0];
+        const atributoPirata = entidadPirata.atributos()[posiciónDeAtributoBuscado];
 
         expect(atributoPirata.nombre()).toBe(nuevoNombre);
         expect(getInputInspector().value).toBe(nuevoNombre);
@@ -221,4 +226,38 @@ describe("[MER] Inspector de Elementos", () => {
         expect(getTítuloInspector()).toBe("Relación");
         expect(getInputInspector().value).toBe("Navega");
     });
+
+    it("Se pueden marcar atributos como parte de la clave primaria de una entidad", () => {
+        const [elementoPirata] = getElementoEntidades();
+        
+        const atributoVisual = getAtributoVisualDe(elementoPirata)[0];
+        fireEvent.click(atributoVisual);
+
+        const inspector = document.getElementById("panel-inspector")!;
+        const botonPK = within(inspector).getByTitle("Marcar como clave primaria");
+        
+        fireEvent.click(botonPK);
+
+        expect(atributoNombre.esPK()).toBeTruthy();
+        expect(atributoVisual.classList.contains("atributo-pk")).toBe(true);
+    });
+
+    it("Se pueden desmarcar atributos como parte de la clave primaria de una entidad", () => {
+        const [elementoPirata] = getElementoEntidades();
+
+        const atributoVisual = getAtributoVisualDe(elementoPirata)[0];
+        fireEvent.click(atributoVisual);
+
+        const inspector = document.getElementById("panel-inspector")!;
+        const botonPK = within(inspector).getByTitle("Marcar como clave primaria");
+
+        fireEvent.click(botonPK);
+        expect(atributoNombre.esPK()).toBeTruthy();
+        expect(atributoVisual.classList.contains("atributo-pk")).toBe(true);
+
+        fireEvent.click(botonPK);
+        expect(atributoNombre.esPK()).toBeFalsy();
+        expect(atributoVisual.classList.contains("atributo-pk")).toBe(false);
+    });
+
 });

@@ -9,12 +9,12 @@ describe("Importador", () => {
     it("importa entidades con atributos correctamente", () => {
         const json: JsonModelo = {
             atributos: [
-                {id: 1, nombre: "a1", posicion: coordenada(10, 10)},
-                {id: 2, nombre: "a2", posicion: coordenada(20, 20)}
+                {id: 1, nombre: "nombre", posicion: coordenada(10, 10), esClavePrimaria: false},
+                {id: 2, nombre: "esMayor?", posicion: coordenada(20, 20), esClavePrimaria: true},
             ],
             entidades: [
-                {id: 100, nombre: "Entidad1", posicion: coordenadaInicial(), atributos: [1]},
-                {id: 101, nombre: "Entidad2", posicion: coordenada(100, 100), atributos: [2]}
+                {id: 100, nombre: "Evaluador", posicion: coordenadaInicial(), atributos: [1]},
+                {id: 101, nombre: "Sobrio", posicion: coordenada(100, 100), atributos: [2]}
             ],
             relaciones: []
         };
@@ -22,8 +22,8 @@ describe("Importador", () => {
         const {entidades, relaciones} = importar(json);
 
         expect(entidades).toHaveLength(2);
-        expect(entidades[0].nombre()).toBe("Entidad1");
-        expect(entidades[0].atributos()[0].nombre()).toBe("a1");
+        expect(entidades[0].nombre()).toBe("Evaluador");
+        expect(entidades[0].atributos()[0].nombre()).toBe("nombre");
         expect(entidades[1].atributos()[0].posicion()).toMatchObject(coordenada(20, 20));
         expect(relaciones).toHaveLength(0);
     });
@@ -94,13 +94,24 @@ describe("Importador", () => {
 
     it("El importador preserva posiciones de todos los elementos", () => {
         const json: JsonModelo = {
-            atributos: [{id: 1, nombre: "a", posicion: coordenada(10, 20)}],
-            entidades: [{id: 1, nombre: "E", posicion: coordenada(100, 200), atributos: [1]}],
+            atributos: [{id: 1, nombre: "Nombre", posicion: coordenada(10, 20), esClavePrimaria: false}],
+            entidades: [{id: 1, nombre: "Chef", posicion: coordenada(100, 200), atributos: [1]}],
             relaciones: []
         };
 
         const {entidades} = importar(json);
         expect(entidades[0].posicion()).toMatchObject(coordenada(100, 200));
         expect(entidades[0].atributos()[0].posicion()).toMatchObject(coordenada(10, 20));
+    });
+
+    it("se cargan correctamente los atributos partes de claves", () => {
+        const json: JsonModelo = {
+            atributos: [{id: 1, nombre: "Estilo", posicion: coordenada(10, 20), esClavePrimaria: true}],
+            entidades: [{id: 1, nombre: "Pizza", posicion: coordenada(100, 200), atributos: [1]}],
+            relaciones: []
+        };
+
+        const {entidades} = importar(json);
+        expect(entidades[0].atributos()[0].esPK()).toBe(true);
     });
 });

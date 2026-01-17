@@ -34,4 +34,15 @@ describe("Entidad", () => {
         expect(entidad.atributos()[0]).toEqual(atr);
         expect(entidad.atributos()[0].nombre()).toEqual("Apellido");
     });
+
+    it("No se puede marcar como PK un atributo que no pertenece a la entidad", () => {
+        const entidad = new Entidad("Pirata", [], coordenadaInicial());
+        const otraEntidad = new Entidad("Barco", [], coordenadaInicial());
+        const atributoDestino = otraEntidad.agregarAtributo("Destino");
+
+        expect(() => {
+            entidad.marcarComoParteDeClaveA(atributoDestino);
+        }).toThrow("El atributo no pertenece a esta entidad.");
+    });
+
 });

@@ -106,7 +106,26 @@ export class InspectorElementos {
 
         this._inputNombre!.oninput = () => this.vistaEditor.renombrarAtributo(this._inputNombre!.value, atributo);
 
-        this._contenedor.append(titulo, label, this._inputNombre!);
+        const botonPK = createElement("button", {
+            textContent: "PK",
+            title: "Marcar como clave primaria",
+            className: this._claseDel(atributo),
+            onclick: () => {
+                if (atributo.esPK()) {
+                    this.vistaEditor.desmarcarAtributoComoClavePrimaria(atributo);
+                } else {
+                    this.vistaEditor.marcarAtributoComoClavePrimaria(atributo);
+                }
+            }
+        });
+
+        atributo.alCambiarLaPK(() => botonPK.className = this._claseDel(atributo));
+
+        this._contenedor.append(titulo, label, this._inputNombre!, botonPK);
+    }
+
+    private _claseDel(atributo: Atributo) {
+        return "boton-pk " + (atributo.esPK() ? "pk-activo" : "pk-inactivo");
     }
 
     private _renderRelacion(relacion: Relacion) {
