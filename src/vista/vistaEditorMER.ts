@@ -18,6 +18,7 @@ import {SeleccionandoEntidadDestinoRelación} from "./interacciones/seleccionand
 import {handlearError} from "../servicios/handlearError.ts";
 import {generarBarraDeInteracciones} from "../topbar.ts";
 import {InspectorElementos} from "./inspectorElementos.ts";
+import {MenuHamburguesa} from "../componentes/menuHamburguesa.ts";
 
 export class VistaEditorMER {
     modelador: Modelador;
@@ -26,6 +27,8 @@ export class VistaEditorMER {
     private _inspector: InspectorElementos;
     private readonly _elementoRaíz: HTMLElement;
     private readonly _elementoSvg: SVGElement;
+    private readonly _topbar: HTMLElement;
+    private readonly _menuHamburguesa: MenuHamburguesa;
 
     private _entidadesVisuales: Map<Entidad, VistaEntidad> = new Map();
     private _relacionesVisuales: Map<Relacion, VistaRelacion> = new Map();
@@ -71,9 +74,11 @@ export class VistaEditorMER {
 
         this.desenfocarElementoInput();
 
-        const topbar = generarBarraDeInteracciones(this, this._elementoRaíz);
+        this._topbar = generarBarraDeInteracciones(this, this._elementoRaíz);
+        elementoRaiz.prepend(this._topbar);
 
-        elementoRaiz.prepend(topbar);
+        this._menuHamburguesa = new MenuHamburguesa(this);
+        this._menuHamburguesa.representarseEn(elementoRaiz);
 
         this._interacción = new SinInteracción(this);
     }

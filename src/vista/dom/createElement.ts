@@ -19,6 +19,10 @@ type SVGAttributesMap = {
     "svg": {
         width: number,
         height: number,
+        viewBox: string,
+        fill: string,
+        stroke: string,
+        'stroke-width': number,
     },
     "g": {
         class: string,

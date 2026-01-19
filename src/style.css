@@ -350,3 +350,75 @@ button.pk-inactivo {
     background-color: #d2d4d8;
   }
 }
+
+.menu-hamburguesa-container {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 2;
+}
+
+.menu-hamburguesa-icono {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 0.4rem;
+  padding: 0.5rem;
+  transition: all 0.3s ease;
+  color: #333;
+}
+
+.menu-hamburguesa-icono:hover {
+  background: #f5f5f5;
+  border-color: #bbb;
+}
+
+.menu-hamburguesa-icono svg {
+  display: block;
+}
+
+.menu-hamburguesa-desplegable {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  background: white;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.15);
+  border-radius: 0.5rem;
+  padding: 0.25rem 0;
+  min-width: 11rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.menu-hamburguesa-desplegable.abierto {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.menu-hamburguesa-desplegable .menu-item {
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  display: block;
+}
+
+.menu-hamburguesa-desplegable .menu-item:hover {
+  background: #f0f0f0;
+}
+
+.menu-hamburguesa-input {
+  display: none;
+}

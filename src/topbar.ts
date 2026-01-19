@@ -1,6 +1,4 @@
 import {createElement} from "./vista/dom/createElement.ts";
-import {exportar} from "./servicios/exportador.ts";
-import {importar} from "./servicios/importador.ts";
 import {VistaEditorMER} from "./vista/vistaEditorMER.ts";
 
 let botonActivo: HTMLButtonElement | null = null;
@@ -9,25 +7,6 @@ export function generarBarraDeInteracciones(vistaEditorMER: VistaEditorMER, elem
     const textoSugerencia = createElement("span", {
         className: "texto-sugerencia",
         textContent: "",
-    });
-
-    const inputJson = createElement("input", {
-        type: "file",
-        accept: ".json",
-        style: {display: "none"},
-        onchange: async (event: Event) => {
-            const input = event.target as HTMLInputElement;
-            if (!input.files?.length) return;
-
-            const file = input.files[0];
-            const text = await file.text();
-            const json = JSON.parse(text);
-
-            const {entidades, relaciones} = importar(json);
-            vistaEditorMER.reemplazarModelo(entidades, relaciones);
-
-            input.value = "";
-        }
     });
 
     elementoRaiz.addEventListener("fin-interaccion-mer", () => {
@@ -54,19 +33,13 @@ export function generarBarraDeInteracciones(vistaEditorMER: VistaEditorMER, elem
     elementoRaiz.addEventListener("momodelo-borrar-elemento",
         () => setSugerencia("Seleccioná el elemento (ESC para cancelar)"));
 
-    const topbar = createElement("div", {id: "topbar"}, [
-        createElement("button", botonCrearEntidad(vistaEditorMER)),
-        createElement("button", botonCrearRelacion(elementoRaiz, vistaEditorMER)),
-        createElement("button", botonBorrar(vistaEditorMER)),
-        createElement("button", botonDeExportar(vistaEditorMER)),
-        createElement("button", botonImportar(inputJson, vistaEditorMER)),
+        const topbar = createElement("div", {id: "topbar"}, [
+            createElement("button", botonCrearEntidad(vistaEditorMER)),
+            createElement("button", botonCrearRelacion(elementoRaiz, vistaEditorMER)),
+            createElement("button", botonBorrar(vistaEditorMER)),
     ]);
 
-    return createElement("div", {className: "contenedor-barra"}, [
-        topbar,
-        textoSugerencia,
-        inputJson
-    ]);
+    return createElement("div", {className: "contenedor-barra"}, [topbar, textoSugerencia])
 }
 
 function handlearBotonPresionado(boton: HTMLButtonElement, vistaEditorMER: VistaEditorMER, callbackAlPresionarBotonn: () => void) {
@@ -113,44 +86,6 @@ function botonBorrar(vistaEditorMER: VistaEditorMER) {
             handlearBotonPresionado(evento.currentTarget as HTMLButtonElement, vistaEditorMER, () =>
                 vistaEditorMER.solicitudDeBorrado()
             ),
-    };
-}
-
-function botonDeExportar(vistaEditorMER: VistaEditorMER) {
-    return {
-        textContent: "Exportar",
-        onclick: () => {
-            vistaEditorMER.cancelarInteracción();
-            const json = exportar(vistaEditorMER.modelador);
-            const blob = new Blob([JSON.stringify(json, null, 2)], {type: "application/json"});
-            const url = URL.createObjectURL(blob);
-
-            const timestamp = new Date().toISOString()
-                .replace(/T/, "_")
-                .replace(/:/g, "-")
-                .replace(/\..+/, "");
-
-            const nombreSugerido = `MER_${timestamp}`;
-            const nombreSinExtension = prompt("Elegí el nombre del archivo:", nombreSugerido);
-
-            if (!nombreSinExtension) return;
-
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${nombreSinExtension}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-    };
-}
-
-function botonImportar(inputJson: HTMLInputElement, vistaEditorMER: VistaEditorMER) {
-    return {
-        textContent: "Importar",
-        onclick: () => {
-            vistaEditorMER.cancelarInteracción();
-            inputJson.click();
-        }
     };
 }
 
