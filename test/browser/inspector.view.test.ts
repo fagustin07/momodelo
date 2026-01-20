@@ -82,8 +82,8 @@ describe("[MER] Inspector de Elementos", () => {
         const [elementoPirata] = getElementoEntidades();
         fireEvent.click(elementoPirata);
 
-        expect(elInspectorEstáVisible()).toBeTruthy;
-        expect(getTítuloInspector()).toBe("Entidad");
+        expect(elInspectorEstáVisible()).toBeTruthy();
+        expect(getTítuloInspector()).toContain("Entidad");
         expect(getInputInspector().value).toBe("Pirata");
     });
 
@@ -93,8 +93,8 @@ describe("[MER] Inspector de Elementos", () => {
 
         fireEvent.click(inputAtributo);
 
-        expect(elInspectorEstáVisible()).toBeTruthy;
-        expect(getTítuloInspector()).toBe("Atributo");
+        expect(elInspectorEstáVisible()).toBeTruthy();
+        expect(getTítuloInspector()).toContain("Atributo");
         expect(getInputInspector().value).toBe("Parche");
     });
 
@@ -104,8 +104,8 @@ describe("[MER] Inspector de Elementos", () => {
 
         const inspector = document.getElementById("panel-inspector")!;
 
-        expect(elInspectorEstáVisible()).toBeTruthy;
-        expect(getTítuloInspector()).toBe("Relación");
+        expect(elInspectorEstáVisible()).toBeTruthy();
+        expect(getTítuloInspector()).toContain("Relación");
         expect(getInputInspector().value).toBe("Navega");
         expect(inspector.innerHTML).toContain("Pirata");
         expect(inspector.innerHTML).toContain("Barco");
@@ -132,15 +132,15 @@ describe("[MER] Inspector de Elementos", () => {
         const participaciónMáximaRestringidaDestino = within(contenedorDestino).getByLabelText(/Una vez/i) as HTMLInputElement;
         const participaciónMáximaLibreDestino = within(contenedorDestino).getByLabelText(/Muchas/i) as HTMLInputElement;
 
-        expect(participaciónMínimaOpcionalOrigen.checked).toBe(true);
-        expect(participaciónMínimaObligatoriaOrigen.checked).toBe(false);
-        expect(participaciónMáximaLibreOrigen.checked).toBe(true);
-        expect(participaciónMáximaRestringidaOrigen.checked).toBe(false);
+        expect(participaciónMínimaOpcionalOrigen.checked).toBeTruthy();
+        expect(participaciónMínimaObligatoriaOrigen.checked).toBeFalsy();
+        expect(participaciónMáximaLibreOrigen.checked).toBeTruthy();
+        expect(participaciónMáximaRestringidaOrigen.checked).toBeFalsy();
 
-        expect(participaciónMínimaOpcionalDestino.checked).toBe(true);
-        expect(participaciónMínimaObligatoriaDestino.checked).toBe(false);
-        expect(participaciónMáximaLibreDestino.checked).toBe(true);
-        expect(participaciónMáximaRestringidaDestino.checked).toBe(false);
+        expect(participaciónMínimaOpcionalDestino.checked).toBeTruthy();
+        expect(participaciónMínimaObligatoriaDestino.checked).toBeFalsy();
+        expect(participaciónMáximaLibreDestino.checked).toBeTruthy();
+        expect(participaciónMáximaRestringidaDestino.checked).toBeFalsy();
     })
 
     it("Al deseleccionar un elemento, el Inspector se oculta", () => {
@@ -223,7 +223,7 @@ describe("[MER] Inspector de Elementos", () => {
 
         fireEvent.click(inputRelacion);
 
-        expect(getTítuloInspector()).toBe("Relación");
+        expect(getTítuloInspector()).toContain("Relación");
         expect(getInputInspector().value).toBe("Navega");
     });
 
@@ -239,7 +239,7 @@ describe("[MER] Inspector de Elementos", () => {
         fireEvent.click(botonPK);
 
         expect(atributoNombre.esPK()).toBeTruthy();
-        expect(atributoVisual.classList.contains("atributo-pk")).toBe(true);
+        expect(atributoVisual.classList.contains("atributo-pk")).toBeTruthy();
     });
 
     it("Se pueden desmarcar atributos como parte de la clave primaria de una entidad", () => {
@@ -253,11 +253,82 @@ describe("[MER] Inspector de Elementos", () => {
 
         fireEvent.click(botonPK);
         expect(atributoNombre.esPK()).toBeTruthy();
-        expect(atributoVisual.classList.contains("atributo-pk")).toBe(true);
+        expect(atributoVisual.classList.contains("atributo-pk")).toBeTruthy();
 
         fireEvent.click(botonPK);
         expect(atributoNombre.esPK()).toBeFalsy();
-        expect(atributoVisual.classList.contains("atributo-pk")).toBe(false);
+        expect(atributoVisual.classList.contains("atributo-pk")).toBeFalsy();
+    });
+
+    it("Se pueden marcar atributos como multivaluados", () => {
+        const [elementoPirata] = getElementoEntidades();
+        
+        const atributoVisual = getAtributoVisualDe(elementoPirata)[0];
+        fireEvent.click(atributoVisual);
+
+        const inspector = document.getElementById("panel-inspector")!;
+        const botonMultivaluado = within(inspector).getByTitle("Marcar como multivaluado");
+        
+        fireEvent.click(botonMultivaluado);
+
+        expect(atributoNombre.esMultivaluado()).toBeTruthy();
+        expect(atributoVisual.classList.contains("atributo-multivaluado")).toBeTruthy();
+    });
+
+    it("Se pueden desmarcar atributos multivaluados", () => {
+        const [elementoPirata] = getElementoEntidades();
+
+        const atributoVisual = getAtributoVisualDe(elementoPirata)[0];
+        fireEvent.click(atributoVisual);
+
+        const inspector = document.getElementById("panel-inspector")!;
+        const botonMultivaluado = within(inspector).getByTitle("Marcar como multivaluado");
+
+        fireEvent.click(botonMultivaluado);
+        expect(atributoNombre.esMultivaluado()).toBeTruthy();
+        expect(atributoVisual.classList.contains("atributo-multivaluado")).toBeTruthy();
+
+        fireEvent.click(botonMultivaluado);
+        expect(atributoNombre.esMultivaluado()).toBeFalsy();
+        expect(atributoVisual.classList.contains("atributo-multivaluado")).toBeFalsy();
+    });
+
+    it("Marcar atributo como PK desmarca multivaluado automáticamente", () => {
+        const [elementoPirata] = getElementoEntidades();
+        const atributoVisual = getAtributoVisualDe(elementoPirata)[0];
+        fireEvent.click(atributoVisual);
+
+        const inspector = document.getElementById("panel-inspector")!;
+        const botonMultivaluado = within(inspector).getByTitle("Marcar como multivaluado");
+        const botonPK = within(inspector).getByTitle("Marcar como clave primaria");
+
+        fireEvent.click(botonMultivaluado);
+        expect(atributoNombre.esMultivaluado()).toBeTruthy();
+
+        fireEvent.click(botonPK);
+        expect(atributoNombre.esPK()).toBeTruthy();
+        expect(atributoNombre.esMultivaluado()).toBeFalsy();
+        expect(atributoVisual.classList.contains("atributo-pk")).toBeTruthy();
+        expect(atributoVisual.classList.contains("atributo-multivaluado")).toBeFalsy();
+    });
+
+    it("Marcar atributo como multivaluado desmarca PK automáticamente", () => {
+        const [elementoPirata] = getElementoEntidades();
+        const atributoVisual = getAtributoVisualDe(elementoPirata)[0];
+        fireEvent.click(atributoVisual);
+
+        const inspector = document.getElementById("panel-inspector")!;
+        const botonMultivaluado = within(inspector).getByTitle("Marcar como multivaluado");
+        const botonPK = within(inspector).getByTitle("Marcar como clave primaria");
+
+        fireEvent.click(botonPK);
+        expect(atributoNombre.esPK()).toBeTruthy();
+
+        fireEvent.click(botonMultivaluado);
+        expect(atributoNombre.esMultivaluado()).toBeTruthy();
+        expect(atributoNombre.esPK()).toBeFalsy();
+        expect(atributoVisual.classList.contains("atributo-multivaluado")).toBeTruthy();
+        expect(atributoVisual.classList.contains("atributo-pk")).toBeFalsy();
     });
 
 });

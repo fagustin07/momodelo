@@ -87,6 +87,17 @@ describe("Exportador", () => {
 
         const json = exportar(modelo);
 
-        expect(json.atributos[0].esClavePrimaria).toBe(true);
+        expect(json.atributos[0].esClavePrimaria).toBeTruthy();
+    });
+
+    it("se guardan correctamente los atributos marcados como multivaluados", () => {
+        const atributoMultivaluado = new Atributo("telefono", coordenadaInicial());
+        const entidad = new Entidad("Cliente", [atributoMultivaluado], coordenadaInicial());
+        const modelo = new Modelador([entidad]);
+        entidad.marcarComoMultivaluadoA(atributoMultivaluado);
+
+        const json = exportar(modelo);
+
+        expect(json.atributos[0].esMultivaluado).toBeTruthy();
     });
 });

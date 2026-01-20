@@ -16,7 +16,8 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
         this._elementoDom = this._crearElementoDom();
         this._crearLinea();
 
-        atributo.alCambiarLaPK(() => this._actualizarEstiloPK());
+        atributo.alCambiarElSerPK(() => this._actualizarEstiloPK());
+        atributo.alCambiarElSerMultivaluado(() => this._actualizarEstiloMultivaluado());
     }
 
     private get _atributo() {
@@ -57,6 +58,14 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
         }
     }
 
+    private _actualizarEstiloMultivaluado() {
+        if (this._atributo.esMultivaluado()) {
+            this._elementoDom.classList.add("atributo-multivaluado");
+        } else {
+            this._elementoDom.classList.remove("atributo-multivaluado");
+        }
+    }
+
     protected elementoDOM(): HTMLElement | SVGElement {
         return this._elementoDom;
     }
@@ -86,6 +95,10 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
         
         if (this._atributo.esPK()) {
             elementoDom.classList.add("atributo-pk");
+        }
+
+        if (this._atributo.esMultivaluado()) {
+            elementoDom.classList.add("atributo-multivaluado");
         }
 
         return elementoDom;

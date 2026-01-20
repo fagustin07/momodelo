@@ -62,6 +62,20 @@ export class Modelador {
         entidad.desmarcarComoParteDeClaveA(atributo);
     }
 
+    marcarAtributoMultivaluado(entidad: Entidad, atributo: Atributo) {
+        if (!entidad.posee(atributo)) {
+            throw new Error("El atributo no pertenece a la entidad seleccionada.");
+        }
+        entidad.marcarComoMultivaluadoA(atributo);
+    }
+
+    desmarcarAtributoMultivaluado(entidad: Entidad, atributo: Atributo) {
+        if (!entidad.posee(atributo)) {
+            throw new Error("El atributo no pertenece a la entidad seleccionada.");
+        }
+        entidad.desmarcarComoMultivaluadoA(atributo);
+    }
+
     // ========= RELACIONES =========
 
     crearRelacion(

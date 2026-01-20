@@ -48,7 +48,7 @@ export class InspectorElementos {
 
     private _titulo(texto: string) {
         return createElement("h3", {
-            textContent: texto,
+            textContent: "Inspector de " + texto,
             title: "Tipo Elemento Inspeccionado",
             style: {
                 fontSize: "1rem",
@@ -109,7 +109,7 @@ export class InspectorElementos {
         const botonPK = createElement("button", {
             textContent: "PK",
             title: "Marcar como clave primaria",
-            className: this._claseDel(atributo),
+            className: this._clasePK(atributo),
             onclick: () => {
                 if (atributo.esPK()) {
                     this.vistaEditor.desmarcarAtributoComoClavePrimaria(atributo);
@@ -119,13 +119,32 @@ export class InspectorElementos {
             }
         });
 
-        atributo.alCambiarLaPK(() => botonPK.className = this._claseDel(atributo));
+        atributo.alCambiarElSerPK(() => botonPK.className = this._clasePK(atributo));
 
-        this._contenedor.append(titulo, label, this._inputNombre!, botonPK);
+        const botonMultivaluado = createElement("button", {
+            textContent: "Multivaluado",
+            title: "Marcar como multivaluado",
+            className: this._claseMultivaluado(atributo),
+            onclick: () => {
+                if (atributo.esMultivaluado()) {
+                    this.vistaEditor.desmarcarAtributoMultivaluado(atributo);
+                } else {
+                    this.vistaEditor.marcarAtributoMultivaluado(atributo);
+                }
+            }
+        });
+
+        atributo.alCambiarElSerMultivaluado(() => botonMultivaluado.className = this._claseMultivaluado(atributo));
+
+        this._contenedor.append(titulo, label, this._inputNombre!, botonPK, botonMultivaluado);
     }
 
-    private _claseDel(atributo: Atributo) {
+    private _clasePK(atributo: Atributo) {
         return "boton-pk " + (atributo.esPK() ? "pk-activo" : "pk-inactivo");
+    }
+
+    private _claseMultivaluado(atributo: Atributo) {
+        return "boton-multivaluado " + (atributo.esMultivaluado() ? "multivaluado-activo" : "multivaluado-inactivo");
     }
 
     private _renderRelacion(relacion: Relacion) {

@@ -49,9 +49,13 @@ export class Entidad extends ElementoMER {
         return true;
     }
 
+    posee(atributo: Atributo) {
+        return this._atributos.includes(atributo);
+    }
+
     marcarComoParteDeClaveA(atributo: Atributo) {
         if (this.posee(atributo)) {
-            atributo.marcarPK();
+            atributo.marcarComoClavePrimaria();
         } else {
             throw new Error("El atributo no pertenece a esta entidad.");
         }
@@ -59,13 +63,26 @@ export class Entidad extends ElementoMER {
 
     desmarcarComoParteDeClaveA(atributo: Atributo) {
         if (this.posee(atributo)) {
-            atributo.desmarcarPK();
+            atributo.desmarcarComoClavePrimaria();
         } else {
             throw new Error("El atributo no pertenece a esta entidad.");
         }
     }
 
-    posee(atributo: Atributo) {
-        return this._atributos.includes(atributo);
+    marcarComoMultivaluadoA(atributo: Atributo) {
+        if (this.posee(atributo)) {
+            atributo.marcarComoMultivaluado();
+        } else {
+            throw new Error("El atributo no pertenece a esta entidad.");
+        }
+
+    }
+
+    desmarcarComoMultivaluadoA(atributo: Atributo) {
+        if (this.posee(atributo)) {
+            atributo.desmarcarComoMultivaluado();
+        } else {
+            throw new Error("El atributo no pertenece a esta entidad.");
+        }
     }
 }

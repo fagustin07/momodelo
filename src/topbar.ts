@@ -33,6 +33,12 @@ export function generarBarraDeInteracciones(vistaEditorMER: VistaEditorMER, elem
     elementoRaiz.addEventListener("momodelo-borrar-elemento",
         () => setSugerencia("Seleccioná el elemento (ESC para cancelar)"));
 
+    elementoRaiz.addEventListener('inicio-inspector',
+        () => setSugerencia("ESC para cerrar inspector"));
+
+    elementoRaiz.addEventListener('fin-inspector',
+        () => setSugerencia(""));
+
         const topbar = createElement("div", {id: "topbar"}, [
             createElement("button", botonCrearEntidad(vistaEditorMER)),
             createElement("button", botonCrearRelacion(elementoRaiz, vistaEditorMER)),

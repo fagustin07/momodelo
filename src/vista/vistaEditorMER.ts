@@ -150,6 +150,7 @@ export class VistaEditorMER {
     deseleccionar() {
         this._elementoSeleccionado = null;
         this._actualizarSelección(null);
+        this.notificarInteracción('fin-inspector');
     }
 
     desenfocarElementoInput() {
@@ -276,6 +277,7 @@ export class VistaEditorMER {
     seleccionarA(elementoMER: ElementoMER) {
         this._elementoSeleccionado = elementoMER;
         this._actualizarSelección(elementoMER);
+        this.notificarInteracción('inicio-inspector');
     }
 
     solicitudCrearEntidad(): void {
@@ -296,6 +298,14 @@ export class VistaEditorMER {
 
     desmarcarAtributoComoClavePrimaria(atributo: Atributo) {
         this.modelador.desmarcarAtributoComoClavePrimaria(this._getEntidadDelAtributo(atributo), atributo);
+    }
+
+    marcarAtributoMultivaluado(atributo: Atributo) {
+        this.modelador.marcarAtributoMultivaluado(this._getEntidadDelAtributo(atributo), atributo);
+    }
+
+    desmarcarAtributoMultivaluado(atributo: Atributo) {
+        this.modelador.desmarcarAtributoMultivaluado(this._getEntidadDelAtributo(atributo), atributo);
     }
 
     private _todasLasVistas() {

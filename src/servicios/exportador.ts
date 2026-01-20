@@ -23,6 +23,7 @@ type JsonAtributo = {
     nombre: string;
     posicion: { x: number; y: number };
     esClavePrimaria: boolean;
+    esMultivaluado: boolean;
 };
 
 export type JsonModelo = {
@@ -37,7 +38,8 @@ export function exportar(modelador: Modelador): JsonModelo {
             id: atributo.id(),
             nombre: atributo.nombre(),
             posicion: atributo.posicion(),
-            esClavePrimaria: atributo.esPK()
+            esClavePrimaria: atributo.esPK(),
+            esMultivaluado: atributo.esMultivaluado()
         }))
     );
 

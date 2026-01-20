@@ -10,7 +10,7 @@ export function importar(json: JsonModelo): { entidades: Entidad[]; relaciones: 
     const relaciones: Relacion[] = [];
 
     json.atributos.forEach(attr => {
-        const atributo = new Atributo(attr.nombre, coordenada(attr.posicion.x, attr.posicion.y), attr.esClavePrimaria);
+        const atributo = new Atributo(attr.nombre, coordenada(attr.posicion.x, attr.posicion.y), attr.esClavePrimaria, attr.esMultivaluado);
         atributosMap.set(attr.id, atributo);
     });
 
