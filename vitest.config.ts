@@ -3,6 +3,9 @@ import {webdriverio} from "@vitest/browser-webdriverio";
 
 export default defineConfig({
   test: {
+    coverage: {
+      provider: 'v8'
+    },
     watch: true,
     projects: [{
       extends: true,
