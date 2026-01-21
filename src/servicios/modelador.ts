@@ -2,8 +2,15 @@ import {Entidad} from "../modelo/entidad";
 import {Atributo} from "../modelo/atributo";
 import {Relacion} from "../modelo/relacion";
 import {coordenada, coordenadaInicial, Posicion} from "../posicion";
-import {RelaciónExistenteError, RelaciónRecursivaError} from "./errores";
-import {Cardinalidad} from "../tipos/tipos.ts";
+import {
+    CicloDeRelacionesDébilesError,
+    EntidadDébilConMúltiplesRelacionesIdentificadorasError,
+    InvertirRelacionFuerteError,
+    MomodeloLogicaError,
+    RelaciónExistenteError,
+    RelaciónRecursivaError
+} from "./errores";
+import {Cardinalidad, TipoRelacion} from "../tipos/tipos.ts";
 
 export class Modelador {
     entidades: Entidad[] = [];
@@ -50,28 +57,28 @@ export class Modelador {
 
     marcarAtributoComoClavePrimaria(entidad: Entidad, atributo: Atributo) {
         if (!entidad.posee(atributo)) {
-            throw new Error("El atributo no pertenece a la entidad seleccionada.");
+            throw new MomodeloLogicaError("El atributo no pertenece a la entidad seleccionada.");
         }
         entidad.marcarComoParteDeClaveA(atributo);
     }
 
     desmarcarAtributoComoClavePrimaria(entidad: Entidad, atributo: Atributo) {
         if (!entidad.posee(atributo)) {
-            throw new Error("El atributo no pertenece a la entidad seleccionada.");
+            throw new MomodeloLogicaError("El atributo no pertenece a la entidad seleccionada.");
         }
         entidad.desmarcarComoParteDeClaveA(atributo);
     }
 
     marcarAtributoMultivaluado(entidad: Entidad, atributo: Atributo) {
         if (!entidad.posee(atributo)) {
-            throw new Error("El atributo no pertenece a la entidad seleccionada.");
+            throw new MomodeloLogicaError("El atributo no pertenece a la entidad seleccionada.");
         }
         entidad.marcarComoMultivaluadoA(atributo);
     }
 
     desmarcarAtributoMultivaluado(entidad: Entidad, atributo: Atributo) {
         if (!entidad.posee(atributo)) {
-            throw new Error("El atributo no pertenece a la entidad seleccionada.");
+            throw new MomodeloLogicaError("El atributo no pertenece a la entidad seleccionada.");
         }
         entidad.desmarcarComoMultivaluadoA(atributo);
     }
@@ -106,6 +113,61 @@ export class Modelador {
 
     agregarAtributoPara(entidad: Entidad, nombreAtributo: string = "Atributo", posicion: Posicion) {
         return entidad.agregarAtributo(nombreAtributo, posicion);
+    }
+
+    cambiarTipoDeRelacionA(relacion: Relacion, nuevoTipo: TipoRelacion) {
+        if (nuevoTipo === 'débil') {
+            const entidadOrigen = relacion.entidadOrigen();
+            const entidadDestino = relacion.entidadDestino();
+
+            const origenPuedeSerDebil = !this._tieneRelacionIdentificatoria(entidadOrigen, relacion);
+
+            if (!origenPuedeSerDebil) {
+                this._intentarInversiónDeRelación(relacion, entidadDestino, entidadOrigen);
+                return;
+            }
+
+            this._validarYMarcarComoDebil(entidadOrigen, entidadDestino);
+        } else {
+            this._actualizarEstadoEntidadAlCambiarAFuerte(relacion);
+        }
+
+        relacion.cambiarTipoRelacionA(nuevoTipo);
+    }
+
+    invertirRelacionDebil(relacion: Relacion) {
+        if (!relacion.esDebil()) {
+            throw new InvertirRelacionFuerteError();
+        }
+
+        const antiguaDebil = relacion.entidadOrigen();
+        const antiguaFuerte = relacion.entidadDestino();
+
+        if (this._tieneRelacionIdentificatoria(antiguaFuerte, relacion)) {
+            throw new EntidadDébilConMúltiplesRelacionesIdentificadorasError();
+        }
+
+        const cardinalidadFuerte = relacion.cardinalidadDestino();
+        const nuevaRelacion = new Relacion(
+            antiguaFuerte,
+            antiguaDebil,
+            relacion.nombre(),
+            ['1', '1'],
+            cardinalidadFuerte,
+            relacion.posicion(),
+            'débil'
+        );
+
+        if (!this._tieneRelacionIdentificatoria(antiguaDebil, relacion)) {
+            antiguaDebil.marcarComoFuerte();
+        }
+
+        antiguaFuerte.marcarComoDebil();
+
+        const index = this.relaciones.indexOf(relacion);
+        this.relaciones[index] = nuevaRelacion;
+
+        return nuevaRelacion;
     }
 
     private _realizarValidacionesParaCrearRelaciónEntre(entidadOrigen: Entidad, entidadDestino: Entidad) {
@@ -143,5 +205,90 @@ export class Modelador {
         if (this._existeRelaciónEntre(entidadOrigen, entidadDestino)) {
             throw new RelaciónExistenteError();
         }
+    }
+
+    private _tieneRelacionIdentificatoria(entidad: Entidad, relacionActual: Relacion): boolean {
+        return this.relaciones.some(
+            rel => rel.esDebil() && rel.entidadOrigen() === entidad && rel !== relacionActual
+        );
+    }
+
+    private _intentarInversiónDeRelación(
+        relacion: Relacion,
+        nuevaEntidadDebil: Entidad,
+        nuevaEntidadFuerte: Entidad
+    ): void {
+        if (this._tieneRelacionIdentificatoria(nuevaEntidadDebil, relacion)) {
+            throw new EntidadDébilConMúltiplesRelacionesIdentificadorasError();
+        }
+
+        if (this._seFormaCicloDeRelacionesDebiles(nuevaEntidadDebil, nuevaEntidadFuerte)) {
+            throw new CicloDeRelacionesDébilesError();
+        }
+
+        const relacionInvertida = this._crearRelacionDébilInvertida(relacion, nuevaEntidadDebil, nuevaEntidadFuerte);
+        this._reemplazarRelacion(relacion, relacionInvertida);
+        nuevaEntidadDebil.marcarComoDebil();
+    }
+
+    private _seFormaCicloDeRelacionesDebiles(
+        entidadHija: Entidad,
+        entidadPadreActual: Entidad,
+        visitados: Set<Entidad> = new Set()
+    ): boolean {
+        if (entidadPadreActual === entidadHija) {
+            return true;
+        }
+
+        if (visitados.has(entidadPadreActual)){
+            return false;
+        }
+
+        visitados.add(entidadPadreActual);
+
+        const relacionesDondePadreEsDebil = this.relaciones.filter(r =>
+            r.esDebil() && r.entidadOrigen() === entidadPadreActual
+        );
+
+        return relacionesDondePadreEsDebil.some(rel =>
+            this._seFormaCicloDeRelacionesDebiles(entidadHija, rel.entidadDestino(), visitados)
+        );
+    }
+
+    private _crearRelacionDébilInvertida(
+        relacionOriginal: Relacion,
+        nuevaEntidadDebil: Entidad,
+        nuevaEntidadFuerte: Entidad
+    ): Relacion {
+        const cardinalidadFuerte = relacionOriginal.cardinalidadOrigen();
+        return new Relacion(
+            nuevaEntidadDebil,
+            nuevaEntidadFuerte,
+            relacionOriginal.nombre(),
+            ['1', '1'],
+            cardinalidadFuerte,
+            relacionOriginal.posicion(),
+            'débil'
+        );
+    }
+
+    private _validarYMarcarComoDebil(entidadDebil: Entidad, entidadFuerte: Entidad): void {
+        if (this._seFormaCicloDeRelacionesDebiles(entidadDebil, entidadFuerte)) {
+            throw new CicloDeRelacionesDébilesError();
+        }
+
+        entidadDebil.marcarComoDebil();
+    }
+
+    private _actualizarEstadoEntidadAlCambiarAFuerte(relacion: Relacion): void {
+        const entidadOrigen = relacion.entidadOrigen();
+        if (!this._tieneRelacionIdentificatoria(entidadOrigen, relacion)) {
+            entidadOrigen.marcarComoFuerte();
+        }
+    }
+
+    private _reemplazarRelacion(relacionVieja: Relacion, relacionNueva: Relacion): void {
+        const index = this.relaciones.indexOf(relacionVieja);
+        this.relaciones[index] = relacionNueva;
     }
 }

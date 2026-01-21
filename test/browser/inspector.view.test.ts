@@ -331,4 +331,94 @@ describe("[MER] Inspector de Elementos", () => {
         expect(atributoVisual.classList.contains("atributo-pk")).toBeFalsy();
     });
 
+    it("Al seleccionar una relación débil, el inspector muestra los controles correctos", () => {
+        const relacionDebil = new Relacion(entidadPirata, entidadBarco, "Depende", ['1','1'], ['0','N'], undefined, 'débil');
+        entidadPirata.marcarComoDebil();
+        
+        document.body.innerHTML = '';
+        elementoRaíz = document.createElement('div');
+        document.body.append(elementoRaíz);
+        init(elementoRaíz, [entidadPirata, entidadBarco], [relacionDebil]);
+
+        const [inputRelacion] = getInputRelaciones();
+        fireEvent.click(inputRelacion);
+
+        const inspector = document.getElementById("panel-inspector")!;
+        const botonDebil = within(inspector).getByText("Débil") as HTMLButtonElement;
+
+        expect(botonDebil).toBeInTheDocument();
+        expect(relacionDebil.esDebil()).toBe(true);
+    });
+
+    it("Al cambiar una relación de fuerte a débil desde el inspector, la entidad origen se marca como débil", () => {
+        const [inputRelacion] = getInputRelaciones();
+        fireEvent.click(inputRelacion);
+
+        const inspector = document.getElementById("panel-inspector")!;
+        const botonDebil = within(inspector).getByText("Débil") as HTMLButtonElement;
+
+        expect(relacionNavega.esDebil()).toBe(false);
+        expect(entidadPirata.esDebil()).toBe(false);
+
+        fireEvent.click(botonDebil);
+
+        expect(relacionNavega.esDebil()).toBe(true);
+        expect(entidadPirata.esDebil()).toBe(true);
+    });
+
+    it("Al cambiar una relación de débil a fuerte, la entidad origen se marca como fuerte si no tiene otras relaciones débiles", () => {
+        const relacionDebil = new Relacion(entidadPirata, entidadBarco, "Depende", ['1','1'], ['0','N'], undefined, 'débil');
+        entidadPirata.marcarComoDebil();
+
+        document.body.innerHTML = '';
+        elementoRaíz = document.createElement('div');
+        document.body.append(elementoRaíz);
+        init(elementoRaíz, [entidadPirata, entidadBarco], [relacionDebil]);
+
+        const [inputRelacion] = getInputRelaciones();
+        fireEvent.click(inputRelacion);
+
+        const inspector = document.getElementById("panel-inspector")!;
+        const botonFuerte = within(inspector).getByText("Fuerte") as HTMLButtonElement;
+
+        expect(relacionDebil.esDebil()).toBe(true);
+
+        fireEvent.click(botonFuerte);
+
+        expect(relacionDebil.esDebil()).toBe(false);
+        expect(entidadPirata.esDebil()).toBe(false);
+    });
+
+    it("Al intentar crear una relación débil que crearía un ciclo, se muestra un error", () => {
+        const entidadNaruto = new Entidad("Naruto", [], coordenada(100, 100));
+        const entidadSasuke = new Entidad("Sasuke", [], coordenada(300, 100));
+        const entidadSakura = new Entidad("Sakura", [], coordenada(500, 100));
+        
+        const relEquipo7A = new Relacion(entidadSasuke, entidadNaruto, "Equipo7A", ['1','1'], ['0','N'], undefined, 'débil');
+        const relEquipo7B = new Relacion(entidadSakura, entidadSasuke, "Equipo7B", ['1','1'], ['0','N'], undefined, 'débil');
+        const relRival = new Relacion(entidadNaruto, entidadSakura, "Rival");
+        
+        entidadSasuke.marcarComoDebil();
+        entidadSakura.marcarComoDebil();
+
+        document.body.innerHTML = '';
+        elementoRaíz = document.createElement('div');
+        document.body.append(elementoRaíz);
+        init(elementoRaíz, [entidadNaruto, entidadSasuke, entidadSakura], [relEquipo7A, relEquipo7B, relRival]);
+
+        const inputRelaciones = getInputRelaciones();
+        const inputRelacionRival = inputRelaciones.find(input => input.value === "Rival")!;
+        fireEvent.click(inputRelacionRival);
+
+        const inspector = document.getElementById("panel-inspector")!;
+        const botonDebil = within(inspector).getByText("Débil") as HTMLButtonElement;
+
+        fireEvent.click(botonDebil);
+
+
+        const toast = document.querySelector('.toast');
+        expect(relRival.esDebil()).toBeFalsy();
+        expect(toast).toBeInTheDocument();
+        expect(toast?.textContent).toContain("Ciclo de relaciones débiles no permitido");
+    });
 });

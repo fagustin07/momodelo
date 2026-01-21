@@ -26,6 +26,12 @@ main {
   border-radius: 4px;
 }
 
+.entidad.entidad-debil.seleccionado {
+  outline: none;
+  box-shadow: 0 0 0 4px white, 0 0 0 7px var(--color-resaltado);
+  filter: drop-shadow(0 0 6px var(--color-resaltado));
+}
+
 .atributo.atributo-multivaluado.seleccionado {
   outline-offset: 3px;
 }
@@ -33,7 +39,7 @@ main {
 .relacion.seleccionado polygon {
   --color-resaltado: #3b82f6;
   stroke: var(--color-resaltado);
-  stroke-width: 3;
+  stroke-width: 2;
   filter: drop-shadow(0 0 6px var(--color-resaltado));
 }
 
@@ -109,6 +115,10 @@ main {
 
   .agarrando, .agarrando .atributo {
     box-shadow: 5px 5px 0 0 rgba(0, 0, 0, 0.5);
+  }
+
+  .agarrando.entidad-debil, .agarrando .atributo.atributo-multivaluado {
+    box-shadow: 0 0 0 4px white, 0 0 0 5px gray, 5px 5px 0 0 rgba(0, 0, 0, 0.5);
   }
 
   .entidad:hover {
@@ -195,6 +205,10 @@ main {
   .atributo.atributo-multivaluado {
     box-shadow: 0 0 0 3px white, 0 0 0 4px gray;
   }
+}
+
+.entidad.entidad-debil {
+  box-shadow: 0 0 0 4px white, 0 0 0 5px gray;
 }
 
 .relacion input {
@@ -462,4 +476,16 @@ button.multivaluado-inactivo {
 
 .menu-hamburguesa-input {
   display: none;
+}
+
+.boton-invertir-debil {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #6b7280;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.8rem;
+  margin-top: 1rem;
+
 }

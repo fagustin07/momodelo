@@ -22,6 +22,11 @@ export function importar(json: JsonModelo): { entidades: Entidad[]; relaciones: 
         });
 
         const entidad = new Entidad(entJson.nombre, atributos, coordenada(entJson.posicion.x, entJson.posicion.y));
+        
+        if (entJson.esDebil) {
+            entidad.marcarComoDebil();
+        }
+        
         entidadesMap.set(entJson.id, entidad);
     });
 
@@ -33,10 +38,13 @@ export function importar(json: JsonModelo): { entidades: Entidad[]; relaciones: 
             throw new Error(`Entidad origen o destino no encontrada para la relación ${relJson.nombre.toUpperCase()}`);
         }
 
+        const tipoRelacion = relJson.tipo || 'fuerte';
+
         const relacion = new Relacion(
             origen, destino, relJson.nombre,
             relJson.cardinalidadOrigen, relJson.cardinalidadDestino,
-            coordenada(relJson.posicion.x, relJson.posicion.y));
+            coordenada(relJson.posicion.x, relJson.posicion.y),
+            tipoRelacion);
 
         relaciones.push(relacion);
     });

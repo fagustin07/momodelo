@@ -100,4 +100,50 @@ describe("Exportador", () => {
 
         expect(json.atributos[0].esMultivaluado).toBeTruthy();
     });
+
+    it("exporta correctamente entidades débiles", () => {
+        const entidadFuerte = new Entidad("Cliente", [], coordenada(10, 10));
+        const entidadDebil = new Entidad("Pedido", [], coordenada(200, 10));
+        entidadDebil.marcarComoDebil();
+        const modelo = new Modelador([entidadFuerte, entidadDebil]);
+
+        const json = exportar(modelo);
+
+        const entidadDebilExportada = json.entidades.find(e => e.nombre === "Pedido");
+        expect(entidadDebilExportada!.esDebil).toBeTruthy();
+
+        const entidadFuerteExportada = json.entidades.find(e => e.nombre === "Cliente");
+        expect(entidadFuerteExportada!.esDebil).toBeFalsy();
+    });
+
+    it("exporta correctamente relaciones débiles", () => {
+        const entidadFuerte = new Entidad("Cliente", [], coordenada(10, 10));
+        const entidadDebil = new Entidad("Pedido", [], coordenada(200, 10));
+        const relacionDebil = new Relacion(entidadDebil, entidadFuerte, "REALIZA", ['1','1'], ['0','N'], coordenada(100, 10), 'débil');
+        entidadDebil.marcarComoDebil();
+        const modelo = new Modelador([entidadFuerte, entidadDebil], [relacionDebil]);
+
+        const json = exportar(modelo);
+
+        expect(json.relaciones[0].tipo).toBe('débil');
+    });
+
+    it("exporta correctamente múltiples relaciones débiles en cadena", () => {
+        const ninja = new Entidad("Ninja", [], coordenada(10, 10));
+        const capitan = new Entidad("Capitán", [], coordenada(200, 10));
+        const comandante = new Entidad("Comandante", [], coordenada(400, 10));
+        
+        const rel1 = new Relacion(capitan, ninja, "Relación 1", ['1','1'], ['0','N'], coordenada(100, 10), 'débil');
+        const rel2 = new Relacion(comandante, capitan, "Relación 2", ['1','1'], ['0','N'], coordenada(300, 10), 'débil');
+        
+        capitan.marcarComoDebil();
+        comandante.marcarComoDebil();
+
+        const modelo = new Modelador([ninja, capitan, comandante], [rel1, rel2]);
+
+        const json = exportar(modelo);
+
+        expect(json.entidades.filter(e => e.esDebil)).toHaveLength(2);
+        expect(json.relaciones.filter(r => r.tipo === 'débil')).toHaveLength(2);
+    });
 });

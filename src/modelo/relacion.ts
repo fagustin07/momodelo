@@ -2,7 +2,7 @@ import {Entidad} from "./entidad";
 import {coordenadaInicial, Posicion} from "../posicion";
 import {generadorDeIDs} from "../servicios/generadorDeIDs.ts";
 import {ElementoMER} from "./elementoMER.ts";
-import {Cardinalidad} from "../tipos/tipos.ts";
+import {Cardinalidad, TipoRelacion} from "../tipos/tipos.ts";
 
 export class Relacion extends ElementoMER {
     private readonly _id: number;
@@ -12,6 +12,7 @@ export class Relacion extends ElementoMER {
     private _cardinalidadOrigen: Cardinalidad;
     private _cardinalidadDestino: Cardinalidad;
     private _alCambiarCardinalidad: (() => void)[] = [];
+    private _tipoRelacion: TipoRelacion = 'fuerte';
 
     constructor(
         entidadOrigen: Entidad,
@@ -20,6 +21,7 @@ export class Relacion extends ElementoMER {
         cardinalidadOrigen: Cardinalidad = ['0', 'N'],
         cardinalidadDestino: Cardinalidad = ['0', 'N'],
         posicion: Posicion = coordenadaInicial(),
+        tipoRelacion: TipoRelacion = 'fuerte',
     ) {
         super(posicion);
         this._nombre = nombre;
@@ -28,6 +30,7 @@ export class Relacion extends ElementoMER {
         this._id = generadorDeIDs.tomarID();
         this._cardinalidadOrigen = cardinalidadOrigen;
         this._cardinalidadDestino = cardinalidadDestino;
+        this._tipoRelacion = tipoRelacion;
     }
 
     nombre() {
@@ -82,5 +85,25 @@ export class Relacion extends ElementoMER {
 
     private _notificarCambio() {
         this._alCambiarCardinalidad.forEach(callback => callback());
+    }
+
+    tipoRelacion() {
+        return this._tipoRelacion;
+    }
+
+    cambiarTipoRelacionA(nuevoTipo: TipoRelacion) {
+        this._tipoRelacion = nuevoTipo;
+        if (nuevoTipo === 'débil') {
+            this._cardinalidadOrigen = ['1', '1'];
+        }
+        this._notificarCambio();
+    }
+
+    esFuerte() {
+        return this._tipoRelacion === 'fuerte';
+    }
+
+    esDebil() {
+        return this._tipoRelacion === 'débil';
     }
 }

@@ -45,4 +45,19 @@ describe("Entidad", () => {
         }).toThrow("El atributo no pertenece a esta entidad.");
     });
 
+    it("Una entidad puede ser marcada como débil", () => {
+        entidad.marcarComoDebil();
+
+        expect(entidad.esDebil()).toBeTruthy();
+    });
+
+    it("Una entidad débil puede ser marcada como fuerte", () => {
+        entidad.marcarComoDebil();
+        expect(entidad.esDebil()).toBeTruthy();
+        
+        entidad.marcarComoFuerte();
+
+        expect(entidad.esDebil()).toBeFalsy();
+    });
+
 });

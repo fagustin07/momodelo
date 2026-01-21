@@ -55,12 +55,20 @@ export class VistaEntidad extends VistaElementoMER<Entidad> {
         return this._elementoDom;
     }
 
+    actualizarEstilo() {
+        if (this._entidad.esDebil()) {
+            this._elementoDom.classList.add("entidad-debil");
+        } else {
+            this._elementoDom.classList.remove("entidad-debil");
+        }
+    }
+
     protected elementoDOM(): HTMLElement | SVGElement {
         return this._elementoDom;
     }
 
     private _crearElementoDom() {
-        this._contenedorDeAtributos = createElement("div");
+        this._contenedorDeAtributos = createElement("div", {className: this._entidad.esDebil() ? "entidad-debil" : ""});
         this._campoNombre = this._crearInputCampoNombre();
 
         const elementoDom = this._crearElementoDOMEntidad();

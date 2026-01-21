@@ -7,6 +7,7 @@ export class Entidad extends ElementoMER {
     private readonly _id: number;
     private _nombre: string;
     private _atributos: Atributo[];
+    private _esDebil: boolean = false;
 
     constructor(nombre: string = 'ENTIDAD', atributos: Atributo[] = [], posicion: Posicion = coordenada(0, 0)) {
         super(posicion);
@@ -84,5 +85,17 @@ export class Entidad extends ElementoMER {
         } else {
             throw new Error("El atributo no pertenece a esta entidad.");
         }
+    }
+
+    esDebil() {
+        return this._esDebil;
+    }
+
+    marcarComoDebil() {
+        this._esDebil = true;
+    }
+
+    marcarComoFuerte() {
+        this._esDebil = false;
     }
 }

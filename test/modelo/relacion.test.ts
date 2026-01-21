@@ -35,4 +35,27 @@ describe("[MER] Relación", () => {
 
         expect(relacionCombate.cardinalidadDestino()).toEqual(['1','1']);
     });
+
+    it("Una relación puede ser débil", () => {
+        const relacionDebil = new Relacion(entidadPirata, entidadBicho, "Protege", ['1','1'], ['0','N'], undefined, 'débil');
+
+        expect(relacionDebil.esDebil()).toBe(true);
+    });
+
+    it("Una relación fuerte puede cambiarse a débil", () => {
+        expect(relacionCombate.esDebil()).toBe(false);
+        
+        relacionCombate.cambiarTipoRelacionA('débil');
+
+        expect(relacionCombate.esDebil()).toBe(true);
+    });
+
+    it("Una relación débil puede cambiarse a fuerte", () => {
+        const relacionDebil = new Relacion(entidadPirata, entidadBicho, "Protege", ['1','1'], ['0','N'], undefined, 'débil');
+        expect(relacionDebil.esDebil()).toBe(true);
+        
+        relacionDebil.cambiarTipoRelacionA('fuerte');
+
+        expect(relacionDebil.esDebil()).toBe(false);
+    });
 });

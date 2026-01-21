@@ -77,8 +77,8 @@ describe("[MER] Vista Relaciones", () => {
         const [inputRelacion] = getInputRelaciones();
 
         expect(inputRelacion.value).toBe("RELACION");
-        expect(relacion.contieneA(personaje)).toBe(true);
-        expect(relacion.contieneA(humorista)).toBe(true);
+        expect(relacion.contieneA(personaje)).toBeTruthy();
+        expect(relacion.contieneA(humorista)).toBeTruthy();
     });
 
     it("Cuando se cambia el nombre a una relación, entonces se refleja en el modelo", async () => {

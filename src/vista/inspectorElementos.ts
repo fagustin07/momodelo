@@ -5,6 +5,7 @@ import {Relacion} from "../modelo/relacion";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
 import {createElement} from "./dom/createElement.ts";
 import {Cardinalidad, CardinalidadMinima, CardinalidadMáxima} from "../tipos/tipos";
+import {handlearError} from "../servicios/handlearError.ts";
 
 export class InspectorElementos {
 
@@ -151,26 +152,95 @@ export class InspectorElementos {
         const titulo = this._titulo("Relación");
         const label = this._label("Nombre");
         this._inputCon(relacion.nombre());
-
         this._inputNombre!.oninput = () => this.vistaEditor.renombrarRelacion(this._inputNombre!.value, relacion);
+
+        const contenedorTabs = createElement("div", {
+            style: {
+                display: "flex",
+                gap: "0.5rem",
+                marginTop: "1rem",
+                marginBottom: "1rem",
+            }
+        });
+
+        const tabFuerte = createElement("button", {
+            textContent: "Fuerte",
+            style: {
+                padding: "0.5rem 1rem",
+                border: "1px solid #d1d5db",
+                borderRadius: "6px",
+                background: relacion.esFuerte() ? "#007bff" : "#fff",
+                color: relacion.esFuerte() ? "#fff" : "#6b768a",
+                cursor: "pointer",
+                fontSize: "0.9rem",
+            },
+            onclick: () => {
+                this.vistaEditor.cambiarTipoDeRelacion(relacion, 'fuerte');
+                this.mostrar(relacion);
+            }
+        });
+
+        const tabDebil = createElement("button", {
+            textContent: "Débil",
+            style: {
+                padding: "0.5rem 1rem",
+                border: "1px solid #d1d5db",
+                borderRadius: "6px",
+                background: relacion.esDebil() ? "#007bff" : "#fff",
+                color: relacion.esDebil() ? "#fff" : "#6b768a",
+                cursor: "pointer",
+                fontSize: "0.9rem",
+            },
+            onclick: () => {
+                this.vistaEditor.cambiarTipoDeRelacion(relacion, 'débil');
+                this.mostrar(relacion);
+            }
+        });
+
+        contenedorTabs.append(tabFuerte, tabDebil);
 
         const origen = relacion.entidades()[0].nombre();
         const destino = relacion.entidades()[1].nombre();
 
-        const formularioCardinalidadOrigen = this._crearFormularioCardinalidad(
-            "Participación de " + origen + ":",
-            () => relacion.cardinalidadOrigen(),
-            (nuevaCardinalidad: Cardinalidad) => relacion.cambiarCardinalidadOrigenA(nuevaCardinalidad),
-            "Cardinalidad origen"
-        );
-        const formularioCardinalidadDestino = this._crearFormularioCardinalidad(
-            "Participación de " + destino + ":",
-            () => relacion.cardinalidadDestino(),
-            (nuevaCardinalidad: Cardinalidad) => relacion.cambiarCardinalidadDestinoA(nuevaCardinalidad),
-            "Cardinalidad destino"
-        );
+        if (relacion.esDebil()) {
+            const formularioCardinalidadDestino = this._crearFormularioCardinalidad(
+                `La entidad fuerte ${destino}:`,
+                () => relacion.cardinalidadDestino(),
+                (nuevaCardinalidad: Cardinalidad) => relacion.cambiarCardinalidadDestinoA(nuevaCardinalidad),
+                "Cardinalidad destino"
+            );
 
-        this._contenedor.append(titulo, label, this._inputNombre!, formularioCardinalidadOrigen, formularioCardinalidadDestino);
+            const botonInvertir = createElement("button", {
+                textContent: "Invertir",
+                className: "boton-invertir-debil",
+                title: "Invertir dependencia entre entidades",
+                onclick: () => {
+                    try {
+                        const nuevaRelacion = this.vistaEditor.invertirRelacionDebil(relacion);
+                        this.mostrar(nuevaRelacion);
+                    } catch (error) {
+                        handlearError(error, this.vistaEditor);
+                    }
+                }
+            });
+
+            this._contenedor.append(titulo, label, this._inputNombre!, contenedorTabs, formularioCardinalidadDestino, botonInvertir);
+        } else {
+            const formularioCardinalidadOrigen = this._crearFormularioCardinalidad(
+                "Participación de " + origen + ":",
+                () => relacion.cardinalidadOrigen(),
+                (nuevaCardinalidad: Cardinalidad) => relacion.cambiarCardinalidadOrigenA(nuevaCardinalidad),
+                "Cardinalidad origen"
+            );
+            const formularioCardinalidadDestino = this._crearFormularioCardinalidad(
+                "Participación de " + destino + ":",
+                () => relacion.cardinalidadDestino(),
+                (nuevaCardinalidad: Cardinalidad) => relacion.cambiarCardinalidadDestinoA(nuevaCardinalidad),
+                "Cardinalidad destino"
+            );
+
+            this._contenedor.append(titulo, label, this._inputNombre!, contenedorTabs, formularioCardinalidadOrigen, formularioCardinalidadDestino);
+        }
     }
 
     private _crearFormularioCardinalidad(
@@ -182,10 +252,10 @@ export class InspectorElementos {
         const formulario = createElement("form", {
             innerHTML: `<fieldset data-testid="${testId}">
                 <legend title="Cardinalidad minima">${titulo}</legend>
-                <label>Puede <input type="radio" name="cardinalidad-minima" value="0" /></label>
+                <span>Mínima: </span><label>Puede <input type="radio" name="cardinalidad-minima" value="0" /></label>
                 <label>Debe <input type="radio" name="cardinalidad-minima" value="1" /></label>
                 <br>
-                <label>Una vez <input type="radio" name="cardinalidad-maxima" value="1" /></label>
+                <span>Máxima: </span><label>Una vez <input type="radio" name="cardinalidad-maxima" value="1" /></label>
                 <label>Muchas <input type="radio" name="cardinalidad-maxima" value="N" /></label>
             </fieldset>`
         });

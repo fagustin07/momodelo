@@ -19,6 +19,8 @@ import {handlearError} from "../servicios/handlearError.ts";
 import {generarBarraDeInteracciones} from "../topbar.ts";
 import {InspectorElementos} from "./inspectorElementos.ts";
 import {MenuHamburguesa} from "../componentes/menuHamburguesa.ts";
+import {TipoRelacion} from "../tipos/tipos.ts";
+import {MomodeloLogicaError} from "../servicios/errores.ts";
 
 export class VistaEditorMER {
     modelador: Modelador;
@@ -88,7 +90,7 @@ export class VistaEditorMER {
     centroDeEntidad(entidad: Entidad): Posicion {
         const vistaEntidad = this._entidadesVisuales.get(entidad);
         if (!vistaEntidad) {
-            throw new Error(`No se encontró vista para la entidad ${entidad.nombre()}`);
+            throw new MomodeloLogicaError(`No se encontró vista para la entidad ${entidad.nombre()}`);
         }
         return vistaEntidad.centro();
     }
@@ -306,6 +308,34 @@ export class VistaEditorMER {
 
     desmarcarAtributoMultivaluado(atributo: Atributo) {
         this.modelador.desmarcarAtributoMultivaluado(this._getEntidadDelAtributo(atributo), atributo);
+    }
+
+    cambiarTipoDeRelacion(relacion: Relacion, nuevoTipo: TipoRelacion) {
+        try {
+            this.modelador.cambiarTipoDeRelacionA(relacion, nuevoTipo);
+            this._relacionesVisuales.get(relacion)?.reposicionarRelacion();
+            const entidadOrigen = relacion.entidadOrigen();
+            const entidadDestino = relacion.entidadDestino();
+            this._entidadesVisuales.get(entidadOrigen)?.actualizarEstilo();
+            this._entidadesVisuales.get(entidadDestino)?.actualizarEstilo();
+        } catch (error) {
+            handlearError(error, this);
+        }
+    }
+
+    invertirRelacionDebil(relacion: Relacion): Relacion {
+        const nuevaRelacion = this.modelador.invertirRelacionDebil(relacion);
+        this._relacionesVisuales.get(relacion)?.borrarse();
+        this._relacionesVisuales.delete(relacion);
+        this.crearVistaRelación(nuevaRelacion);
+
+        const entidadOrigen = nuevaRelacion.entidadOrigen();
+        const entidadDestino = nuevaRelacion.entidadDestino();
+        this._entidadesVisuales.get(entidadOrigen)?.actualizarEstilo();
+        this._entidadesVisuales.get(entidadDestino)?.actualizarEstilo();
+
+        this.seleccionarA(nuevaRelacion);
+        return nuevaRelacion;
     }
 
     private _todasLasVistas() {
