@@ -116,7 +116,7 @@ export class MenuHamburguesa {
         this._cerrarMenu();
         this._vistaEditor.cancelarInteracción();
 
-        const json = exportar(this._vistaEditor.modelador);
+        const json = exportar(this._vistaEditor.modeloER);
         const blob = new Blob([JSON.stringify(json, null, 2)], {type: "application/json"});
         const url = URL.createObjectURL(blob);
 

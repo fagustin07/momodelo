@@ -1,5 +1,5 @@
 import {Entidad} from "./modelo/entidad.ts";
-import {Modelador} from "./servicios/modelador.ts";
+import {ModeloER} from "./servicios/modelador.ts";
 import {Relacion} from "./modelo/relacion.ts";
 import {VistaEditorMER} from "./vista/vistaEditorMER.ts";
 
@@ -16,5 +16,5 @@ function crearElementoSvgParaRelaciones() {
 // ToDo: Esto debería encapsularse en el constructor de VistaEditorMER?
 export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], relaciones: Relacion[]) {
     const svg = crearElementoSvgParaRelaciones();
-    return new VistaEditorMER(new Modelador(entidadesEnModelo, relaciones), elementoRaiz, svg);
+    return new VistaEditorMER(new ModeloER(entidadesEnModelo, relaciones), elementoRaiz, svg);
 }

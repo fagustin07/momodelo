@@ -2,14 +2,14 @@ import {beforeEach, describe, expect, it} from "vitest";
 import {Entidad} from "../../src/modelo/entidad.ts";
 import {Relacion} from "../../src/modelo/relacion.ts";
 import {coordenada} from "../../src/posicion.ts";
-import {Modelador} from "../../src/servicios/modelador.ts";
+import {ModeloER} from "../../src/servicios/modelador.ts";
 import {VistaEditorMER} from "../../src/vista/vistaEditorMER.ts";
 import "../../src/style.css";
 
 describe("[MER] VistaEditor", () => {
     let elementoRaiz: HTMLElement;
     let elementoSvg: SVGElement;
-    let modelador: Modelador;
+    let modeloER: ModeloER;
     let vistaEditorMER: VistaEditorMER;
 
     beforeEach(() => {
@@ -23,8 +23,8 @@ describe("[MER] VistaEditor", () => {
     it("Dado un modelo con entidades y un vista editor, cuando se inicializa la vista, todas se renderizan", () => {
         const cliente = new Entidad("CLIENTE", [], coordenada(100, 100));
         const producto = new Entidad("PRODUCTO", [], coordenada(400, 100));
-        modelador = new Modelador([cliente, producto], []);
-        vistaEditorMER = new VistaEditorMER(modelador, elementoRaiz, elementoSvg);
+        modeloER = new ModeloER([cliente, producto], []);
+        vistaEditorMER = new VistaEditorMER(modeloER, elementoRaiz, elementoSvg);
 
         const entidadesDOM = elementoRaiz.querySelectorAll(".entidad");
         expect(entidadesDOM.length).toBe(2);
@@ -35,18 +35,18 @@ describe("[MER] VistaEditor", () => {
         const pedido = new Entidad("PEDIDO", [], coordenada(400, 100));
         const relacion = new Relacion(cliente, pedido, "REALIZA");
 
-        modelador = new Modelador([cliente, pedido], [relacion]);
-        vistaEditorMER = new VistaEditorMER(modelador, elementoRaiz, elementoSvg);
+        modeloER = new ModeloER([cliente, pedido], [relacion]);
+        vistaEditorMER = new VistaEditorMER(modeloER, elementoRaiz, elementoSvg);
 
-        expect(vistaEditorMER.modelador.relaciones).toHaveLength(1);
-        expect(vistaEditorMER.modelador.relaciones[0].nombre()).toBe("REALIZA");
+        expect(vistaEditorMER.modeloER.relaciones).toHaveLength(1);
+        expect(vistaEditorMER.modeloER.relaciones[0].nombre()).toBe("REALIZA");
     });
 
     it("Dado un vista editor, cuando se reemplaza el modelo completo, se actualizan las vistas correctamente", () => {
         const cliente = new Entidad("CLIENTE", []);
         const pedido = new Entidad("PEDIDO", []);
-        modelador = new Modelador([cliente], []);
-        vistaEditorMER = new VistaEditorMER(modelador, elementoRaiz, elementoSvg);
+        modeloER = new ModeloER([cliente], []);
+        vistaEditorMER = new VistaEditorMER(modeloER, elementoRaiz, elementoSvg);
 
         const nuevasEntidades = [cliente, pedido];
         vistaEditorMER.reemplazarModelo(nuevasEntidades, []);

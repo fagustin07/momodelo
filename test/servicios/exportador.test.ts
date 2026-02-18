@@ -2,7 +2,7 @@ import {describe, expect, it} from "vitest";
 import {coordenada, coordenadaInicial} from "../../src/posicion.ts";
 import {Entidad} from "../../src/modelo/entidad.ts";
 import {exportar} from "../../src/servicios/exportador.ts";
-import {Modelador} from "../../src/servicios/modelador.ts";
+import {ModeloER} from "../../src/servicios/modelador.ts";
 import {Atributo} from "../../src/modelo/atributo.ts";
 import {Relacion} from "../../src/modelo/relacion.ts";
 
@@ -10,7 +10,7 @@ describe("Exportador", () => {
 
     it("exporta una entidad sin atributos", () => {
         const entidad = new Entidad("E", [], coordenada(10, 20));
-        const modelo = new Modelador([entidad]);
+        const modelo = new ModeloER([entidad]);
         const json = exportar(modelo);
 
         expect(json.entidades).toHaveLength(1);
@@ -26,7 +26,7 @@ describe("Exportador", () => {
         const atributo1 = new Atributo("a", coordenadaInicial());
         const atributo2 = new Atributo("b", coordenada(5, 5));
         const entidad = new Entidad("E", [atributo1, atributo2], coordenada(10, 10));
-        const modelo = new Modelador([entidad]);
+        const modelo = new ModeloER([entidad]);
         const json = exportar(modelo);
 
         expect(json.atributos).toHaveLength(2);
@@ -45,7 +45,7 @@ describe("Exportador", () => {
         const relacion3 = new Relacion(entidad1, entidad3, "R3", ['1', 'N'], ['1', 'N'], coordenada(100, 100));
 
         const relacionesOriginales = [relacion1, relacion2, relacion3];
-        const json = exportar(new Modelador([entidad1, entidad2, entidad3], relacionesOriginales));
+        const json = exportar(new ModeloER([entidad1, entidad2, entidad3], relacionesOriginales));
 
         expect(json.relaciones).toHaveLength(relacionesOriginales.length);
 
@@ -70,7 +70,7 @@ describe("Exportador", () => {
     it("asigna ids únicos", () => {
         const atributo = new Atributo("codigo", coordenadaInicial());
         const entidad = new Entidad("Producto", [atributo], coordenadaInicial());
-        const modelo = new Modelador([entidad]);
+        const modelo = new ModeloER([entidad]);
         const json = exportar(modelo);
 
         const entidadId = json.entidades[0].id;
@@ -83,7 +83,7 @@ describe("Exportador", () => {
         const atributoPK = new Atributo("codigo", coordenadaInicial());
         const entidadConPK = new Entidad("Producto", [atributoPK], coordenadaInicial());
         entidadConPK.marcarComoParteDeClaveA(atributoPK);
-        const modelo = new Modelador([entidadConPK]);
+        const modelo = new ModeloER([entidadConPK]);
 
         const json = exportar(modelo);
 
@@ -93,7 +93,7 @@ describe("Exportador", () => {
     it("se guardan correctamente los atributos marcados como multivaluados", () => {
         const atributoMultivaluado = new Atributo("telefono", coordenadaInicial());
         const entidad = new Entidad("Cliente", [atributoMultivaluado], coordenadaInicial());
-        const modelo = new Modelador([entidad]);
+        const modelo = new ModeloER([entidad]);
         entidad.marcarComoMultivaluadoA(atributoMultivaluado);
 
         const json = exportar(modelo);
@@ -105,7 +105,7 @@ describe("Exportador", () => {
         const entidadFuerte = new Entidad("Cliente", [], coordenada(10, 10));
         const entidadDebil = new Entidad("Pedido", [], coordenada(200, 10));
         entidadDebil.marcarComoDebil();
-        const modelo = new Modelador([entidadFuerte, entidadDebil]);
+        const modelo = new ModeloER([entidadFuerte, entidadDebil]);
 
         const json = exportar(modelo);
 
@@ -121,7 +121,7 @@ describe("Exportador", () => {
         const entidadDebil = new Entidad("Pedido", [], coordenada(200, 10));
         const relacionDebil = new Relacion(entidadDebil, entidadFuerte, "REALIZA", ['1','1'], ['0','N'], coordenada(100, 10), 'débil');
         entidadDebil.marcarComoDebil();
-        const modelo = new Modelador([entidadFuerte, entidadDebil], [relacionDebil]);
+        const modelo = new ModeloER([entidadFuerte, entidadDebil], [relacionDebil]);
 
         const json = exportar(modelo);
 
@@ -139,7 +139,7 @@ describe("Exportador", () => {
         capitan.marcarComoDebil();
         comandante.marcarComoDebil();
 
-        const modelo = new Modelador([ninja, capitan, comandante], [rel1, rel2]);
+        const modelo = new ModeloER([ninja, capitan, comandante], [rel1, rel2]);
 
         const json = exportar(modelo);
 

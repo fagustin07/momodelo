@@ -89,7 +89,7 @@ describe("[MER] Vista Modelo tests", () => {
 
         cambiarNombreEntidadPor(elementoEntidad, "Marinero");
 
-        expect(vistaEditorMER.modelador.entidades[0].nombre()).toEqual("Marinero");
+        expect(vistaEditorMER.modeloER.entidades[0].nombre()).toEqual("Marinero");
     });
 
     it("Cuando se escribe un nombre en la entidad creada, el modelo se actualiza correctamente", async () => {
@@ -132,7 +132,7 @@ describe("[MER] Vista Modelo tests", () => {
         realizarGestoEliminarSobre(elementoEntidad);
 
         expect(getElementoEntidades().length).toBe(0);
-        expect(vistaEditorMER.modelador.entidades.length).toBe(0);
+        expect(vistaEditorMER.modeloER.entidades.length).toBe(0);
     });
 
     it("Cuando se realiza el gesto de borrar sobre una entidad y luego se clickea en otra, entonces solo se borra la primer entidad", () => {
@@ -144,7 +144,7 @@ describe("[MER] Vista Modelo tests", () => {
         fireEvent.click(elementoEntidadBarco);
 
         expect(elementoEntidadBarco).toBeInTheDocument();
-        expect(vistaEditorMER.modelador.entidades.length).toBe(1);
+        expect(vistaEditorMER.modeloER.entidades.length).toBe(1);
     });
 
     it("Se puede agregar un atributo a una entidad existente", () => {

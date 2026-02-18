@@ -90,7 +90,7 @@ describe("[MER] Barra de Interacciones", () => {
         fireEvent.click(ent1);
         fireEvent.click(ent2);
 
-        expect(vistaEditorMER.modelador.relaciones.length).toBe(1);
+        expect(vistaEditorMER.modeloER.relaciones.length).toBe(1);
 
         expect(botónRelacion).not.toHaveClass("boton-activo");
     });

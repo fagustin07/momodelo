@@ -12,7 +12,7 @@ import {
 } from "./errores";
 import {Cardinalidad, TipoRelacion} from "../tipos/tipos.ts";
 
-export class Modelador {
+export class ModeloER {
     entidades: Entidad[] = [];
     relaciones: Relacion[] = [];
 

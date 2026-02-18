@@ -1,4 +1,4 @@
-import {Modelador} from "./modelador.ts";
+import {ModeloER} from "./modelador.ts";
 import {Cardinalidad, TipoRelacion} from "../tipos/tipos.ts";
 
 type JsonEntidad = {
@@ -34,8 +34,8 @@ export type JsonModelo = {
     atributos: JsonAtributo[];
 };
 
-export function exportar(modelador: Modelador): JsonModelo {
-    const atributosJson: JsonAtributo[] = modelador.entidades.flatMap(entidad =>
+export function exportar(modeloER: ModeloER): JsonModelo {
+    const atributosJson: JsonAtributo[] = modeloER.entidades.flatMap(entidad =>
         entidad.atributos().map(atributo => ({
             id: atributo.id(),
             nombre: atributo.nombre(),
@@ -45,7 +45,7 @@ export function exportar(modelador: Modelador): JsonModelo {
         }))
     );
 
-    const entidadesJson: JsonEntidad[] = modelador.entidades.map(entidad => ({
+    const entidadesJson: JsonEntidad[] = modeloER.entidades.map(entidad => ({
             id: entidad.id(),
             nombre: entidad.nombre(),
             posicion: entidad.posicion(),
@@ -53,7 +53,7 @@ export function exportar(modelador: Modelador): JsonModelo {
             esDebil: entidad.esDebil()
         }));
 
-    const relacionesJson: JsonRelacion[] = modelador.relaciones.map(relacion => ({
+    const relacionesJson: JsonRelacion[] = modeloER.relaciones.map(relacion => ({
             id: relacion.id(),
             nombre: relacion.nombre(),
             posicion: relacion.posicion(),

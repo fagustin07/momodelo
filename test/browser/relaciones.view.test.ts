@@ -73,7 +73,7 @@ describe("[MER] Vista Relaciones", () => {
 
         realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista);
 
-        const [relacion] = vistaEditorMER.modelador.relaciones;
+        const [relacion] = vistaEditorMER.modeloER.relaciones;
         const [inputRelacion] = getInputRelaciones();
 
         expect(inputRelacion.value).toBe("RELACION");
@@ -92,7 +92,7 @@ describe("[MER] Vista Relaciones", () => {
             skipClick: true
         });
 
-        expect(vistaEditorMER.modelador.relaciones[0].nombre()).toBe("IMITA");
+        expect(vistaEditorMER.modeloER.relaciones[0].nombre()).toBe("IMITA");
     });
 
     it("Se puede crear más de una relación", async () => {
@@ -103,7 +103,7 @@ describe("[MER] Vista Relaciones", () => {
 
         expect(elementoRelacionRepresenta).toBeInTheDocument();
         expect(elementoRelacionAma).toBeInTheDocument();
-        expect(vistaEditorMER.modelador.relaciones.length).toBe(2);
+        expect(vistaEditorMER.modeloER.relaciones.length).toBe(2);
     });
 
     it("Al eliminar una relacion, entonces no queda referencia de la misma, tanto en la vista como en el modelo", async () => {
@@ -114,7 +114,7 @@ describe("[MER] Vista Relaciones", () => {
         realizarGestoEliminarSobre(campoNombreRelacion);
 
         expect(getInputRelaciones().length).toBe(0);
-        expect(vistaEditorMER.modelador.relaciones.length).toBe(0);
+        expect(vistaEditorMER.modeloER.relaciones.length).toBe(0);
     });
 
     it("Al eliminar una relacion y clickear en otra, solo se elimina la primer relacion", async () => {
@@ -128,7 +128,7 @@ describe("[MER] Vista Relaciones", () => {
 
         expect(elementoRelacionRepresenta).not.toBeInTheDocument();
         expect(elementoRelacionAma).toBeInTheDocument();
-        expect(vistaEditorMER.modelador.relaciones.length).toBe(1);
+        expect(vistaEditorMER.modeloER.relaciones.length).toBe(1);
     });
 
     it("Al eliminar una entidad, entonces no quedan relaciones de la misma, tanto en la vista como en el modelo", async () => {
@@ -139,7 +139,7 @@ describe("[MER] Vista Relaciones", () => {
         realizarGestoEliminarSobre(elementoPersonaje);
 
         expect(getInputRelaciones().length).toBe(0);
-        expect(vistaEditorMER.modelador.relaciones.length).toBe(0);
+        expect(vistaEditorMER.modeloER.relaciones.length).toBe(0);
     });
 
     it("No se puede crear una relación recursiva", async () => {
@@ -151,7 +151,7 @@ describe("[MER] Vista Relaciones", () => {
         fireEvent.click(elementoPersonaje);
 
         expect(getInputRelaciones().length).toBe(0);
-        expect(vistaEditorMER.modelador.relaciones.length).toBe(0);
+        expect(vistaEditorMER.modeloER.relaciones.length).toBe(0);
     });
 
     it("Al seleccionar una relación sin interacciones en proceso, entonces dicha relación queda seleccionada", async () => {

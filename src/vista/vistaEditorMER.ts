@@ -2,7 +2,7 @@ import {Entidad} from "../modelo/entidad";
 import {Atributo} from "../modelo/atributo";
 import {Relacion} from "../modelo/relacion";
 import {coordenada, coordenadaInicial, Posicion} from "../posicion";
-import {Modelador} from "../servicios/modelador";
+import {ModeloER} from "../servicios/modelador";
 import {VistaEntidad} from "./vistaEntidad";
 import {VistaRelacion} from "./vistaRelacion";
 import {VistaAtributo} from "./vistaAtributo";
@@ -23,7 +23,7 @@ import {TipoRelacion} from "../tipos/tipos.ts";
 import {MomodeloLogicaError} from "../servicios/errores.ts";
 
 export class VistaEditorMER {
-    modelador: Modelador;
+    modeloER: ModeloER;
     private _elementoSeleccionado: ElementoMER | null = null;
     private _posicionActualVista = coordenadaInicial();
     private _inspector: InspectorElementos;
@@ -37,8 +37,8 @@ export class VistaEditorMER {
     private _atributosVisuales: Map<Atributo, VistaAtributo> = new Map();
     private _interacción: InteracciónMER;
 
-    constructor(modelador: Modelador, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
-        this.modelador = modelador;
+    constructor(modelador: ModeloER, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
+        this.modeloER = modelador;
         this._elementoRaíz = elementoRaiz;
         this._elementoSvg = elementoSvg;
         this._inspector = new InspectorElementos(this._elementoRaíz, this);
@@ -100,13 +100,13 @@ export class VistaEditorMER {
     }
 
     atributoEliminado(entidad: Entidad, atributo: Atributo) {
-        this.modelador.eliminarAtributo(atributo, entidad);
+        this.modeloER.eliminarAtributo(atributo, entidad);
         this._atributosVisuales.get(atributo)!.borrarse();
         this._atributosVisuales.delete(atributo);
     }
 
     borrarEntidad(entidad: Entidad) {
-        const relacionesAfectadas = this.modelador.eliminarEntidad(entidad);
+        const relacionesAfectadas = this.modeloER.eliminarEntidad(entidad);
         this.entidadEliminada(entidad, relacionesAfectadas);
     }
 
@@ -115,7 +115,7 @@ export class VistaEditorMER {
     }
 
     borrarRelación(relación: Relacion) {
-        this.modelador.eliminarRelación(relación);
+        this.modeloER.eliminarRelación(relación);
         this._relacionesVisuales.get(relación)?.borrarse();
         this._relacionesVisuales.delete(relación);
     }
@@ -146,7 +146,7 @@ export class VistaEditorMER {
     }
 
     crearRelaciónConDestinoEn(entidad: Entidad) {
-        return this.modelador.crearRelacion(this._elementoSeleccionado as Entidad, entidad);
+        return this.modeloER.crearRelacion(this._elementoSeleccionado as Entidad, entidad);
     }
 
     deseleccionar() {
@@ -166,7 +166,7 @@ export class VistaEditorMER {
     }
 
     emitirCreacionDeAtributoEn(entidad: Entidad, nombreAtributo: string = "Atributo"): void {
-        const nuevo = this.modelador.agregarAtributoPara(entidad, nombreAtributo, coordenada(12, -75));
+        const nuevo = this.modeloER.agregarAtributoPara(entidad, nombreAtributo, coordenada(12, -75));
         this._atributoCreado(entidad, nuevo);
         this.deseleccionar();
         this.emitirSeleccionDeAtributo(entidad, nuevo);
@@ -197,7 +197,7 @@ export class VistaEditorMER {
     }
 
     generarEntidadUbicadaEn(posicion: Posicion) {
-        return this.modelador.generarEntidadUbicadaEn(posicion);
+        return this.modeloER.generarEntidadUbicadaEn(posicion);
     }
 
     finalizarInteracción() {
@@ -236,13 +236,13 @@ export class VistaEditorMER {
     }
 
     posicionarRelacionEn(relacion: Relacion, centro: { x: number; y: number }): void {
-        this.modelador.posicionarRelacionEn(relacion, centro);
+        this.modeloER.posicionarRelacionEn(relacion, centro);
         this.relacionReposicionada(relacion);
     }
 
     reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[]): void {
         this._limpiarVistaDelUsuario();
-        this.modelador = new Modelador(nuevasEntidades, nuevasRelaciones);
+        this.modeloER = new ModeloER(nuevasEntidades, nuevasRelaciones);
         this._dibujarModelo();
         this.desenfocarElementoInput();
     }
@@ -257,17 +257,17 @@ export class VistaEditorMER {
     }
 
     renombrarAtributo(nuevoNombre: string, atributoExistente: Atributo): void {
-        this.modelador.renombrarAtributo(nuevoNombre, atributoExistente, this._getEntidadDelAtributo(atributoExistente));
+        this.modeloER.renombrarAtributo(nuevoNombre, atributoExistente, this._getEntidadDelAtributo(atributoExistente));
         this._atributoRenombrado(atributoExistente);
     }
 
     renombrarEntidad(nuevoNombre: string, entidad: Entidad): void {
-        this.modelador.renombrarEntidad(nuevoNombre, entidad);
+        this.modeloER.renombrarEntidad(nuevoNombre, entidad);
         this._entidadRenombrada(entidad);
     }
 
     renombrarRelacion(nuevoNombre: string, relacion: Relacion): void {
-        this.modelador.renombrarRelacion(nuevoNombre, relacion);
+        this.modeloER.renombrarRelacion(nuevoNombre, relacion);
         this._relacionRenombrada(relacion);
     }
 
@@ -295,24 +295,24 @@ export class VistaEditorMER {
     }
 
     marcarAtributoComoClavePrimaria(atributo: Atributo) {
-        this.modelador.marcarAtributoComoClavePrimaria(this._getEntidadDelAtributo(atributo), atributo);
+        this.modeloER.marcarAtributoComoClavePrimaria(this._getEntidadDelAtributo(atributo), atributo);
     }
 
     desmarcarAtributoComoClavePrimaria(atributo: Atributo) {
-        this.modelador.desmarcarAtributoComoClavePrimaria(this._getEntidadDelAtributo(atributo), atributo);
+        this.modeloER.desmarcarAtributoComoClavePrimaria(this._getEntidadDelAtributo(atributo), atributo);
     }
 
     marcarAtributoMultivaluado(atributo: Atributo) {
-        this.modelador.marcarAtributoMultivaluado(this._getEntidadDelAtributo(atributo), atributo);
+        this.modeloER.marcarAtributoMultivaluado(this._getEntidadDelAtributo(atributo), atributo);
     }
 
     desmarcarAtributoMultivaluado(atributo: Atributo) {
-        this.modelador.desmarcarAtributoMultivaluado(this._getEntidadDelAtributo(atributo), atributo);
+        this.modeloER.desmarcarAtributoMultivaluado(this._getEntidadDelAtributo(atributo), atributo);
     }
 
     cambiarTipoDeRelacion(relacion: Relacion, nuevoTipo: TipoRelacion) {
         try {
-            this.modelador.cambiarTipoDeRelacionA(relacion, nuevoTipo);
+            this.modeloER.cambiarTipoDeRelacionA(relacion, nuevoTipo);
             this._relacionesVisuales.get(relacion)?.reposicionarRelacion();
             const entidadOrigen = relacion.entidadOrigen();
             const entidadDestino = relacion.entidadDestino();
@@ -324,7 +324,7 @@ export class VistaEditorMER {
     }
 
     invertirRelacionDebil(relacion: Relacion): Relacion {
-        const nuevaRelacion = this.modelador.invertirRelacionDebil(relacion);
+        const nuevaRelacion = this.modeloER.invertirRelacionDebil(relacion);
         this._relacionesVisuales.get(relacion)?.borrarse();
         this._relacionesVisuales.delete(relacion);
         this.crearVistaRelación(nuevaRelacion);
@@ -379,8 +379,8 @@ export class VistaEditorMER {
     }
 
     private _dibujarModelo() {
-        this.modelador.entidades.forEach(e => this.crearVistaEntidad(e));
-        this.modelador.relaciones.forEach(r => this.crearVistaRelación(r));
+        this.modeloER.entidades.forEach(e => this.crearVistaEntidad(e));
+        this.modeloER.relaciones.forEach(r => this.crearVistaRelación(r));
     }
 
     private _entidadRenombrada(entidad: Entidad) {
