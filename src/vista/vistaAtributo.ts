@@ -3,6 +3,8 @@ import {createElement, createSvgElement} from "./dom/createElement.ts";
 import {Atributo} from "../modelo/atributo.ts";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
 import {VistaElementoMER} from "./vistaElementoMER.ts";
+import {Posicion} from "../posicion.ts";
+import {PuntoDeBordeNoImplementadoError} from "../servicios/errores.ts";
 
 export class VistaAtributo extends VistaElementoMER<Atributo> {
     private readonly _entidad: Entidad;
@@ -35,6 +37,10 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
     centro() {
         const posiciónAtributo = this._entidad.posicion().plus(this._atributo.posicion());
         return this.calcularCentroBasadoEn(this._elementoDom, posiciónAtributo);
+    }
+
+    puntoDeConexion(_puntoDestino: Posicion): Posicion {
+        throw new PuntoDeBordeNoImplementadoError("Atributo");
     }
 
     borrarse() {
@@ -92,7 +98,7 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
 
         this.posicionarElemento(elementoDom);
         this.hacerArrastrable(elementoDom);
-        
+
         if (this._atributo.esPK()) {
             elementoDom.classList.add("atributo-pk");
         }

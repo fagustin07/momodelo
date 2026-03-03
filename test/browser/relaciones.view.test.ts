@@ -166,4 +166,104 @@ describe("[MER] Vista Relaciones", () => {
         expect(getGrupoRelacionDe(inputRelacionRepresenta)).not.toHaveClass("seleccionado");
         expect(getGrupoRelacionDe(inputRelacionAma)).toHaveClass("seleccionado");
     });
+
+    it("Una relación sabe dibujar la participación de una entidad a la derecha y se muestra en el punto medio exacto del segmento de conexión", () => {
+        const [elemPersonaje, elemHumorista] = getElementoEntidades();
+        realizarGestoParaRelacionarA(elemPersonaje, elemHumorista);
+        const vistaRelacion = vistaEditorMER.vistaDeRelacion(vistaEditorMER.modeloER.relaciones[0]);
+
+        const vistaDestino = vistaEditorMER.vistaDeEntidad(vistaEditorMER.modeloER.entidades[1]);
+        const centroRomboInicial = vistaRelacion.centro();
+
+        const destinoFinal = coordenada(centroRomboInicial.x + 800, centroRomboInicial.y);
+        vistaEditorMER.modeloER.entidades[1].moverseHacia(destinoFinal.minus(vistaEditorMER.modeloER.entidades[1].posicion()));
+        vistaEditorMER.reposicionarElementosSVG();
+
+        const centroRombo = vistaRelacion.centro();
+        const bordeRomboSalida = vistaRelacion.puntoDeConexion(vistaDestino.centro());
+        const bordeEntidadLlegada = vistaDestino.puntoDeConexion(centroRombo);
+
+        const puntoMedioEsperadoX = bordeRomboSalida.x + (bordeEntidadLlegada.x - bordeRomboSalida.x) / 2;
+        const puntoMedioEsperadoY = bordeRomboSalida.y + (bordeEntidadLlegada.y - bordeRomboSalida.y) / 2;
+
+        const textoCardinalidadDestino = document.querySelectorAll<SVGTextElement>(".cardinalidad-texto")[1];
+
+        expect(Number(textoCardinalidadDestino.getAttribute("x"))).toBeCloseTo(puntoMedioEsperadoX, 0);
+        expect(Number(textoCardinalidadDestino.getAttribute("y"))).toBeCloseTo(puntoMedioEsperadoY, 0);
+    });
+
+    it("Una relación sabe dibujar la participación de una entidad a la izquierda y se muestra en el punto medio exacto del segmento de conexión", () => {
+        const [elemPersonaje, elemHumorista] = getElementoEntidades();
+        realizarGestoParaRelacionarA(elemPersonaje, elemHumorista);
+        const vistaRelacion = vistaEditorMER.vistaDeRelacion(vistaEditorMER.modeloER.relaciones[0]);
+
+        const vistaDestino = vistaEditorMER.vistaDeEntidad(vistaEditorMER.modeloER.entidades[1]);
+        const centroRomboInicial = vistaRelacion.centro();
+
+        const destinoFinal = coordenada(centroRomboInicial.x - 800, centroRomboInicial.y);
+        vistaEditorMER.modeloER.entidades[1].moverseHacia(destinoFinal.minus(vistaEditorMER.modeloER.entidades[1].posicion()));
+        vistaEditorMER.reposicionarElementosSVG();
+
+        const centroRombo = vistaRelacion.centro();
+        const bordeRomboSalida = vistaRelacion.puntoDeConexion(vistaDestino.centro());
+        const bordeEntidadLlegada = vistaDestino.puntoDeConexion(centroRombo);
+
+        const puntoMedioEsperadoX = bordeRomboSalida.x + (bordeEntidadLlegada.x - bordeRomboSalida.x) / 2;
+        const puntoMedioEsperadoY = bordeRomboSalida.y + (bordeEntidadLlegada.y - bordeRomboSalida.y) / 2;
+
+        const textoCardinalidadDestino = document.querySelectorAll<SVGTextElement>(".cardinalidad-texto")[1];
+
+        expect(Number(textoCardinalidadDestino.getAttribute("x"))).toBeCloseTo(puntoMedioEsperadoX, 0);
+        expect(Number(textoCardinalidadDestino.getAttribute("y"))).toBeCloseTo(puntoMedioEsperadoY, 0);
+    });
+
+    it("Una relación sabe dibujar la participación de una entidad hacia arriba y se muestra en el punto medio exacto del segmento de conexión", () => {
+        const [elemPersonaje, elemHumorista] = getElementoEntidades();
+        realizarGestoParaRelacionarA(elemPersonaje, elemHumorista);
+        const vistaRelacion = vistaEditorMER.vistaDeRelacion(vistaEditorMER.modeloER.relaciones[0]);
+
+        const vistaDestino = vistaEditorMER.vistaDeEntidad(vistaEditorMER.modeloER.entidades[1]);
+        const centroRomboInicial = vistaRelacion.centro();
+
+        const destinoFinal = coordenada(centroRomboInicial.x, centroRomboInicial.y - 800);
+        vistaEditorMER.modeloER.entidades[1].moverseHacia(destinoFinal.minus(vistaEditorMER.modeloER.entidades[1].posicion()));
+        vistaEditorMER.reposicionarElementosSVG();
+
+        const centroRombo = vistaRelacion.centro();
+        const bordeRomboSalida = vistaRelacion.puntoDeConexion(vistaDestino.centro());
+        const bordeEntidadLlegada = vistaDestino.puntoDeConexion(centroRombo);
+
+        const puntoMedioEsperadoX = bordeRomboSalida.x + (bordeEntidadLlegada.x - bordeRomboSalida.x) / 2;
+        const puntoMedioEsperadoY = bordeRomboSalida.y + (bordeEntidadLlegada.y - bordeRomboSalida.y) / 2;
+
+        const textoCardinalidadDestino = document.querySelectorAll<SVGTextElement>(".cardinalidad-texto")[1];
+
+        expect(Number(textoCardinalidadDestino.getAttribute("x"))).toBeCloseTo(puntoMedioEsperadoX, 0);
+        expect(Number(textoCardinalidadDestino.getAttribute("y"))).toBeCloseTo(puntoMedioEsperadoY, 0);
+    });
+
+    it("Una relación sabe dibujar la participación de una entidad hacia abajo y se muestra en el punto medio exacto del segmento de conexión", () => {
+        const [elemPersonaje, elemHumorista] = getElementoEntidades();
+        realizarGestoParaRelacionarA(elemPersonaje, elemHumorista);
+        const vistaRelacion = vistaEditorMER.vistaDeRelacion(vistaEditorMER.modeloER.relaciones[0]);
+
+        const vistaDestino = vistaEditorMER.vistaDeEntidad(vistaEditorMER.modeloER.entidades[1]);
+        const centroRomboInicial = vistaRelacion.centro();
+
+        const destinoFinal = coordenada(centroRomboInicial.x, centroRomboInicial.y + 800);
+        vistaEditorMER.modeloER.entidades[1].moverseHacia(destinoFinal.minus(vistaEditorMER.modeloER.entidades[1].posicion()));
+        vistaEditorMER.reposicionarElementosSVG();
+
+        const centroRombo = vistaRelacion.centro();
+        const bordeRomboSalida = vistaRelacion.puntoDeConexion(vistaDestino.centro());
+        const bordeEntidadLlegada = vistaDestino.puntoDeConexion(centroRombo);
+
+        const puntoMedioEsperadoX = bordeRomboSalida.x + (bordeEntidadLlegada.x - bordeRomboSalida.x) / 2;
+        const puntoMedioEsperadoY = bordeRomboSalida.y + (bordeEntidadLlegada.y - bordeRomboSalida.y) / 2;
+
+        const textoCardinalidadDestino = document.querySelectorAll<SVGTextElement>(".cardinalidad-texto")[1];
+
+        expect(Number(textoCardinalidadDestino.getAttribute("x"))).toBeCloseTo(puntoMedioEsperadoX, 0);
+        expect(Number(textoCardinalidadDestino.getAttribute("y"))).toBeCloseTo(puntoMedioEsperadoY, 0);
+    });
 });

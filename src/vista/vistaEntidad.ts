@@ -4,6 +4,7 @@ import {VistaEditorMER} from "./vistaEditorMER.ts";
 import {VistaElementoMER} from "./vistaElementoMER.ts";
 import {VistaAtributo} from "./vistaAtributo.ts";
 import {Atributo} from "../modelo/atributo.ts";
+import {coordenada, Posicion} from "../posicion.ts";
 
 export class VistaEntidad extends VistaElementoMER<Entidad> {
     private readonly _elementoDom: HTMLElement;
@@ -33,6 +34,54 @@ export class VistaEntidad extends VistaElementoMER<Entidad> {
 
     centro() {
         return this.calcularCentroBasadoEn(this._elementoDom, this._entidad.posicion());
+    }
+
+    puntoDeConexion(destino: Posicion): Posicion {
+        const centroEntidad = this.centro();
+        const posicionEntidad = this._entidad.posicion();
+        const anchoEntidad = this.ancho();
+        const altoEntidad = this.alto();
+
+        const bordeSuperior = posicionEntidad.y;
+        const bordeInferior = posicionEntidad.y + altoEntidad;
+        const bordeIzquierdo = posicionEntidad.x;
+        const bordeDerecho = posicionEntidad.x + anchoEntidad;
+
+        const elDestinoEstaArribaDeLaDiagonalAscendente = destino.y < (altoEntidad / anchoEntidad) * (destino.x - bordeIzquierdo) + bordeSuperior;
+        const elDestinoEstaArribaDeLaDiagonalDescendente = destino.y < (-altoEntidad / anchoEntidad) * (destino.x - bordeDerecho) + bordeSuperior;
+
+        if (elDestinoEstaArribaDeLaDiagonalAscendente && elDestinoEstaArribaDeLaDiagonalDescendente)
+            return this._interpolarPuntoEnY(centroEntidad, destino, bordeSuperior);
+
+        if (!elDestinoEstaArribaDeLaDiagonalAscendente && !elDestinoEstaArribaDeLaDiagonalDescendente)
+            return this._interpolarPuntoEnY(centroEntidad, destino, bordeInferior);
+
+        if (!elDestinoEstaArribaDeLaDiagonalAscendente && elDestinoEstaArribaDeLaDiagonalDescendente)
+            return this._interpolarPuntoEnX(centroEntidad, destino, bordeIzquierdo);
+
+        return this._interpolarPuntoEnX(centroEntidad, destino, bordeDerecho);
+    }
+
+    private _interpolarPunto(p0: Posicion, p1: Posicion, factor: number): Posicion {
+        return coordenada(p0.x + factor * (p1.x - p0.x), p0.y + factor * (p1.y - p0.y));
+    }
+
+    private _interpolarPuntoEnY(p0: Posicion, p1: Posicion, yObjetivo: number): Posicion {
+        const factorInterpolacion = (yObjetivo - p0.y) / (p1.y - p0.y);
+        return this._interpolarPunto(p0, p1, factorInterpolacion);
+    }
+
+    private _interpolarPuntoEnX(p0: Posicion, p1: Posicion, xObjetivo: number): Posicion {
+        const factorInterpolacion = (xObjetivo - p0.x) / (p1.x - p0.x);
+        return this._interpolarPunto(p0, p1, factorInterpolacion);
+    }
+
+    ancho() {
+        return this._elementoDom.getBoundingClientRect().width;
+    }
+
+    alto() {
+        return this._elementoDom.getBoundingClientRect().height;
     }
 
     actualizarNombre() {

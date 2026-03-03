@@ -87,12 +87,24 @@ export class VistaEditorMER {
         return this._interacción.estáEnProceso();
     }
 
-    centroDeEntidad(entidad: Entidad): Posicion {
+    vistaDeEntidad(entidad: Entidad): VistaEntidad {
         const vistaEntidad = this._entidadesVisuales.get(entidad);
         if (!vistaEntidad) {
             throw new MomodeloLogicaError(`No se encontró vista para la entidad ${entidad.nombre()}`);
         }
-        return vistaEntidad.centro();
+        return vistaEntidad;
+    }
+
+    vistaDeRelacion(relacion: Relacion): VistaRelacion {
+        const vistaRelacion = this._relacionesVisuales.get(relacion);
+        if (!vistaRelacion) {
+            throw new MomodeloLogicaError(`No se encontró vista para la relación ${relacion.nombre()}`);
+        }
+        return vistaRelacion;
+    }
+
+    centroDeEntidad(entidad: Entidad): Posicion {
+        return this.vistaDeEntidad(entidad).centro();
     }
 
     agregarElementoSvg(...elementos: SVGElement[]): void {
@@ -140,7 +152,14 @@ export class VistaEditorMER {
     crearVistaRelación(relación: Relacion) {
         const [entidadOrigen, entidadDestino] = relación.entidades();
 
-        const vista = new VistaRelacion(entidadOrigen, entidadDestino, relación, this);
+        const vistaEntidadOrigen = this._entidadesVisuales.get(entidadOrigen);
+        const vistaEntidadDestino = this._entidadesVisuales.get(entidadDestino);
+
+        if (!vistaEntidadOrigen || !vistaEntidadDestino) {
+            throw new MomodeloLogicaError(`No se encontró vista para las entidades de la relación "${relación.nombre()}"`);
+        }
+
+        const vista = new VistaRelacion(vistaEntidadOrigen, vistaEntidadDestino, relación, this);
         vista.representarse();
         this._relacionesVisuales.set(relación, vista);
     }

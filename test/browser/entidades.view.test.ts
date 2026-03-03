@@ -21,7 +21,7 @@ function cambiarNombreEntidadPor(elementoEntidad: HTMLElement, nuevoValor: strin
 }
 
 function realizarGestoEliminarSobre(elemento: HTMLElement) {
-    const botonBorrar = screen.getByRole('button', { name: /borrar/i });
+    const botonBorrar = screen.getByRole('button', {name: /borrar/i});
     fireEvent.click(botonBorrar);
     fireEvent.click(elemento);
 }
@@ -33,7 +33,7 @@ function agregarAtributoEn(elementoEntidad: HTMLElement, nombreAtributoNuevo: st
 
     const camposDeAtributos = within(elementoEntidad).getAllByTitle<HTMLInputElement>("Nombre de atributo");
     const nuevoAtributo = camposDeAtributos[camposDeAtributos.length - 1];
-    fireEvent.input(nuevoAtributo, { target: { value: nombreAtributoNuevo } });
+    fireEvent.input(nuevoAtributo, {target: {value: nombreAtributoNuevo}});
     return nuevoAtributo;
 }
 
@@ -52,7 +52,7 @@ function realizarGestoParaAgregarEntidadEn(elementoRaiz: HTMLElement, posicion: 
 
 function realizarGestoParaAgregarEntidadLlamadaEn(nombreEntidad: string, elementoRaiz: HTMLElement, posicion: Posicion) {
     const {nuevaEntidad, campoNombre} = realizarGestoParaAgregarEntidadEn(elementoRaiz, posicion);
-    fireEvent.input(campoNombre, { target: { value: nombreEntidad } });
+    fireEvent.input(campoNombre, {target: {value: nombreEntidad}});
 
     return nuevaEntidad;
 }
@@ -211,5 +211,49 @@ describe("[MER] Vista Modelo tests", () => {
         expect(vistaEditorMER.hayUnaInteraccionEnProceso()).toBeFalsy;
         expect(atributoNombre.parentElement!).not.toHaveClass("seleccionado");
         expect(atributoApellido.parentElement!).toHaveClass("seleccionado");
+    });
+
+    it("Una Entidad sabe identificar el punto de intersección y su orientación a derecha según la ubicación del destino", () => {
+        const vistaEntidad = vistaEditorMER.vistaDeEntidad(entidad);
+        const centro = vistaEntidad.centro();
+        const destinoADerecha = coordenada(centro.x + 1000, centro.y);
+        const bordeDerechoEsperado = entidad.posicion().x + vistaEntidad.ancho();
+
+        const resultado = vistaEntidad.puntoDeConexion(destinoADerecha);
+
+        expect(resultado.x).toBeCloseTo(bordeDerechoEsperado, 0);
+    });
+
+    it("Una Entidad sabe identificar el punto de intersección y su orientación a izquierda según la ubicación del destino", () => {
+        const vistaEntidad = vistaEditorMER.vistaDeEntidad(entidad);
+        const centro = vistaEntidad.centro();
+        const destinoAIzquierda = coordenada(centro.x - 1000, centro.y);
+        const bordeIzquierdoEsperado = entidad.posicion().x;
+
+        const resultado = vistaEntidad.puntoDeConexion(destinoAIzquierda);
+
+        expect(resultado.x).toBeCloseTo(bordeIzquierdoEsperado, 0);
+    });
+
+    it("Una entidad sabe identificar el punto de intersección y su orientación sobre su cara superior si el destino está por este lado de la figura", () => {
+        const vistaEntidad = vistaEditorMER.vistaDeEntidad(entidad);
+        const centro = vistaEntidad.centro();
+        const destinoArriba = coordenada(centro.x, centro.y - 1000);
+        const bordeSuperiorEsperado = entidad.posicion().y;
+
+        const resultado = vistaEntidad.puntoDeConexion(destinoArriba);
+
+        expect(resultado.y).toBeCloseTo(bordeSuperiorEsperado, 0);
+    });
+
+    it("Una entidad sabe identificar el punto de intersección y su orientación sobre su cara inferior si el destino está por este lado de la figura", () => {
+        const vistaEntidad = vistaEditorMER.vistaDeEntidad(entidad);
+        const centro = vistaEntidad.centro();
+        const destinoAbajo = coordenada(centro.x, centro.y + 1000);
+        const bordeInferiorEsperado = entidad.posicion().y + vistaEntidad.alto();
+
+        const resultado = vistaEntidad.puntoDeConexion(destinoAbajo);
+
+        expect(resultado.y).toBeCloseTo(bordeInferiorEsperado, 0);
     });
 });

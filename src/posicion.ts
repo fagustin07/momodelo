@@ -40,3 +40,7 @@ export function coordenada(x: number, y: number) {
 export function coordenadaInicial() {
     return new Posicion(0,0);
 }
+
+export function puntoMedio(p0: Posicion, p1: Posicion): Posicion {
+    return coordenada((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
+}

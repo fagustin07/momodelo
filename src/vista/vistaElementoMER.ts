@@ -14,6 +14,8 @@ export abstract class VistaElementoMER<E extends ElementoMER> {
 
     abstract centro(): Posicion;
 
+    abstract puntoDeConexion(puntoDestino: Posicion): Posicion;
+
     protected abstract elementoDOM(): HTMLElement | SVGElement;
 
     actualizarSelección(elementoSeleccionado: ElementoMER | null) {

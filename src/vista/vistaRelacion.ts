@@ -1,14 +1,14 @@
 import {Relacion} from "../modelo/relacion";
-import {coordenada, Posicion} from "../posicion";
+import {coordenada, Posicion, puntoMedio} from "../posicion";
 import {createElement, createSvgElement} from "./dom/createElement.ts";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
 import {VistaElementoMER} from "./vistaElementoMER.ts";
-import {Entidad} from "../modelo/entidad.ts";
+import {VistaEntidad} from "./vistaEntidad.ts";
 import {Cardinalidad} from "../tipos/tipos.ts";
 
 export class VistaRelacion extends VistaElementoMER<Relacion> {
-    private readonly _entidadOrigen: Entidad;
-    private readonly _entidadDestino: Entidad;
+    private readonly _vistaEntidadOrigen: VistaEntidad;
+    private readonly _vistaEntidadDestino: VistaEntidad;
 
     private _rombo!: SVGPolygonElement;
     private _romboInterior!: SVGPolygonElement;
@@ -24,10 +24,10 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
     private _ancho = 140;
     private _alto = 100;
 
-    constructor(vistaEntidadOrigen: Entidad, vistaEntidadDestino: Entidad, relacion: Relacion, vistaEditorMER: VistaEditorMER) {
+    constructor(vistaEntidadOrigen: VistaEntidad, vistaEntidadDestino: VistaEntidad, relacion: Relacion, vistaEditorMER: VistaEditorMER) {
         super(relacion, vistaEditorMER);
-        this._entidadOrigen = vistaEntidadOrigen;
-        this._entidadDestino = vistaEntidadDestino;
+        this._vistaEntidadOrigen = vistaEntidadOrigen;
+        this._vistaEntidadDestino = vistaEntidadDestino;
 
         const centro = this.centro();
         this._vistaEditorMER.posicionarRelacionEn(this._relacion, centro);
@@ -56,12 +56,14 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
     }
 
     centro() {
-        const c1 = this._vistaEditorMER.centroDeEntidad(this._entidadOrigen);
-        const c2 = this._vistaEditorMER.centroDeEntidad(this._entidadDestino);
-        return coordenada(
-            (c1.x + c2.x) / 2,
-            (c1.y + c2.y) / 2,
+        return puntoMedio(
+            this._vistaEntidadOrigen.centro(),
+            this._vistaEntidadDestino.centro(),
         );
+    }
+
+    puntoDeConexion(puntoExterno: Posicion): Posicion {
+        return this._calcularPuntoDeConexion(this.centro(), puntoExterno);
     }
 
     reposicionarRelacion() {
@@ -186,13 +188,6 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
         return `(${cardinalidad[0]}, ${cardinalidad[1]})`;
     }
 
-    private _calcularPuntoEntreEntidadYRelacion(coordenadaEntidad: Posicion, coordenadaRelación: Posicion): Posicion {
-        const delta = 0.4;
-        return coordenada(
-            coordenadaEntidad.x + (coordenadaRelación.x - coordenadaEntidad.x) * delta,
-            coordenadaEntidad.y + (coordenadaRelación.y - coordenadaEntidad.y) * delta - 10
-        )
-    };
 
     private _dibujarElementosDeRelación() {
         this._romboInterior = createSvgElement("polygon", {
@@ -289,33 +284,85 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
     }
 
     private _reposicionarParticipaciónDeEntidades(posiciónRelación: Posicion) {
-        const posiciónEntidadOrigen = this._vistaEditorMER.centroDeEntidad(this._entidadOrigen);
-        const posiciónEntidadDestino = this._vistaEditorMER.centroDeEntidad(this._entidadDestino);
-        const posicionCardinalidadDestino = this._calcularPuntoEntreEntidadYRelacion(posiciónEntidadOrigen, posiciónRelación);
-        const posicionCardinalidadOrigen = this._calcularPuntoEntreEntidadYRelacion(posiciónEntidadDestino, posiciónRelación);
+        const centroOrigen = this._vistaEntidadOrigen.centro();
+        const centroDestino = this._vistaEntidadDestino.centro();
 
-        this._textoCardinalidadOrigen.setAttribute("x", `${posicionCardinalidadOrigen.x}`);
-        this._textoCardinalidadOrigen.setAttribute("y", `${posicionCardinalidadOrigen.y}`);
-        this._textoCardinalidadOrigen.textContent = this._formatearCardinalidad(this._relacion.cardinalidadOrigen());
+        const bordeOrigen = this._vistaEntidadOrigen.puntoDeConexion(posiciónRelación);
+        const bordeRomboOrigen = this.puntoDeConexion(centroOrigen);
 
-        this._textoCardinalidadDestino.setAttribute("x", `${posicionCardinalidadDestino.x}`);
-        this._textoCardinalidadDestino.setAttribute("y", `${posicionCardinalidadDestino.y}`);
-        this._textoCardinalidadDestino.textContent = this._formatearCardinalidad(this._relacion.cardinalidadDestino());
+        const bordeDestino = this._vistaEntidadDestino.puntoDeConexion(posiciónRelación);
+        const bordeRomboDestino = this.puntoDeConexion(centroDestino);
 
-        this._lineaOrigen.setAttribute("x1", `${posiciónEntidadOrigen.x}`);
-        this._lineaOrigen.setAttribute("y1", `${posiciónEntidadOrigen.y}`);
-        this._lineaOrigen.setAttribute("x2", `${posiciónRelación.x}`);
-        this._lineaOrigen.setAttribute("y2", `${posiciónRelación.y}`);
+        this._reposicionarLinea(this._lineaOrigen, bordeOrigen, bordeRomboOrigen);
+        this._reposicionarLinea(this._lineaOrigenInterior, bordeOrigen, bordeRomboOrigen);
+        this._reposicionarLinea(this._lineaDestino, bordeDestino, bordeRomboDestino);
 
-        this._lineaOrigenInterior.setAttribute("x1", `${posiciónEntidadOrigen.x}`);
-        this._lineaOrigenInterior.setAttribute("y1", `${posiciónEntidadOrigen.y}`);
-        this._lineaOrigenInterior.setAttribute("x2", `${posiciónRelación.x}`);
-        this._lineaOrigenInterior.setAttribute("y2", `${posiciónRelación.y}`);
-
-        this._lineaDestino.setAttribute("x1", `${posiciónEntidadDestino.x}`);
-        this._lineaDestino.setAttribute("y1", `${posiciónEntidadDestino.y}`);
-        this._lineaDestino.setAttribute("x2", `${posiciónRelación.x}`);
-        this._lineaDestino.setAttribute("y2", `${posiciónRelación.y}`);
+        this._redibujarTexto(
+            this._textoCardinalidadOrigen,
+            puntoMedio(bordeOrigen, bordeRomboOrigen),
+            this._formatearCardinalidad(this._relacion.cardinalidadOrigen()),
+        );
+        this._redibujarTexto(
+            this._textoCardinalidadDestino,
+            puntoMedio(bordeDestino, bordeRomboDestino),
+            this._formatearCardinalidad(this._relacion.cardinalidadDestino()),
+        );
     }
 
+    private _calcularPuntoDeConexion(centroRelacion: Posicion, ubicacionObjetivo: Posicion): Posicion {
+        const mitadAnchoDelRombo = this._ancho / 2;
+        const mitadAltoDelRombo = this._alto / 2;
+
+        const verticeSuperior = coordenada(centroRelacion.x, centroRelacion.y - mitadAltoDelRombo);
+        const verticeDerecho = coordenada(centroRelacion.x + mitadAnchoDelRombo, centroRelacion.y);
+        const verticeInferior = coordenada(centroRelacion.x, centroRelacion.y + mitadAltoDelRombo);
+        const verticeIzquierdo = coordenada(centroRelacion.x - mitadAnchoDelRombo, centroRelacion.y);
+
+        const elObjetivoEstaALaDerecha = ubicacionObjetivo.x >= centroRelacion.x;
+        const elObjetivoEstaAbajo = ubicacionObjetivo.y >= centroRelacion.y;
+
+        if (elObjetivoEstaALaDerecha && !elObjetivoEstaAbajo)
+            return this._calcularInterseccionConLado(centroRelacion, ubicacionObjetivo, verticeSuperior, verticeDerecho);
+        if (elObjetivoEstaALaDerecha && elObjetivoEstaAbajo)
+            return this._calcularInterseccionConLado(centroRelacion, ubicacionObjetivo, verticeDerecho, verticeInferior);
+        if (!elObjetivoEstaALaDerecha && elObjetivoEstaAbajo)
+            return this._calcularInterseccionConLado(centroRelacion, ubicacionObjetivo, verticeInferior, verticeIzquierdo);
+
+        return this._calcularInterseccionConLado(centroRelacion, ubicacionObjetivo, verticeIzquierdo, verticeSuperior);
+    }
+
+    private _interpolarPunto(p0: Posicion, p1: Posicion, factor: number): Posicion {
+        return coordenada(
+            p0.x + factor * (p1.x - p0.x),
+            p0.y + factor * (p1.y - p0.y),
+        );
+    }
+
+    private _calcularInterseccionConLado(centroRelacion: Posicion, ubicacionObjetivo: Posicion, verticeA: Posicion, verticeB: Posicion): Posicion {
+        const magnitudXDeseada = ubicacionObjetivo.x - centroRelacion.x;
+        const magnitudYDeseada = ubicacionObjetivo.y - centroRelacion.y;
+        const magnitudXLateralDelRombo = verticeB.x - verticeA.x;
+        const magnitudYLateralDelRombo = verticeB.y - verticeA.y;
+
+        const productoVectorialCruzado = magnitudXDeseada * magnitudYLateralDelRombo - magnitudYDeseada * magnitudXLateralDelRombo;
+
+        const factorDistanciaHaciaElObjetivo =
+            ((verticeA.x - centroRelacion.x) * magnitudYLateralDelRombo -
+                (verticeA.y - centroRelacion.y) * magnitudXLateralDelRombo) / productoVectorialCruzado;
+
+        return this._interpolarPunto(centroRelacion, ubicacionObjetivo, factorDistanciaHaciaElObjetivo);
+    }
+
+    private _redibujarTexto(elementoTexto: SVGTextElement, posicionCardinalidadDestino: Posicion, texto: string) {
+        elementoTexto.setAttribute("x", `${posicionCardinalidadDestino.x}`);
+        elementoTexto.setAttribute("y", `${posicionCardinalidadDestino.y}`);
+        elementoTexto.textContent = texto;
+    }
+
+    private _reposicionarLinea(linea: SVGLineElement, posicionOrigen: Posicion, posicionDestino: Posicion) {
+        linea.setAttribute("x1", `${posicionOrigen.x}`);
+        linea.setAttribute("y1", `${posicionOrigen.y}`);
+        linea.setAttribute("x2", `${posicionDestino.x}`);
+        linea.setAttribute("y2", `${posicionDestino.y}`);
+    }
 }

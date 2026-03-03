@@ -16,6 +16,12 @@ export class MomodeloErrorImplementaciónPlanificada extends MomodeloError {
     }
 }
 
+export class PuntoDeBordeNoImplementadoError extends MomodeloErrorImplementaciónPlanificada {
+    constructor(figura: string) {
+        super(`puntoDeBorde no implementado para ${figura}`);
+    }
+}
+
 export class RelaciónRecursivaError extends MomodeloErrorImplementaciónPlanificada {
     constructor() {
         super("La creación de relaciones recursivas aún no está disponible.");
