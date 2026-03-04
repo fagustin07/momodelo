@@ -2,16 +2,22 @@ import {createElement, createSvgElement} from "../vista/dom/createElement.ts";
 import {exportar} from "../servicios/exportador.ts";
 import {importar} from "../servicios/importador.ts";
 import {VistaEditorMER} from "../vista/vistaEditorMER.ts";
+import {AlmacenamientoLocal} from "../servicios/almacenamientoLocal.ts";
+import {ModalMisModelos} from "./modalMisModelos.ts";
 
 export class MenuHamburguesa {
     private readonly _vistaEditor: VistaEditorMER;
     private readonly _menúContainer: HTMLElement;
     private readonly _menuDesplegable: HTMLElement;
     private readonly _inputJson: HTMLInputElement;
+    private readonly _almacenamiento: AlmacenamientoLocal;
+    private readonly _modalMisModelos: ModalMisModelos;
     private _menuAbierto = false;
 
     constructor(vistaEditor: VistaEditorMER) {
         this._vistaEditor = vistaEditor;
+        this._almacenamiento = new AlmacenamientoLocal();
+        this._modalMisModelos = new ModalMisModelos(vistaEditor, this._almacenamiento);
 
         this._inputJson = createElement("input", {
             type: "file",
@@ -85,13 +91,20 @@ export class MenuHamburguesa {
             onclick: () => this._importarModelo()
         });
 
+        const botonMisModelos = createElement("button", {
+            className: "menu-item",
+            textContent: "Mis Modelos",
+            onclick: () => this._abrirMisModelos()
+        });
+
         return createElement("div", {
             className: "menu-hamburguesa-desplegable"
-        }, [botonExportar, botonImportar]);
+        }, [botonMisModelos, botonExportar, botonImportar]);
     }
 
     private _toggleMenu(e: MouseEvent): void {
         e.stopPropagation();
+        if (this._vistaEditor.hayUnaInteraccionEnProceso()) return;
         this._menuAbierto = !this._menuAbierto;
         
         if (this._menuAbierto) {
@@ -150,5 +163,11 @@ export class MenuHamburguesa {
         this._vistaEditor.reemplazarModelo(entidades, relaciones);
 
         input.value = "";
+    }
+
+    private _abrirMisModelos(): void {
+        this._cerrarMenu();
+        this._vistaEditor.cancelarInteracción();
+        this._modalMisModelos.abrir();
     }
 }

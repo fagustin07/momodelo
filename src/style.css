@@ -433,6 +433,11 @@ button.multivaluado-inactivo {
   border-color: #bbb;
 }
 
+.diagrama-mer.accion-en-curso .menu-hamburguesa-icono {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .menu-hamburguesa-icono svg {
   display: block;
 }
@@ -488,4 +493,178 @@ button.multivaluado-inactivo {
   font-size: 0.8rem;
   margin-top: 1rem;
 
+}
+
+.modal-mis-modelos-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  &.modal-abierto { opacity: 1; }
+}
+
+.modal-mis-modelos-panel {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  width: min(70vw, 500px);
+  min-width: 0;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: sans-serif;
+}
+
+.modal-mis-modelos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-mis-modelos-titulo {
+  margin: 0;
+}
+
+.modal-mis-modelos-cerrar {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #6b7280;
+  border-radius: 0.4rem;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #f3f4f6;
+    color: #000;
+  }
+}
+
+.modal-mis-modelos-warning {
+  margin: 0.75rem 1.5rem 0;
+  padding: 0.6rem 1rem;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  color: #92400e;
+  overflow-wrap: break-word;
+}
+
+.modal-mis-modelos-seccion-guardar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.80rem;
+}
+
+.modal-mis-modelos-input-nombre,
+.modal-mis-modelos-input-renombrar {
+  border: 1px solid #d1d5db;
+  border-radius: 0.4rem;
+  font: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus { border-color: #3b82f6; }
+}
+
+.modal-mis-modelos-input-nombre {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+}
+
+.modal-mis-modelos-input-renombrar {
+  padding: 0.3rem 0.4rem;
+}
+
+.modal-mis-modelos-boton-guardar {
+  padding: 0.5rem 1rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #2563eb;
+  }
+}
+
+.modal-mis-modelos-lista {
+  overflow-y: auto;
+}
+
+.modal-mis-modelos-vacio {
+  text-align: center;
+  color: #9ca3af;
+  padding: 2rem 1rem;
+}
+
+.modal-mis-modelos-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.modal-mis-modelos-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+
+  .modal-mis-modelos-fecha {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    white-space: nowrap;
+  }
+
+  .modal-mis-modelos-nombre {
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.modal-mis-modelos-acciones {
+  display: flex;
+  gap: 0.4rem;
+
+  .modal-mis-modelos-boton {
+    padding: 0.35rem 0.75rem;
+    border-radius: 0.4rem;
+    border: 1px solid;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &.modal-mis-modelos-boton--cargar {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+      &:hover { background: #dbeafe; }
+    }
+
+    &.modal-mis-modelos-boton--eliminar {
+      background: #fef2f2;
+      color: #b91c1c;
+      border-color: #fecaca;
+      &:hover { background: #fee2e2; }
+    }
+  }
 }
