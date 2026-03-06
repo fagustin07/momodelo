@@ -15,31 +15,38 @@ main {
   overflow: clip;
 }
 
-.entidad.seleccionado, .atributo.seleccionado {
+.entidad.seleccionado {
   --color-resaltado: #3b82f6;
   outline: 3px solid var(--color-resaltado);
-  filter: drop-shadow(0 0 6px var(--color-resaltado));
 
   input {
     cursor: text !important;
   }
-  border-radius: 4px;
+}
+
+.atributo.seleccionado {
+  --color-resaltado: #3b82f6;
+  outline: 3px solid var(--color-resaltado);
+
+  input {
+    cursor: text !important;
+  }
 }
 
 .entidad.entidad-debil.seleccionado {
-  outline: none;
-  box-shadow: 0 0 0 4px white, 0 0 0 7px var(--color-resaltado);
-  filter: drop-shadow(0 0 6px var(--color-resaltado));
+  outline: 3px solid var(--color-resaltado);
+  box-shadow: 0 0 0 4px white, 0 0 0 7px var(--color-resaltado), 0 0 8px 2px var(--color-resaltado);
 }
 
 .atributo.atributo-multivaluado.seleccionado {
   outline-offset: 3px;
+  border: 3px solid var(--color-resaltado);
 }
 
 .relacion.seleccionado polygon {
   --color-resaltado: #3b82f6;
   stroke: var(--color-resaltado);
-  stroke-width: 2;
+  stroke-width: 3;
   filter: drop-shadow(0 0 6px var(--color-resaltado));
 }
 
@@ -48,14 +55,21 @@ main {
 }
 
 .diagrama-mer[data-interaccion-en-curso='Borrado'] {
-  .entidad:not(:has(.atributo:hover)), .atributo, .relacion polygon {
+  .entidad:not(:has(.atributo:hover)) {
     &:hover {
       --color-resaltado: rgba(245, 19, 19, 0.5);
       cursor: pointer;
-      box-shadow: 0 0 5px var(--color-resaltado);
-      filter: drop-shadow(0 0 5px var(--color-resaltado));
+      box-shadow: 0 0 10px var(--color-resaltado);
       user-select: none;
     }
+  }
+
+  .atributo:hover, .relacion polygon:hover {
+    --color-resaltado: rgba(245, 19, 19, 0.5);
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--color-resaltado);
+    filter: drop-shadow(0 0 5px var(--color-resaltado));
+    user-select: none;
   }
 }
 
@@ -64,8 +78,7 @@ main {
     &:hover {
       --color-resaltado: rgba(16, 173, 128, 0.53);
       cursor: pointer;
-      box-shadow: 0 0 5px var(--color-resaltado);
-      filter: drop-shadow(0 0 5px var(--color-resaltado));
+      box-shadow: 0 0 10px var(--color-resaltado);
       user-select: none;
     }
   }
@@ -77,7 +90,7 @@ main {
 
 
 .diagrama-mer[data-interaccion-en-curso='Crear Entidad'] {
-    cursor: pointer;
+  cursor: pointer;
 
   .entidad, .atributo, .relacion, line, .cardinalidad-texto {
     filter: blur(3px);
@@ -303,7 +316,7 @@ main {
   width: 20vw;
   padding: 10px 14px;
   border-radius: 10px;
-  box-shadow: 0 6px 24px rgba(0,0,0,.18);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .18);
   background: #dc2626;
   color: #fff;
   opacity: 0;
@@ -506,7 +519,9 @@ button.multivaluado-inactivo {
   opacity: 0;
   transition: opacity 0.2s ease;
 
-  &.modal-abierto { opacity: 1; }
+  &.modal-abierto {
+    opacity: 1;
+  }
 }
 
 .modal-mis-modelos-panel {
@@ -576,7 +591,9 @@ button.multivaluado-inactivo {
   outline: none;
   transition: border-color 0.2s;
 
-  &:focus { border-color: #3b82f6; }
+  &:focus {
+    border-color: #3b82f6;
+  }
 }
 
 .modal-mis-modelos-input-nombre {
@@ -657,14 +674,20 @@ button.multivaluado-inactivo {
       background: #eff6ff;
       color: #1d4ed8;
       border-color: #bfdbfe;
-      &:hover { background: #dbeafe; }
+
+      &:hover {
+        background: #dbeafe;
+      }
     }
 
     &.modal-mis-modelos-boton--eliminar {
       background: #fef2f2;
       color: #b91c1c;
       border-color: #fecaca;
-      &:hover { background: #fee2e2; }
+
+      &:hover {
+        background: #fee2e2;
+      }
     }
   }
 }

@@ -300,12 +300,12 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
         this._redibujarTexto(
             this._textoCardinalidadOrigen,
             puntoMedio(bordeOrigen, bordeRomboOrigen),
-            this._formatearCardinalidad(this._relacion.cardinalidadOrigen()),
+            this._formatearCardinalidad(this._relacion.cardinalidadDestino()),
         );
         this._redibujarTexto(
             this._textoCardinalidadDestino,
             puntoMedio(bordeDestino, bordeRomboDestino),
-            this._formatearCardinalidad(this._relacion.cardinalidadDestino()),
+            this._formatearCardinalidad(this._relacion.cardinalidadOrigen()),
         );
     }
 

@@ -32,6 +32,7 @@ export abstract class VistaElementoMER<E extends ElementoMER> {
         hacerArrastrable(elementoDom, {
             alAgarrar: () => {
                 this._vistaEditorMER.cancelarInteracción();
+                this._vistaEditorMER.seleccionarA(this._elemento);
                 this._vistaEditorMER.desenfocarElementoInput();
                 elementoDom.parentElement?.append(elementoDom);
             },
