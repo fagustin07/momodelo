@@ -119,7 +119,7 @@ export class VistaEditorMER {
 
     borrarEntidad(entidad: Entidad) {
         const relacionesAfectadas = this.modeloER.eliminarEntidad(entidad);
-        const habíaDébilesDependientes = relacionesAfectadas.some(r => r.esDebil());
+        const habíaDébilesDependientes = relacionesAfectadas.some(r => r.esDebil() && r.entidadDestino() === entidad);
         this.entidadEliminada(entidad, relacionesAfectadas);
         if (habíaDébilesDependientes) {
             renderizarToast(this._elementoRaíz, "Las entidades débiles asociadas se transformaron en fuertes al perder su dependencia.", 'warning');
