@@ -51,3 +51,9 @@ export class CicloDeRelacionesDébilesError extends MomodeloLogicaError {
         super("Ciclo de relaciones débiles no permitido.");
     }
 }
+
+export class EliminarRelacionIdentificadoraError extends MomodeloLogicaError {
+    constructor() {
+        super("No se puede eliminar una relación identificadora porque una entidad depende de ella.");
+    }
+}

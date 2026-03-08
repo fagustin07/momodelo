@@ -4,6 +4,7 @@ import {coordenada} from "../../src/posicion.ts";
 import {ModeloER} from "../../src/servicios/modelador.ts";
 import {
     CicloDeRelacionesDébilesError,
+    EliminarRelacionIdentificadoraError,
     EntidadDébilConMúltiplesRelacionesIdentificadorasError,
     RelaciónExistenteError,
     RelaciónRecursivaError
@@ -204,6 +205,54 @@ describe("[MER] Modelador", () => {
         expect(relacionInvertida.entidadDestino()).toBe(pedido);
         expect(cliente.esDebil()).toBeTruthy();
         expect(pedido.esDebil()).toBeFalsy();
+    });
+
+    it("Al intentar eliminar directamente una relación débil, se levanta una excepción", () => {
+        modeloER = new ModeloER();
+        const entidadFuerte = crearEntidadLlamada("Cliente");
+        const entidadDebil = crearEntidadLlamada("Pedido");
+        const relacion = modeloER.crearRelacion(entidadDebil, entidadFuerte, "REALIZA");
+        modeloER.cambiarTipoDeRelacionA(relacion, 'débil');
+
+        expect(() => modeloER.eliminarRelación(relacion)).toThrow(EliminarRelacionIdentificadoraError);
+        expect(modeloER.relaciones).toHaveLength(1);
+        expect(relacion.esDebil()).toBeTruthy();
+    });
+
+    it("En el MER, se puede eliminar una relación fuerte", () => {
+        modeloER = new ModeloER();
+        const entidad1 = crearEntidadLlamada("Cliente");
+        const entidad2 = crearEntidadLlamada("Pedido");
+        const relacion = modeloER.crearRelacion(entidad1, entidad2, "REALIZA");
+
+        modeloER.eliminarRelación(relacion);
+
+        expect(modeloER.relaciones).toHaveLength(0);
+    });
+
+    it("Al eliminar una entidad fuerte, las entidades débiles dependientes pasa a ser fuertes al perder su dependencia", () => {
+        modeloER = new ModeloER();
+        const entidadFuerte = crearEntidadLlamada("PIRATA");
+        const entidadDebil = crearEntidadLlamada("ISLA");
+        const relacion = modeloER.crearRelacion(entidadDebil, entidadFuerte, "CONQUISTA");
+        modeloER.cambiarTipoDeRelacionA(relacion, 'débil');
+
+        modeloER.eliminarEntidad(entidadFuerte);
+
+        expect(entidadDebil.esDebil()).toBeFalsy();
+    });
+
+    it("Al eliminar una entidad débil, la entidad fuerte asociada no se ve afectada", () => {
+        modeloER = new ModeloER();
+        const entidadFuerte = crearEntidadLlamada("CLIENTE");
+        const entidadDebil = crearEntidadLlamada("PEDIDO");
+        const relacion = modeloER.crearRelacion(entidadDebil, entidadFuerte, "REALIZA");
+        modeloER.cambiarTipoDeRelacionA(relacion, 'débil');
+
+        modeloER.eliminarEntidad(entidadDebil);
+
+        expect(entidadFuerte.esDebil()).toBeFalsy();
+        expect(modeloER.relaciones).toHaveLength(0);
     });
 
     function crearEntidadLlamada(nombreEntidad: string): Entidad {

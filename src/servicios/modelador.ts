@@ -4,6 +4,7 @@ import {Relacion} from "../modelo/relacion";
 import {coordenada, coordenadaInicial, Posicion} from "../posicion";
 import {
     CicloDeRelacionesDébilesError,
+    EliminarRelacionIdentificadoraError,
     EntidadDébilConMúltiplesRelacionesIdentificadorasError,
     InvertirRelacionFuerteError,
     MomodeloLogicaError,
@@ -38,14 +39,13 @@ export class ModeloER {
 
 
     eliminarEntidad(entidad: Entidad) {
-        const relacionesAfectadas = this._relacionesAsociadasA(entidad);
-
+        const relacionesAfectadas = this._quitarDependenciaDeEntidadesAsociadasA(entidad);
         this._eliminarRelaciones(relacionesAfectadas);
         this._eliminarEntidad(entidad);
         return relacionesAfectadas;
     }
 
-    // ========= ATRIBUTOS =========
+// ========= ATRIBUTOS =========
 
     renombrarAtributo(nuevoNombre: string, atributo: Atributo, entidad: Entidad) {
         entidad.renombrarAtributo(atributo, nuevoNombre);
@@ -104,6 +104,9 @@ export class ModeloER {
     }
 
     eliminarRelación(relacion: Relacion) {
+        if (relacion.esDebil()) {
+            throw new EliminarRelacionIdentificadoraError();
+        }
         this.relaciones = this.relaciones.filter(rel => rel !== relacion);
     }
 
@@ -290,5 +293,14 @@ export class ModeloER {
     private _reemplazarRelacion(relacionVieja: Relacion, relacionNueva: Relacion): void {
         const index = this.relaciones.indexOf(relacionVieja);
         this.relaciones[index] = relacionNueva;
+    }
+
+    private _quitarDependenciaDeEntidadesAsociadasA(entidad: Entidad) {
+        const relacionesAfectadas = this._relacionesAsociadasA(entidad);
+
+        relacionesAfectadas
+            .filter(r => r.esDebil())
+            .forEach(r => this._actualizarEstadoEntidadAlCambiarAFuerte(r));
+        return relacionesAfectadas;
     }
 }

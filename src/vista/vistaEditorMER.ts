@@ -20,7 +20,7 @@ import {generarBarraDeInteracciones} from "../topbar.ts";
 import {InspectorElementos} from "./inspectorElementos.ts";
 import {MenuHamburguesa} from "../componentes/menuHamburguesa.ts";
 import {TipoRelacion} from "../tipos/tipos.ts";
-import {MomodeloLogicaError} from "../servicios/errores.ts";
+import {EliminarRelacionIdentificadoraError, MomodeloLogicaError} from "../servicios/errores.ts";
 
 export class VistaEditorMER {
     modeloER: ModeloER;
@@ -119,7 +119,11 @@ export class VistaEditorMER {
 
     borrarEntidad(entidad: Entidad) {
         const relacionesAfectadas = this.modeloER.eliminarEntidad(entidad);
+        const habíaDébilesDependientes = relacionesAfectadas.some(r => r.esDebil());
         this.entidadEliminada(entidad, relacionesAfectadas);
+        if (habíaDébilesDependientes) {
+            renderizarToast(this._elementoRaíz, "Las entidades débiles asociadas se transformaron en fuertes al perder su dependencia.", 'warning');
+        }
     }
 
     borrarAtributo(atributo: Atributo, entidad: Entidad) {
@@ -127,9 +131,21 @@ export class VistaEditorMER {
     }
 
     borrarRelación(relación: Relacion) {
-        this.modeloER.eliminarRelación(relación);
-        this._relacionesVisuales.get(relación)?.borrarse();
-        this._relacionesVisuales.delete(relación);
+        try {
+            this.modeloER.eliminarRelación(relación);
+            this._relacionesVisuales.get(relación)?.borrarse();
+            this._relacionesVisuales.delete(relación);
+        } catch (error) {
+            if (error instanceof EliminarRelacionIdentificadoraError) {
+                this.cambiarTipoDeRelacion(relación, 'fuerte');
+                this.modeloER.eliminarRelación(relación);
+                this._relacionesVisuales.get(relación)?.borrarse();
+                this._relacionesVisuales.delete(relación);
+                renderizarToast(this._elementoRaíz, `${(relación.entidadOrigen().nombre())} se convirtió en una entidad fuerte al perder su relación identificadora.`, 'warning');
+            } else {
+                handlearError(error, this);
+            }
+        }
     }
 
     cancelarInteracción() {
@@ -213,6 +229,11 @@ export class VistaEditorMER {
         entidad.atributos().forEach(atr => this.atributoEliminado(entidad, atr));
         this._entidadesVisuales.delete(entidad);
         relacionesEliminadas.forEach(rel => this.relacionEliminada(rel));
+        relacionesEliminadas.forEach(rel => {
+            const [origen, destino] = rel.entidades();
+            this._entidadesVisuales.get(origen)?.actualizarEstilo();
+            this._entidadesVisuales.get(destino)?.actualizarEstilo();
+        });
     }
 
     generarEntidadUbicadaEn(posicion: Posicion) {

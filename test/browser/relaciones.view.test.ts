@@ -266,4 +266,41 @@ describe("[MER] Vista Relaciones", () => {
         expect(Number(textoCardinalidadDestino.getAttribute("x"))).toBeCloseTo(puntoMedioEsperadoX, 0);
         expect(Number(textoCardinalidadDestino.getAttribute("y"))).toBeCloseTo(puntoMedioEsperadoY, 0);
     });
+
+    it("Se pueden eliminar relaciones débiles, dejando como entidad fuerte a la débil asociada", () => {
+        const [elementoPersonaje, elementoHumorista] = getElementoEntidades();
+        realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista);
+
+        const [relacion] = vistaEditorMER.modeloER.relaciones;
+        vistaEditorMER.cambiarTipoDeRelacion(relacion, 'débil');
+
+        const [campoNombreRelacion] = getInputRelaciones();
+        realizarGestoEliminarSobre(campoNombreRelacion);
+
+        expect(getInputRelaciones()).toHaveLength(0);
+        expect(vistaEditorMER.modeloER.relaciones).toHaveLength(0);
+        expect(personaje.esDebil()).toBeFalsy();
+        expect(humorista.esDebil()).toBeFalsy();
+    });
+
+    it("Al eliminar una entidad fuerte que tiene relaciones débiles, estas últimas pasan a ser entidades fuertes", () => {
+        const [elementoPersonaje, elementoHumorista] = getElementoEntidades();
+        realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista);
+
+        const [relacion] = vistaEditorMER.modeloER.relaciones;
+        vistaEditorMER.cambiarTipoDeRelacion(relacion, 'débil');
+
+        const elementoDebilDom = getElementoEntidades().find(el =>
+            within(el).getByTitle<HTMLInputElement>("Nombre Entidad").value === personaje.nombre()
+        )!;
+        expect(elementoDebilDom).toHaveClass("entidad-debil");
+
+        realizarGestoEliminarSobre(elementoHumorista);
+
+        const elementoDebilTrasEliminar = getElementoEntidades().find(el =>
+            within(el).getByTitle<HTMLInputElement>("Nombre Entidad").value === personaje.nombre()
+        )!;
+        expect(elementoDebilTrasEliminar).not.toHaveClass("entidad-debil");
+        expect(personaje.esDebil()).toBeFalsy();
+    });
 });
