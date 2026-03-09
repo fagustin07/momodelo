@@ -106,4 +106,8 @@ export class Relacion extends ElementoMER {
     esDebil() {
         return this._tipoRelacion === 'débil';
     }
+
+    representaUnaRelación() {
+        return true;
+    }
 }

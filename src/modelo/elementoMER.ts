@@ -24,4 +24,12 @@ export abstract class ElementoMER {
     representaUnaEntidad() {
         return false;
     }
+
+    representaUnAtributo() {
+        return false;
+    }
+
+    representaUnaRelación() {
+        return false;
+    }
 }

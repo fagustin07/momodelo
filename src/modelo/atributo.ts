@@ -72,6 +72,10 @@ export class Atributo extends ElementoMER {
         this._alCambiarElSerMultivaluado.push(callback);
     }
 
+    representaUnAtributo() {
+        return true;
+    }
+
     private _notificarCambioPK() {
         this._alCambiarLaPK.forEach(callback => callback());
     }

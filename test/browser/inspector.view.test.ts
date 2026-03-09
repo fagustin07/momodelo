@@ -105,7 +105,7 @@ describe("[MER] Inspector de Elementos", () => {
         const inspector = document.getElementById("panel-inspector")!;
 
         expect(elInspectorEstáVisible()).toBeTruthy();
-        expect(getTítuloInspector()).toContain("Relación");
+        expect(getTítuloInspector()).toContain("Relaciones");
         expect(getInputInspector().value).toBe("Navega");
         expect(inspector.innerHTML).toContain("Pirata");
         expect(inspector.innerHTML).toContain("Barco");
@@ -120,14 +120,14 @@ describe("[MER] Inspector de Elementos", () => {
         const contenedorOrigen = within(inspector).getByTestId("Cardinalidad origen");
         const contenedorDestino = within(inspector).getByTestId("Cardinalidad destino");
 
-        const participaciónMínimaOpcionalOrigen = within(contenedorOrigen).getByLabelText(/Puede/i) as HTMLInputElement;
-        const participaciónMínimaObligatoriaOrigen = within(contenedorOrigen).getByLabelText(/Debe/i) as HTMLInputElement;
+        const participaciónMínimaOpcionalOrigen = within(contenedorOrigen).getByLabelText(/Parcial/i) as HTMLInputElement;
+        const participaciónMínimaObligatoriaOrigen = within(contenedorOrigen).getByLabelText(/Total/i) as HTMLInputElement;
 
         const participaciónMáximaRestringidaOrigen = within(contenedorOrigen).getByLabelText(/Una vez/i) as HTMLInputElement;
         const participaciónMáximaLibreOrigen = within(contenedorOrigen).getByLabelText(/Muchas/i) as HTMLInputElement;
 
-        const participaciónMínimaOpcionalDestino = within(contenedorDestino).getByLabelText(/Puede/i) as HTMLInputElement;
-        const participaciónMínimaObligatoriaDestino = within(contenedorDestino).getByLabelText(/Debe/i) as HTMLInputElement;
+        const participaciónMínimaOpcionalDestino = within(contenedorDestino).getByLabelText(/Parcial/i) as HTMLInputElement;
+        const participaciónMínimaObligatoriaDestino = within(contenedorDestino).getByLabelText(/Total/i) as HTMLInputElement;
 
         const participaciónMáximaRestringidaDestino = within(contenedorDestino).getByLabelText(/Una vez/i) as HTMLInputElement;
         const participaciónMáximaLibreDestino = within(contenedorDestino).getByLabelText(/Muchas/i) as HTMLInputElement;
@@ -223,7 +223,7 @@ describe("[MER] Inspector de Elementos", () => {
 
         fireEvent.click(inputRelacion);
 
-        expect(getTítuloInspector()).toContain("Relación");
+        expect(getTítuloInspector()).toContain("Relaciones");
         expect(getInputInspector().value).toBe("Navega");
     });
 

@@ -327,12 +327,24 @@ main {
   font-family: Roboto, sans-serif;
 }
 
+.inspector-boton-cerrar {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.7rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #9ca3af;
+  cursor: pointer;
+}
+
 #panel-inspector {
   position: fixed;
   right: 0;
   top: 0;
   width: 20vw;
   height: 100vh;
+  overflow-y: auto;
 
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(6px);
@@ -360,63 +372,167 @@ main {
   text-decoration: underline;
 }
 
-.boton-pk {
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  border: 2px solid;
+.tecla {
+  padding: 0.4rem 0.9rem;
+  border-radius: 99px;
+  border: 1.5px solid #d1d5db;
   cursor: pointer;
-  font-size: 1rem;
-  transition: all 0.2s;
+  font-size: 0.9rem;
+  font-family: sans-serif;
+  text-transform: uppercase;
 }
 
-button.pk-activo {
+.tecla-activa {
   background-color: #3b82f6;
-  color: white;
-  border-color: #333b50;
+  color: #fff;
+  border-color: #2563eb;
 
   &:hover {
     background-color: #2563eb;
   }
 }
 
-button.pk-inactivo {
+.tecla-inactiva {
   background-color: #f3f4f6;
   color: #6b7280;
+  border-color: #d1d5db;
 
   &:hover {
-    background-color: #d2d4d8;
+    background-color: #e5e7eb;
+    color: #374151;
   }
 }
 
-.boton-multivaluado {
+.tecla-radio-oculto {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.inspector-grupo-teclas {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.tecla-grupo-segmentado {
+  display: inline-flex;
+  gap: 0;
+  margin-top: 0;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.tecla-grupo-segmentado .tecla {
+  padding: 0.2rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.tecla-grupo-segmentado .tecla:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.tecla-grupo-segmentado .tecla:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.tecla-grupo-segmentado .tecla:not(:first-child):not(:last-child) {
+  border-radius: 0;
+}
+
+.inspector-separador {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1rem 0;
+}
+
+.inspector-mientras-que {
+  font-size: 0.85rem;
+  color: #4b5563;
+  font-style: italic;
+  font-family: sans-serif;
+}
+
+
+.inspector-cardinalidad-label {
+  position: relative;
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin: 0.75rem 0 0.15rem 0;
+  font-family: sans-serif;
+  padding-left: 0.85rem;
+}
+
+.inspector-cardinalidad-label::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #9ca3af;
+}
+
+.inspector-grupo-teclas-tipo {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0 0.75rem 0;
+}
+
+.inspector-teclas-fila {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  margin-top: 0.4rem;
+  flex-wrap: wrap;
+  margin-left: 1.5rem;
+}
+
+.inspector-marcador-fila {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  line-height: 1.7;
+}
+
+.boton-invertir-debil {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   margin-top: 1rem;
-  padding: 0.5rem 1rem;
+  padding: 0.45rem 0.9rem;
   border-radius: 6px;
-  border: 2px solid;
+  border: 1.5px solid #2563eb;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 0.85rem;
+  font-family: sans-serif;
   cursor: pointer;
-  font-size: 1rem;
-  display: block;
-  transition: all 0.2s;
-}
-
-button.multivaluado-activo {
-  background-color: #3b82f6;
-  color: white;
-  border-color: #333b50;
+  transition: background-color 0.15s, border-color 0.15s;
 
   &:hover {
-    background-color: #2563eb;
+    background: #2563eb;
+    border-color: #1d4ed8;
   }
 }
 
-button.multivaluado-inactivo {
-  background-color: #f3f4f6;
+.inspector-teclas-label {
+  font-size: 0.8rem;
+  color: #4b5563;
+}
+
+.inspector-texto-fijo {
+  font-size: 0.85rem;
   color: #6b7280;
+  margin: 0.75rem 0 0;
+}
 
-  &:hover {
-    background-color: #d2d4d8;
-  }
+.inspector-seccion-cardinalidades {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  margin: 0.5rem 0 0.5rem 0;
 }
 
 .menu-hamburguesa-container {
@@ -494,18 +610,6 @@ button.multivaluado-inactivo {
 
 .menu-hamburguesa-input {
   display: none;
-}
-
-.boton-invertir-debil {
-  padding: 0.35rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: #6b7280;
-  color: #fff;
-  cursor: pointer;
-  font-size: 0.8rem;
-  margin-top: 1rem;
-
 }
 
 .modal-mis-modelos-overlay {
