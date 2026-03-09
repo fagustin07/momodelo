@@ -303,4 +303,21 @@ describe("[MER] Vista Relaciones", () => {
         expect(elementoDebilTrasEliminar).not.toHaveClass("entidad-debil");
         expect(personaje.esDebil()).toBeFalsy();
     });
+
+    it("Al convertir a débil una relación cuya entidad origen ya tiene relación identificadora, la relación se invierte y su rombo se dibuja con doble línea", () => {
+        const [elementoPersonaje] = getElementoEntidades();
+        realizarGestoParaRelacionarA(elementoPersonaje, getElementoEntidades()[1], "IDENTIFICA");
+        vistaEditorMER.cambiarTipoDeRelacion(vistaEditorMER.modeloER.relaciones[0], 'débil');
+        agregarEntidadVisualEn(elementoRaíz, coordenada(500, 300));
+        realizarGestoParaRelacionarA(elementoPersonaje, getElementoEntidades()[2], "RELACION");
+        const elementoEntidadExterna = getElementoEntidades()[2];
+
+        vistaEditorMER.cambiarTipoDeRelacion(vistaEditorMER.modeloER.relaciones[1], 'débil');
+
+        const [, inputRelacion] = getInputRelaciones();
+        const lineaInteriorDeRelacion = document.querySelectorAll<SVGLineElement>('line[stroke="white"]')[1];
+        expect(elementoEntidadExterna).toHaveClass("entidad-debil");
+        expect(lineaInteriorDeRelacion.getAttribute("stroke-width")).toBe("2");
+        expect(getGrupoRelacionDe(inputRelacion).querySelectorAll("polygon")).toHaveLength(2);
+    });
 });

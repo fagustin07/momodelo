@@ -46,13 +46,13 @@ export class TemplateRelacion extends TemplateInspector {
 
     private _seccionTipo(): HTMLElement[] {
         const teclaFuerte = this._tecla("Fuerte", "Cambiar a relación fuerte", this.relacion.esFuerte(), () => {
-            this.vistaEditor.cambiarTipoDeRelacion(this.relacion, 'fuerte');
-            this.onRerenderizar(this.relacion);
+            const relacionFinal = this.vistaEditor.cambiarTipoDeRelacion(this.relacion, 'fuerte');
+            this.onRerenderizar(relacionFinal);
         });
 
         const teclaDebil = this._tecla("Débil", "Cambiar a relación débil", this.relacion.esDebil(), () => {
-            this.vistaEditor.cambiarTipoDeRelacion(this.relacion, 'débil');
-            this.onRerenderizar(this.relacion);
+            const relacionFinal = this.vistaEditor.cambiarTipoDeRelacion(this.relacion, 'débil');
+            this.onRerenderizar(relacionFinal);
         });
 
         const grupoTeclas = createElement("div", {className: "tecla-grupo-segmentado"});

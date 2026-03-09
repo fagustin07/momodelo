@@ -350,16 +350,24 @@ export class VistaEditorMER {
         this.modeloER.desmarcarAtributoMultivaluado(this._getEntidadDelAtributo(atributo), atributo);
     }
 
-    cambiarTipoDeRelacion(relacion: Relacion, nuevoTipo: TipoRelacion) {
+    cambiarTipoDeRelacion(relacion: Relacion, nuevoTipo: TipoRelacion): Relacion {
         try {
-            this.modeloER.cambiarTipoDeRelacionA(relacion, nuevoTipo);
-            this._relacionesVisuales.get(relacion)?.reposicionarRelacion();
-            const entidadOrigen = relacion.entidadOrigen();
-            const entidadDestino = relacion.entidadDestino();
+            const relacionFinal = this.modeloER.cambiarTipoDeRelacionA(relacion, nuevoTipo);
+            if (relacionFinal !== relacion) {
+                this._relacionesVisuales.get(relacion)?.borrarse();
+                this._relacionesVisuales.delete(relacion);
+                this.crearVistaRelación(relacionFinal);
+            } else {
+                this._relacionesVisuales.get(relacion)?.reposicionarRelacion();
+            }
+            const entidadOrigen = relacionFinal.entidadOrigen();
+            const entidadDestino = relacionFinal.entidadDestino();
             this._entidadesVisuales.get(entidadOrigen)?.actualizarEstilo();
             this._entidadesVisuales.get(entidadDestino)?.actualizarEstilo();
+            return relacionFinal;
         } catch (error) {
             handlearError(error, this);
+            return relacion;
         }
     }
 

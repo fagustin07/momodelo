@@ -118,7 +118,7 @@ export class ModeloER {
         return entidad.agregarAtributo(nombreAtributo, posicion);
     }
 
-    cambiarTipoDeRelacionA(relacion: Relacion, nuevoTipo: TipoRelacion) {
+    cambiarTipoDeRelacionA(relacion: Relacion, nuevoTipo: TipoRelacion): Relacion {
         if (nuevoTipo === 'débil') {
             const entidadOrigen = relacion.entidadOrigen();
             const entidadDestino = relacion.entidadDestino();
@@ -126,8 +126,7 @@ export class ModeloER {
             const origenPuedeSerDebil = !this._tieneRelacionIdentificatoria(entidadOrigen, relacion);
 
             if (!origenPuedeSerDebil) {
-                this._intentarInversiónDeRelación(relacion, entidadDestino, entidadOrigen);
-                return;
+                return this._intentarInversiónDeRelación(relacion, entidadDestino, entidadOrigen);
             }
 
             this._validarYMarcarComoDebil(entidadOrigen, entidadDestino);
@@ -136,6 +135,7 @@ export class ModeloER {
         }
 
         relacion.cambiarTipoRelacionA(nuevoTipo);
+        return relacion;
     }
 
     invertirRelacionDebil(relacion: Relacion) {
@@ -220,7 +220,7 @@ export class ModeloER {
         relacion: Relacion,
         nuevaEntidadDebil: Entidad,
         nuevaEntidadFuerte: Entidad
-    ): void {
+    ): Relacion {
         if (this._tieneRelacionIdentificatoria(nuevaEntidadDebil, relacion)) {
             throw new EntidadDébilConMúltiplesRelacionesIdentificadorasError();
         }
@@ -232,6 +232,7 @@ export class ModeloER {
         const relacionInvertida = this._crearRelacionDébilInvertida(relacion, nuevaEntidadDebil, nuevaEntidadFuerte);
         this._reemplazarRelacion(relacion, relacionInvertida);
         nuevaEntidadDebil.marcarComoDebil();
+        return relacionInvertida;
     }
 
     private _seFormaCicloDeRelacionesDebiles(
