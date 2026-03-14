@@ -1,6 +1,6 @@
 import {Relacion} from "../modelo/relacion";
 import {coordenada, Posicion, puntoMedio} from "../posicion";
-import {createElement, createSvgElement} from "./dom/createElement.ts";
+import {createElement, createSvgElement, posicionarLinea} from "./dom/createElement.ts";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
 import {VistaElementoMER} from "./vistaElementoMER.ts";
 import {VistaEntidad} from "./vistaEntidad.ts";
@@ -293,9 +293,9 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
         const bordeDestino = this._vistaEntidadDestino.puntoDeConexion(posiciónRelación);
         const bordeRomboDestino = this.puntoDeConexion(centroDestino);
 
-        this._reposicionarLinea(this._lineaOrigen, bordeOrigen, bordeRomboOrigen);
-        this._reposicionarLinea(this._lineaOrigenInterior, bordeOrigen, bordeRomboOrigen);
-        this._reposicionarLinea(this._lineaDestino, bordeDestino, bordeRomboDestino);
+        posicionarLinea(this._lineaOrigen, bordeOrigen, bordeRomboOrigen);
+        posicionarLinea(this._lineaOrigenInterior, bordeOrigen, bordeRomboOrigen);
+        posicionarLinea(this._lineaDestino, bordeDestino, bordeRomboDestino);
 
         this._redibujarTexto(
             this._textoCardinalidadOrigen,
@@ -357,12 +357,5 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
         elementoTexto.setAttribute("x", `${posicionCardinalidadDestino.x}`);
         elementoTexto.setAttribute("y", `${posicionCardinalidadDestino.y}`);
         elementoTexto.textContent = texto;
-    }
-
-    private _reposicionarLinea(linea: SVGLineElement, posicionOrigen: Posicion, posicionDestino: Posicion) {
-        linea.setAttribute("x1", `${posicionOrigen.x}`);
-        linea.setAttribute("y1", `${posicionOrigen.y}`);
-        linea.setAttribute("x2", `${posicionDestino.x}`);
-        linea.setAttribute("y2", `${posicionDestino.y}`);
     }
 }

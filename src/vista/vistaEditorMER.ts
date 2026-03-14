@@ -21,6 +21,7 @@ import {InspectorElementos} from "./inspectorElementos.ts";
 import {MenuHamburguesa} from "../componentes/menuHamburguesa.ts";
 import {TipoRelacion} from "../tipos/tipos.ts";
 import {EliminarRelacionIdentificadoraError, MomodeloLogicaError} from "../servicios/errores.ts";
+import {VistaLineaCreandoRelacion} from "./vistaLineaCreandoRelacion.ts";
 
 export class VistaEditorMER {
     modeloER: ModeloER;
@@ -36,6 +37,8 @@ export class VistaEditorMER {
     private _relacionesVisuales: Map<Relacion, VistaRelacion> = new Map();
     private _atributosVisuales: Map<Atributo, VistaAtributo> = new Map();
     private _interacción: InteracciónMER;
+
+    private _lineaCreandoRelacion: VistaLineaCreandoRelacion | null = null;
 
     constructor(modelador: ModeloER, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
         this.modeloER = modelador;
@@ -181,6 +184,7 @@ export class VistaEditorMER {
     }
 
     crearRelaciónConDestinoEn(entidad: Entidad) {
+        this._limpiarLineaFeedback();
         return this.modeloER.crearRelacion(this._elementoSeleccionado as Entidad, entidad);
     }
 
@@ -241,6 +245,7 @@ export class VistaEditorMER {
     }
 
     finalizarInteracción() {
+        this._limpiarLineaFeedback();
         this._interacción = new SinInteracción(this);
         this._elementoRaíz.classList.remove("accion-en-curso");
         this._elementoRaíz.dataset.interaccionEnCurso = this._interacción.nombre();
@@ -262,6 +267,7 @@ export class VistaEditorMER {
 
     marcarEntidadOrigen(entidad: Entidad) {
         this._elementoSeleccionado = entidad;
+        this._iniciarLineaFeedback(entidad);
         this._interacción = new SeleccionandoEntidadDestinoRelación(this);
     }
 
@@ -384,6 +390,21 @@ export class VistaEditorMER {
 
         this.seleccionarA(nuevaRelacion);
         return nuevaRelacion;
+    }
+
+    private _iniciarLineaFeedback(entidadOrigen: Entidad) {
+        const vistaOrigen = this._entidadesVisuales.get(entidadOrigen)!;
+        this._lineaCreandoRelacion = new VistaLineaCreandoRelacion(
+            vistaOrigen,
+            this._elementoRaíz,
+            this._elementoSvg,
+        );
+        this._lineaCreandoRelacion.representarse();
+    }
+
+    private _limpiarLineaFeedback() {
+        this._lineaCreandoRelacion?.borrarse();
+        this._lineaCreandoRelacion = null;
     }
 
     private _todasLasVistas() {

@@ -1,3 +1,5 @@
+import {Posicion} from "../../posicion.ts";
+
 export function createElement<K extends keyof HTMLElementTagNameMap>(
     tagName: K, properties: Partial<Omit<HTMLElementTagNameMap[K], "style"> & { style: Partial<CSSStyleDeclaration> }> = {}, children: (Node | string)[] = [],
 ) {
@@ -56,8 +58,10 @@ type SVGAttributesMap = {
         y2: number,
         stroke: string,
         'stroke-width': number,
-        'pointer-events': string
-    },
+        'pointer-events': string,
+        class: string,
+        opacity: number,
+    }
     "polygon": {
         fill: string,
         stroke: string,
@@ -65,7 +69,17 @@ type SVGAttributesMap = {
         'pointer-events': string,
         points: string,
         class: string
-    }
+    },
+    "circle": {
+        cx: number,
+        cy: number,
+        r: number,
+        fill: string,
+        stroke: string,
+        opacity: number,
+        'pointer-events': string,
+        class: string,
+    },
 };
 
 type SVGAttributes<K extends keyof SVGElementTagNameMap> = K extends keyof SVGAttributesMap ? SVGAttributesMap[K] : `UNKNOWN TAG: ${K}`;
@@ -79,4 +93,11 @@ export function createSvgElement<K extends keyof SVGElementTagNameMap>(
     }
     newElement.append(...children);
     return newElement;
+}
+
+export function posicionarLinea(linea: SVGLineElement, origen: Posicion, destino: Posicion) {
+    linea.setAttribute("x1", `${origen.x}`);
+    linea.setAttribute("y1", `${origen.y}`);
+    linea.setAttribute("x2", `${destino.x}`);
+    linea.setAttribute("y2", `${destino.y}`);
 }

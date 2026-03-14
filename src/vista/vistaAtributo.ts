@@ -1,5 +1,5 @@
 import {Entidad} from "../modelo/entidad.ts";
-import {createElement, createSvgElement} from "./dom/createElement.ts";
+import {createElement, createSvgElement, posicionarLinea} from "./dom/createElement.ts";
 import {Atributo} from "../modelo/atributo.ts";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
 import {VistaElementoMER} from "./vistaElementoMER.ts";
@@ -130,9 +130,6 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
         const centroEntidad = this._vistaEditorMER.centroDeEntidad(this._entidad);
         const centroAtributo = this.centro();
 
-        this._linea.setAttribute("x1", `${centroEntidad.x}`);
-        this._linea.setAttribute("y1", `${centroEntidad.y}`);
-        this._linea.setAttribute("x2", `${centroAtributo.x}`);
-        this._linea.setAttribute("y2", `${centroAtributo.y}`);
+        posicionarLinea(this._linea, centroEntidad, centroAtributo);
     }
 }

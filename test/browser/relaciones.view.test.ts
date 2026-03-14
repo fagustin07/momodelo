@@ -81,6 +81,26 @@ describe("[MER] Vista Relaciones", () => {
         expect(relacion.contieneA(humorista)).toBeTruthy();
     });
 
+    it("Al clickear la entidad origen para crear una relación, entonces aparece una línea de feedback", () => {
+        const [elementoPersonaje] = getElementoEntidades();
+        const botonCrearRelacion = screen.getByRole('button', {name: /\+relacion/i});
+
+        fireEvent.click(botonCrearRelacion);
+        fireEvent.click(elementoPersonaje);
+
+        const lineaFeedback = document.querySelector("line.linea-feedback");
+        expect(lineaFeedback).toBeInTheDocument();
+    });
+
+    it("Al terminar la interacción de crear una relación, la línea de feedback desaparece", () => {
+        const [elementoPersonaje, elementoHumorista] = getElementoEntidades();
+
+        realizarGestoParaRelacionarA(elementoPersonaje, elementoHumorista);
+
+        const lineaFeedback = document.querySelector("line.linea-feedback");
+        expect(lineaFeedback).not.toBeInTheDocument();
+    });
+
     it("Cuando se cambia el nombre a una relación, entonces se refleja en el modelo", async () => {
         const [elementoPersonaje, elementoHumorista] = getElementoEntidades();
 
