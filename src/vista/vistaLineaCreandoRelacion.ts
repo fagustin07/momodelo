@@ -8,12 +8,12 @@ export class VistaLineaCreandoRelacion {
     private readonly _listenerPosiciónCursor: (e: PointerEvent) => void;
     private readonly _elementoEntidadOrigen: HTMLElement;
     private readonly _elementoRaiz: HTMLElement;
-    private readonly _elementoSvg: SVGElement;
+    private readonly _elementoSvg: SVGSVGElement;
 
     constructor(
         vistaEntidadOrigen: VistaEntidad,
         elementoRaiz: HTMLElement,
-        elementoSvg: SVGElement,
+        elementoSvg: SVGSVGElement,
     ) {
         this._elementoRaiz = elementoRaiz;
         this._elementoSvg = elementoSvg;
@@ -59,8 +59,17 @@ export class VistaLineaCreandoRelacion {
     }
 
     private _cursorEnCoordenada(evento: PointerEvent) {
-        const tamañoPantallaUsuario = this._elementoSvg.getBoundingClientRect();
-        return coordenada(evento.clientX - tamañoPantallaUsuario.left, evento.clientY - tamañoPantallaUsuario.top);
+        const puntoEnPantalla = this._puntoEnPantalla(evento);
+        const transformaciónPantallaADiagrama = this._elementoSvg.getScreenCTM()!.inverse();
+        const puntoEnDiagrama = puntoEnPantalla.matrixTransform(transformaciónPantallaADiagrama);
+        return coordenada(puntoEnDiagrama.x, puntoEnDiagrama.y);
+    }
+
+    private _puntoEnPantalla(evento: PointerEvent) {
+        const punto = this._elementoSvg.createSVGPoint();
+        punto.x = evento.clientX;
+        punto.y = evento.clientY;
+        return punto;
     }
 
     private _crearCirculo(): SVGCircleElement {

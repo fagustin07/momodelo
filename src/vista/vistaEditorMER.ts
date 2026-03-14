@@ -397,7 +397,7 @@ export class VistaEditorMER {
         this._lineaCreandoRelacion = new VistaLineaCreandoRelacion(
             vistaOrigen,
             this._elementoRaíz,
-            this._elementoSvg,
+            this._elementoSvg as SVGSVGElement,
         );
         this._lineaCreandoRelacion.representarse();
     }
