@@ -35,7 +35,7 @@ export class InspectorElementos {
             className: "inspector-boton-cerrar",
             title: "Cerrar inspector",
             textContent: "✕",
-            onclick: () => this.ocultar(),
+            onclick: () => this.vistaEditor.deseleccionar(),
         });
         this._contenedor.appendChild(botonCerrar);
 
