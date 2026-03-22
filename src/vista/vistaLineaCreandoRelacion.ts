@@ -22,6 +22,9 @@ export class VistaLineaCreandoRelacion {
         this._linea = this._crearLinea();
         this._circulo = this._crearCirculo();
 
+        const centroOrigen = vistaEntidadOrigen.centro();
+        this._actualizarPosición(centroOrigen, centroOrigen);
+
         this._listenerPosiciónCursor = (e: PointerEvent) => {
             const posiciónCursor = this._cursorEnCoordenada(e);
             this._actualizarPosición(vistaEntidadOrigen.puntoDeConexion(posiciónCursor), posiciónCursor);
