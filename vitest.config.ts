@@ -16,10 +16,14 @@ export default defineConfig({
           enabled: true,
           api: {host: "0.0.0.0"},
           provider: webdriverio({
-            logLevel: 'info',
+            logLevel: 'warn',
             capabilities: {
               "goog:chromeOptions": {
-                args: ["--remote-debugging-port=9229"],
+                args: [
+                  "--no-sandbox",
+                  "--disable-dev-shm-usage",
+                  "--disable-gpu",
+                ],
               },
             },
           }),
