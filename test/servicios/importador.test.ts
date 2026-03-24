@@ -9,8 +9,8 @@ describe("Importador", () => {
     it("importa entidades con atributos correctamente", () => {
         const json: JsonModelo = {
             atributos: [
-                {id: 1, nombre: "nombre", posicion: coordenada(10, 10), esClavePrimaria: false, esMultivaluado: false},
-                {id: 2, nombre: "esMayor?", posicion: coordenada(20, 20), esClavePrimaria: true, esMultivaluado: false},
+                {id: 1, nombre: "nombre", posicion: coordenada(10, 10), tipo: 'simple'},
+                {id: 2, nombre: "esMayor?", posicion: coordenada(20, 20), tipo: 'pk'},
             ],
             entidades: [
                 {id: 100, nombre: "Evaluador", posicion: coordenadaInicial(), atributos: [1], esDebil: false},
@@ -106,7 +106,7 @@ describe("Importador", () => {
 
     it("El importador preserva posiciones de todos los elementos", () => {
         const json: JsonModelo = {
-            atributos: [{id: 1, nombre: "Nombre", posicion: coordenada(10, 20), esClavePrimaria: false, esMultivaluado: false}],
+            atributos: [{id: 1, nombre: "Nombre", posicion: coordenada(10, 20), tipo: 'simple'}],
             entidades: [{id: 1, nombre: "Chef", posicion: coordenada(100, 200), atributos: [1], esDebil: false}],
             relaciones: []
         };
@@ -118,7 +118,7 @@ describe("Importador", () => {
 
     it("se cargan correctamente los atributos partes de claves", () => {
         const json: JsonModelo = {
-            atributos: [{id: 1, nombre: "Estilo", posicion: coordenada(10, 20), esClavePrimaria: true, esMultivaluado: false}],
+            atributos: [{id: 1, nombre: "Estilo", posicion: coordenada(10, 20), tipo: 'pk'}],
             entidades: [{id: 1, nombre: "Pizza", posicion: coordenada(100, 200), atributos: [1], esDebil: false}],
             relaciones: []
         };
@@ -129,7 +129,7 @@ describe("Importador", () => {
 
     it("se cargan correctamente los atributos multivaluados", () => {
         const json: JsonModelo = {
-            atributos: [{id: 1, nombre: "Telefonos", posicion: coordenada(10, 20), esClavePrimaria: false, esMultivaluado: true}],
+            atributos: [{id: 1, nombre: "Telefonos", posicion: coordenada(10, 20), tipo: 'multivaluado'}],
             entidades: [{id: 1, nombre: "Contacto", posicion: coordenada(100, 200), atributos: [1], esDebil: false}],
             relaciones: []
         };

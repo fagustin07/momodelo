@@ -82,23 +82,23 @@ describe("Exportador", () => {
     it("se guardan correctamente los atributos marcados como clave primaria", () => {
         const atributoPK = new Atributo("codigo", coordenadaInicial());
         const entidadConPK = new Entidad("Producto", [atributoPK], coordenadaInicial());
-        entidadConPK.marcarComoParteDeClaveA(atributoPK);
+        entidadConPK.cambiarTipoDeAtributo(atributoPK, 'pk');
         const modelo = new ModeloER([entidadConPK]);
 
         const json = exportar(modelo);
 
-        expect(json.atributos[0].esClavePrimaria).toBeTruthy();
+        expect(json.atributos[0].tipo).toBe('pk');
     });
 
     it("se guardan correctamente los atributos marcados como multivaluados", () => {
         const atributoMultivaluado = new Atributo("telefono", coordenadaInicial());
         const entidad = new Entidad("Cliente", [atributoMultivaluado], coordenadaInicial());
         const modelo = new ModeloER([entidad]);
-        entidad.marcarComoMultivaluadoA(atributoMultivaluado);
+        entidad.cambiarTipoDeAtributo(atributoMultivaluado, 'multivaluado');
 
         const json = exportar(modelo);
 
-        expect(json.atributos[0].esMultivaluado).toBeTruthy();
+        expect(json.atributos[0].tipo).toBe('multivaluado');
     });
 
     it("exporta correctamente entidades débiles", () => {

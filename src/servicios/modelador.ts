@@ -11,7 +11,7 @@ import {
     RelaciónExistenteError,
     RelaciónRecursivaError
 } from "./errores";
-import {Cardinalidad, TipoRelacion} from "../tipos/tipos.ts";
+import {Cardinalidad, TipoAtributo, TipoRelacion} from "../tipos/tipos.ts";
 
 export class ModeloER {
     entidades: Entidad[] = [];
@@ -55,32 +55,11 @@ export class ModeloER {
         entidad.eliminarAtributo(atributo);
     }
 
-    marcarAtributoComoClavePrimaria(entidad: Entidad, atributo: Atributo) {
+    cambiarTipoDeAtributo(entidad: Entidad, atributo: Atributo, tipo: TipoAtributo) {
         if (!entidad.posee(atributo)) {
             throw new MomodeloLogicaError("El atributo no pertenece a la entidad seleccionada.");
         }
-        entidad.marcarComoParteDeClaveA(atributo);
-    }
-
-    desmarcarAtributoComoClavePrimaria(entidad: Entidad, atributo: Atributo) {
-        if (!entidad.posee(atributo)) {
-            throw new MomodeloLogicaError("El atributo no pertenece a la entidad seleccionada.");
-        }
-        entidad.desmarcarComoParteDeClaveA(atributo);
-    }
-
-    marcarAtributoMultivaluado(entidad: Entidad, atributo: Atributo) {
-        if (!entidad.posee(atributo)) {
-            throw new MomodeloLogicaError("El atributo no pertenece a la entidad seleccionada.");
-        }
-        entidad.marcarComoMultivaluadoA(atributo);
-    }
-
-    desmarcarAtributoMultivaluado(entidad: Entidad, atributo: Atributo) {
-        if (!entidad.posee(atributo)) {
-            throw new MomodeloLogicaError("El atributo no pertenece a la entidad seleccionada.");
-        }
-        entidad.desmarcarComoMultivaluadoA(atributo);
+        entidad.cambiarTipoDeAtributo(atributo, tipo);
     }
 
     // ========= RELACIONES =========

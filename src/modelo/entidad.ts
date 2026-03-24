@@ -2,6 +2,7 @@ import {coordenada, Posicion} from "../posicion";
 import {Atributo} from "./atributo.ts";
 import {generadorDeIDs} from "../servicios/generadorDeIDs.ts";
 import {ElementoMER} from "./elementoMER.ts";
+import {TipoAtributo} from "../tipos/tipos.ts";
 
 export class Entidad extends ElementoMER {
     private readonly _id: number;
@@ -54,37 +55,11 @@ export class Entidad extends ElementoMER {
         return this._atributos.includes(atributo);
     }
 
-    marcarComoParteDeClaveA(atributo: Atributo) {
-        if (this.posee(atributo)) {
-            atributo.marcarComoClavePrimaria();
-        } else {
+    cambiarTipoDeAtributo(atributo: Atributo, tipo: TipoAtributo) {
+        if (!this.posee(atributo)) {
             throw new Error("El atributo no pertenece a esta entidad.");
         }
-    }
-
-    desmarcarComoParteDeClaveA(atributo: Atributo) {
-        if (this.posee(atributo)) {
-            atributo.desmarcarComoClavePrimaria();
-        } else {
-            throw new Error("El atributo no pertenece a esta entidad.");
-        }
-    }
-
-    marcarComoMultivaluadoA(atributo: Atributo) {
-        if (this.posee(atributo)) {
-            atributo.marcarComoMultivaluado();
-        } else {
-            throw new Error("El atributo no pertenece a esta entidad.");
-        }
-
-    }
-
-    desmarcarComoMultivaluadoA(atributo: Atributo) {
-        if (this.posee(atributo)) {
-            atributo.desmarcarComoMultivaluado();
-        } else {
-            throw new Error("El atributo no pertenece a esta entidad.");
-        }
+        atributo.cambiarTipo(tipo);
     }
 
     esDebil() {

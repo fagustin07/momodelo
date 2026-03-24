@@ -19,7 +19,7 @@ import {handlearError} from "../servicios/handlearError.ts";
 import {generarBarraDeInteracciones} from "../topbar.ts";
 import {InspectorElementos} from "./inspectorElementos.ts";
 import {MenuHamburguesa} from "../componentes/menuHamburguesa.ts";
-import {TipoRelacion} from "../tipos/tipos.ts";
+import {TipoAtributo, TipoRelacion} from "../tipos/tipos.ts";
 import {EliminarRelacionIdentificadoraError, MomodeloLogicaError} from "../servicios/errores.ts";
 import {VistaLineaCreandoRelacion} from "./vistaLineaCreandoRelacion.ts";
 
@@ -340,20 +340,8 @@ export class VistaEditorMER {
         this._interacción = new BorrandoElemento(this);
     }
 
-    marcarAtributoComoClavePrimaria(atributo: Atributo) {
-        this.modeloER.marcarAtributoComoClavePrimaria(this._getEntidadDelAtributo(atributo), atributo);
-    }
-
-    desmarcarAtributoComoClavePrimaria(atributo: Atributo) {
-        this.modeloER.desmarcarAtributoComoClavePrimaria(this._getEntidadDelAtributo(atributo), atributo);
-    }
-
-    marcarAtributoMultivaluado(atributo: Atributo) {
-        this.modeloER.marcarAtributoMultivaluado(this._getEntidadDelAtributo(atributo), atributo);
-    }
-
-    desmarcarAtributoMultivaluado(atributo: Atributo) {
-        this.modeloER.desmarcarAtributoMultivaluado(this._getEntidadDelAtributo(atributo), atributo);
+    cambiarTipoDeAtributo(atributo: Atributo, tipo: TipoAtributo) {
+        this.modeloER.cambiarTipoDeAtributo(this._getEntidadDelAtributo(atributo), atributo, tipo);
     }
 
     cambiarTipoDeRelacion(relacion: Relacion, nuevoTipo: TipoRelacion): Relacion {

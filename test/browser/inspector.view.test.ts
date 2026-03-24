@@ -229,13 +229,13 @@ describe("[MER] Inspector de Elementos", () => {
 
     it("Se pueden marcar atributos como parte de la clave primaria de una entidad", () => {
         const [elementoPirata] = getElementoEntidades();
-        
+
         const atributoVisual = getAtributoVisualDe(elementoPirata)[0];
         fireEvent.click(atributoVisual);
 
         const inspector = document.getElementById("panel-inspector")!;
-        const botonPK = within(inspector).getByTitle("Marcar como clave primaria");
-        
+        const botonPK = within(inspector).getByRole("radio", { name: /clave primaria/i });
+
         fireEvent.click(botonPK);
 
         expect(atributoNombre.esPK()).toBeTruthy();
@@ -249,26 +249,27 @@ describe("[MER] Inspector de Elementos", () => {
         fireEvent.click(atributoVisual);
 
         const inspector = document.getElementById("panel-inspector")!;
-        const botonPK = within(inspector).getByTitle("Marcar como clave primaria");
+        const botonPK = within(inspector).getByRole("radio", { name: /clave primaria/i });
+        const botonSimple = within(inspector).getByRole("radio", { name: /simple/i });
 
         fireEvent.click(botonPK);
         expect(atributoNombre.esPK()).toBeTruthy();
         expect(atributoVisual.classList.contains("atributo-pk")).toBeTruthy();
 
-        fireEvent.click(botonPK);
+        fireEvent.click(botonSimple);
         expect(atributoNombre.esPK()).toBeFalsy();
         expect(atributoVisual.classList.contains("atributo-pk")).toBeFalsy();
     });
 
     it("Se pueden marcar atributos como multivaluados", () => {
         const [elementoPirata] = getElementoEntidades();
-        
+
         const atributoVisual = getAtributoVisualDe(elementoPirata)[0];
         fireEvent.click(atributoVisual);
 
         const inspector = document.getElementById("panel-inspector")!;
-        const botonMultivaluado = within(inspector).getByTitle("Marcar como multivaluado");
-        
+        const botonMultivaluado = within(inspector).getByRole("radio", { name: /multivaluado/i });
+
         fireEvent.click(botonMultivaluado);
 
         expect(atributoNombre.esMultivaluado()).toBeTruthy();
@@ -282,13 +283,14 @@ describe("[MER] Inspector de Elementos", () => {
         fireEvent.click(atributoVisual);
 
         const inspector = document.getElementById("panel-inspector")!;
-        const botonMultivaluado = within(inspector).getByTitle("Marcar como multivaluado");
+        const botonMultivaluado = within(inspector).getByRole("radio", { name: /multivaluado/i });
+        const botonSimple = within(inspector).getByRole("radio", { name: /simple/i });
 
         fireEvent.click(botonMultivaluado);
         expect(atributoNombre.esMultivaluado()).toBeTruthy();
         expect(atributoVisual.classList.contains("atributo-multivaluado")).toBeTruthy();
 
-        fireEvent.click(botonMultivaluado);
+        fireEvent.click(botonSimple);
         expect(atributoNombre.esMultivaluado()).toBeFalsy();
         expect(atributoVisual.classList.contains("atributo-multivaluado")).toBeFalsy();
     });
@@ -299,8 +301,8 @@ describe("[MER] Inspector de Elementos", () => {
         fireEvent.click(atributoVisual);
 
         const inspector = document.getElementById("panel-inspector")!;
-        const botonMultivaluado = within(inspector).getByTitle("Marcar como multivaluado");
-        const botonPK = within(inspector).getByTitle("Marcar como clave primaria");
+        const botonMultivaluado = within(inspector).getByRole("radio", { name: /multivaluado/i });
+        const botonPK = within(inspector).getByRole("radio", { name: /clave primaria/i });
 
         fireEvent.click(botonMultivaluado);
         expect(atributoNombre.esMultivaluado()).toBeTruthy();
@@ -318,8 +320,8 @@ describe("[MER] Inspector de Elementos", () => {
         fireEvent.click(atributoVisual);
 
         const inspector = document.getElementById("panel-inspector")!;
-        const botonMultivaluado = within(inspector).getByTitle("Marcar como multivaluado");
-        const botonPK = within(inspector).getByTitle("Marcar como clave primaria");
+        const botonMultivaluado = within(inspector).getByRole("radio", { name: /multivaluado/i });
+        const botonPK = within(inspector).getByRole("radio", { name: /clave primaria/i });
 
         fireEvent.click(botonPK);
         expect(atributoNombre.esPK()).toBeTruthy();

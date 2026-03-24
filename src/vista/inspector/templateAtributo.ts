@@ -2,6 +2,7 @@ import {ElementoMER} from "../../modelo/elementoMER";
 import {Atributo} from "../../modelo/atributo";
 import {VistaEditorMER} from "../vistaEditorMER.ts";
 import {createElement} from "../dom/createElement.ts";
+import {TipoAtributo} from "../../tipos/tipos.ts";
 import {TemplateInspector} from "./templateInspector.ts";
 
 export class TemplateAtributo extends TemplateInspector {
@@ -26,41 +27,56 @@ export class TemplateAtributo extends TemplateInspector {
         this._inputNombre!.oninput = () =>
             this.vistaEditor.renombrarAtributo(this._inputNombre!.value, this.atributo);
 
-        const teclaPK = this._tecla("Clave primaria", "Marcar como clave primaria", this.atributo.esPK(), () => {
-            this.atributo.esPK()
-                ? this.vistaEditor.desmarcarAtributoComoClavePrimaria(this.atributo)
-                : this.vistaEditor.marcarAtributoComoClavePrimaria(this.atributo);
-        });
-
-        const teclaMultivaluado = this._tecla("Multivaluado", "Marcar como multivaluado", this.atributo.esMultivaluado(), () => {
-            this.atributo.esMultivaluado()
-                ? this.vistaEditor.desmarcarAtributoMultivaluado(this.atributo)
-                : this.vistaEditor.marcarAtributoMultivaluado(this.atributo);
-        });
-
-        this.atributo.alCambiarElSerPK(() => {
-            teclaPK.classList.toggle("tecla-activa", this.atributo.esPK());
-            teclaPK.classList.toggle("tecla-inactiva", !this.atributo.esPK());
-        });
-
-        this.atributo.alCambiarElSerMultivaluado(() => {
-            teclaMultivaluado.classList.toggle("tecla-activa", this.atributo.esMultivaluado());
-            teclaMultivaluado.classList.toggle("tecla-inactiva", !this.atributo.esMultivaluado());
-        });
-
-        const grupoTeclas = createElement("div", {className: "inspector-grupo-teclas tecla-grupo-segmentado"});
-        grupoTeclas.append(teclaPK, teclaMultivaluado);
-
         contenedor.append(
             this._titulo("Atributo"),
             this._separador(),
             this._subtitulo("NOMBRE"),
             this._inputNombre!,
             this._separador(),
-            grupoTeclas,
+            this._secciónTipoDeAtributo(),
         );
 
         return this;
+    }
+
+    private _secciónTipoDeAtributo(): HTMLElement {
+        const radios = this._radiosDeOpcionesDeTipoAtributo();
+
+        const callbackDeSincronización = () =>
+            radios.forEach(({radio}) => (radio.checked = radio.value === this.atributo.tipo()));
+
+        this.atributo.alCambiarTipo(callbackDeSincronización);
+
+        const grupo = createElement("div", {className: "inspector-grupo-teclas"});
+        grupo.append(...radios.map(({label}) => label));
+        return grupo;
+    }
+
+    private _radiosDeOpcionesDeTipoAtributo() {
+        return [
+            {etiqueta: "Simple", tipo: "simple"},
+            {etiqueta: "Clave primaria", tipo: "pk"},
+            {etiqueta: "Multivaluado", tipo: "multivaluado"},
+        ]
+            .map(({etiqueta, tipo}) =>
+                this._opciónTipo(etiqueta, tipo as TipoAtributo));
+    }
+
+    private _opciónTipo(etiqueta: string, tipo: TipoAtributo) {
+        const radio = createElement("input", {
+            type: "radio",
+            name: "tipo-atributo",
+            checked: this.atributo.tipo() === tipo,
+            className: "tecla-radio-oculto",
+        });
+
+        (radio as HTMLInputElement).value = tipo;
+        (radio as HTMLInputElement).onchange = () => this.vistaEditor.cambiarTipoDeAtributo(this.atributo, tipo);
+
+        const label = createElement("label", {textContent: etiqueta, className: "tecla tecla-inactiva"});
+        label.appendChild(radio);
+
+        return {radio: radio as HTMLInputElement, label};
     }
 }
 

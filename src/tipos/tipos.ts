@@ -1,6 +1,8 @@
-export type CardinalidadMinima = '0' | '1'
-export type CardinalidadMáxima = '1' | 'N'
+export type CardinalidadMinima = '0' | '1';
+export type CardinalidadMáxima = '1' | 'N';
 
-export type Cardinalidad = [CardinalidadMinima, CardinalidadMáxima]
+export type Cardinalidad = [CardinalidadMinima, CardinalidadMáxima];
 
-export type TipoRelacion = 'fuerte' | 'débil'
+export type TipoRelacion = 'fuerte' | 'débil';
+
+export type TipoAtributo = 'simple' | 'pk' | 'multivaluado';

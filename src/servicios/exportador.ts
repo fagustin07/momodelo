@@ -1,5 +1,5 @@
 import {ModeloER} from "./modelador.ts";
-import {Cardinalidad, TipoRelacion} from "../tipos/tipos.ts";
+import {Cardinalidad, TipoAtributo, TipoRelacion} from "../tipos/tipos.ts";
 
 type JsonEntidad = {
     id: number;
@@ -24,8 +24,7 @@ type JsonAtributo = {
     id: number;
     nombre: string;
     posicion: { x: number; y: number };
-    esClavePrimaria: boolean;
-    esMultivaluado: boolean;
+    tipo: TipoAtributo;
 };
 
 export type JsonModelo = {
@@ -40,8 +39,7 @@ export function exportar(modeloER: ModeloER): JsonModelo {
             id: atributo.id(),
             nombre: atributo.nombre(),
             posicion: atributo.posicion(),
-            esClavePrimaria: atributo.esPK(),
-            esMultivaluado: atributo.esMultivaluado()
+            tipo: atributo.tipo()
         }))
     );
 

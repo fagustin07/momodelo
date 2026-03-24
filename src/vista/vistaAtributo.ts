@@ -18,8 +18,7 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
         this._elementoDom = this._crearElementoDom();
         this._crearLinea();
 
-        atributo.alCambiarElSerPK(() => this._actualizarEstiloPK());
-        atributo.alCambiarElSerMultivaluado(() => this._actualizarEstiloMultivaluado());
+        atributo.alCambiarTipo(() => this._actualizarEstilo());
     }
 
     private get _atributo() {
@@ -56,20 +55,9 @@ export class VistaAtributo extends VistaElementoMER<Atributo> {
         this._campoNombre.value = this._atributo.nombre();
     }
 
-    private _actualizarEstiloPK() {
-        if (this._atributo.esPK()) {
-            this._elementoDom.classList.add("atributo-pk");
-        } else {
-            this._elementoDom.classList.remove("atributo-pk");
-        }
-    }
-
-    private _actualizarEstiloMultivaluado() {
-        if (this._atributo.esMultivaluado()) {
-            this._elementoDom.classList.add("atributo-multivaluado");
-        } else {
-            this._elementoDom.classList.remove("atributo-multivaluado");
-        }
+    private _actualizarEstilo() {
+        this._elementoDom.classList.toggle("atributo-pk", this._atributo.esPK());
+        this._elementoDom.classList.toggle("atributo-multivaluado", this._atributo.esMultivaluado());
     }
 
     protected elementoDOM(): HTMLElement | SVGElement {

@@ -1,21 +1,19 @@
 import {coordenada, Posicion} from "../posicion";
 import {generadorDeIDs} from "../servicios/generadorDeIDs.ts";
 import {ElementoMER} from "./elementoMER.ts";
+import {TipoAtributo} from "../tipos/tipos.ts";
 
 export class Atributo extends ElementoMER {
     private readonly _id: number;
     private _nombre: string;
-    private _esPK: boolean = false;
-    private _esMultivaluado: boolean = false;
-    private _alCambiarLaPK: (() => void)[] = [];
-    private _alCambiarElSerMultivaluado: (() => void)[] = [];
+    private _tipo: TipoAtributo = 'simple';
+    private _alCambiarTipo: (() => void)[] = [];
 
-    constructor(nombre: string = 'ATRIBUTO', posicion: Posicion = coordenada(0,0), esPK = false, esMultivaluado = false) {
+    constructor(nombre: string = 'ATRIBUTO', posicion: Posicion = coordenada(0,0), tipo: TipoAtributo = 'simple') {
         super(posicion);
         this._nombre = nombre;
         this._id = generadorDeIDs.tomarID();
-        this._esPK = esPK;
-        this._esMultivaluado = esMultivaluado;
+        this._tipo = tipo;
     }
 
     nombre() {
@@ -30,57 +28,28 @@ export class Atributo extends ElementoMER {
         this._nombre = nuevoNombre;
     }
 
+    tipo() {
+        return this._tipo;
+    }
+
     esPK() {
-        return this._esPK;
-    }
-
-    marcarComoClavePrimaria() {
-        this._esPK = true;
-        if (this._esMultivaluado) {
-            this.desmarcarComoMultivaluado();
-        }
-        this._notificarCambioPK();
-    }
-
-    desmarcarComoClavePrimaria() {
-        this._esPK = false;
-        this._notificarCambioPK();
+        return this._tipo === 'pk';
     }
 
     esMultivaluado() {
-        return this._esMultivaluado;
+        return this._tipo === 'multivaluado';
     }
 
-    marcarComoMultivaluado() {
-        this._esMultivaluado = true;
-        if (this._esPK) {
-            this.desmarcarComoClavePrimaria();
-        }
-        this._notificarCambioMultivaluado();
+    cambiarTipo(nuevoTipo: TipoAtributo) {
+        this._tipo = nuevoTipo;
+        this._alCambiarTipo.forEach(callback => callback());
     }
 
-    desmarcarComoMultivaluado() {
-        this._esMultivaluado = false;
-        this._notificarCambioMultivaluado();
-    }
-
-    alCambiarElSerPK(callback: () => void) {
-        this._alCambiarLaPK.push(callback);
-    }
-
-    alCambiarElSerMultivaluado(callback: () => void) {
-        this._alCambiarElSerMultivaluado.push(callback);
+    alCambiarTipo(callback: () => void) {
+        this._alCambiarTipo.push(callback);
     }
 
     representaUnAtributo() {
         return true;
-    }
-
-    private _notificarCambioPK() {
-        this._alCambiarLaPK.forEach(callback => callback());
-    }
-
-    private _notificarCambioMultivaluado() {
-        this._alCambiarElSerMultivaluado.forEach(callback => callback());
     }
 }

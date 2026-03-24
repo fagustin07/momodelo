@@ -441,6 +441,7 @@ main {
   gap: 0.4rem;
   margin-top: 0.75rem;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .tecla-grupo-segmentado {
@@ -498,6 +499,16 @@ main {
   position: absolute;
   left: 0;
   color: #9ca3af;
+}
+
+.inspector-grupo-teclas label.tecla:has(.tecla-radio-oculto:checked) {
+  background-color: #3b82f6;
+  color: #fff;
+  border-color: #2563eb;
+
+  &:hover {
+    background-color: #2563eb;
+  }
 }
 
 .inspector-grupo-teclas-tipo {
