@@ -3,7 +3,7 @@ import {VistaEditorMER} from "../vistaEditorMER.ts";
 import {createElement} from "../dom/createElement.ts";
 
 type TemplateRegistrable = {
-    new(vistaEditor: VistaEditorMER, onRerenderizar: (el: ElementoMER) => void, elemento: ElementoMER): TemplateInspector;
+    new(vistaEditor: VistaEditorMER, elemento: ElementoMER): TemplateInspector;
     puedeManejar(elemento: ElementoMER): boolean;
 };
 
@@ -15,7 +15,6 @@ export abstract class TemplateInspector {
 
     constructor(
         protected readonly vistaEditor: VistaEditorMER,
-        protected readonly onRerenderizar: (elemento: ElementoMER) => void,
     ) {}
 
     static registrar(clase: TemplateRegistrable): void {
@@ -24,13 +23,12 @@ export abstract class TemplateInspector {
 
     static puedeHacerseCargoDe(
         vistaEditor: VistaEditorMER,
-        onRerenderizar: (elemento: ElementoMER) => void,
         elemento: ElementoMER,
     ): TemplateInspector {
         return new (
             TemplateInspector
                 ._registradas
-                .find(template => template.puedeManejar(elemento))!)(vistaEditor, onRerenderizar, elemento)
+                .find(template => template.puedeManejar(elemento))!)(vistaEditor, elemento)
     }
 
     abstract representarseEn(contenedor: HTMLElement): TemplateInspector;

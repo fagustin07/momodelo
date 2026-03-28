@@ -537,12 +537,6 @@ line:not(.linea-feedback) {
   margin-left: 1.5rem;
 }
 
-.inspector-marcador-fila {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  line-height: 1.7;
-}
-
 .boton-invertir-debil {
   display: flex;
   align-items: center;

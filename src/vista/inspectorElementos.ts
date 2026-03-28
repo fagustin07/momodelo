@@ -41,7 +41,7 @@ export class InspectorElementos {
 
         this._template =
             TemplateInspector
-                .puedeHacerseCargoDe(this.vistaEditor, (elem: ElementoMER) => this.mostrar(elem), elemento)!
+                .puedeHacerseCargoDe(this.vistaEditor, elemento)!
                 .representarseEn(this._contenedor);
     }
 

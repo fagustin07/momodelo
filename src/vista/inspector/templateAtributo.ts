@@ -15,10 +15,9 @@ export class TemplateAtributo extends TemplateInspector {
 
     constructor(
         vistaEditor: VistaEditorMER,
-        onRerenderizar: (elemento: ElementoMER) => void,
         elemento: ElementoMER,
     ) {
-        super(vistaEditor, onRerenderizar);
+        super(vistaEditor);
         this.atributo = elemento as Atributo;
     }
 

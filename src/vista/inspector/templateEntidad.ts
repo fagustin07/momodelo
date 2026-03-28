@@ -13,10 +13,9 @@ export class TemplateEntidad extends TemplateInspector {
 
     constructor(
         vistaEditor: VistaEditorMER,
-        onRerenderizar: (elemento: ElementoMER) => void,
         elemento: ElementoMER,
     ) {
-        super(vistaEditor, onRerenderizar);
+        super(vistaEditor);
         this.entidad = elemento as Entidad;
     }
 
