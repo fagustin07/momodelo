@@ -77,13 +77,4 @@ export abstract class TemplateInspector {
             },
         });
     }
-
-    protected _tecla(texto: string, titulo: string, activo: boolean, onClick: () => void): HTMLButtonElement {
-        return createElement("button", {
-            textContent: texto,
-            title: titulo,
-            className: activo ? "tecla tecla-activa" : "tecla tecla-inactiva",
-            onclick: () => onClick(),
-        });
-    }
 }

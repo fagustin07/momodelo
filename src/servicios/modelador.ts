@@ -93,6 +93,14 @@ export class ModeloER {
         relacion.cambiarNombre(nuevoNombre);
     }
 
+    cambiarCardinalidadOrigenA(relacion: Relacion, nuevaCardinalidad: Cardinalidad) {
+        relacion.cambiarCardinalidadOrigenA(nuevaCardinalidad);
+    }
+
+    cambiarCardinalidadDestinoA(relacion: Relacion, nuevaCardinalidad: Cardinalidad) {
+        relacion.cambiarCardinalidadDestinoA(nuevaCardinalidad);
+    }
+
     agregarAtributoPara(entidad: Entidad, nombreAtributo: string = "Atributo", posicion: Posicion) {
         return entidad.agregarAtributo(nombreAtributo, posicion);
     }

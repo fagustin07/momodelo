@@ -19,7 +19,7 @@ import {handlearError} from "../servicios/handlearError.ts";
 import {generarBarraDeInteracciones} from "../topbar.ts";
 import {InspectorElementos} from "./inspectorElementos.ts";
 import {MenuHamburguesa} from "../componentes/menuHamburguesa.ts";
-import {TipoAtributo, TipoRelacion} from "../tipos/tipos.ts";
+import {Cardinalidad, TipoAtributo, TipoRelacion} from "../tipos/tipos.ts";
 import {EliminarRelacionIdentificadoraError, MomodeloLogicaError} from "../servicios/errores.ts";
 import {VistaLineaCreandoRelacion} from "./vistaLineaCreandoRelacion.ts";
 
@@ -273,6 +273,7 @@ export class VistaEditorMER {
 
     mostrarMensajeDeError(mensaje: string) {
         this.finalizarInteracción();
+        this.deseleccionar();
         renderizarToast(this._elementoRaíz, mensaje);
     }
 
@@ -317,6 +318,14 @@ export class VistaEditorMER {
         this._relacionRenombrada(relacion);
     }
 
+    cambiarCardinalidadOrigenA(relacion: Relacion, nuevaCardinalidad: Cardinalidad) {
+        this.modeloER.cambiarCardinalidadOrigenA(relacion, nuevaCardinalidad);
+    }
+
+    cambiarCardinalidadDestinoA(relacion: Relacion, nuevaCardinalidad: Cardinalidad) {
+        this.modeloER.cambiarCardinalidadDestinoA(relacion, nuevaCardinalidad);
+    }
+
     reposicionarElementosSVG(): void {
         this._relacionesVisuales.forEach(relVisual => relVisual.reposicionarRelacion());
         this._atributosVisuales.forEach(atrVisual => atrVisual.reposicionarConexión());
@@ -344,7 +353,7 @@ export class VistaEditorMER {
         this.modeloER.cambiarTipoDeAtributo(this._getEntidadDelAtributo(atributo), atributo, tipo);
     }
 
-    cambiarTipoDeRelacion(relacion: Relacion, nuevoTipo: TipoRelacion): Relacion {
+    cambiarTipoDeRelacion(relacion: Relacion, nuevoTipo: TipoRelacion): Relacion | null {
         try {
             const relacionFinal = this.modeloER.cambiarTipoDeRelacionA(relacion, nuevoTipo);
             if (relacionFinal !== relacion) {
@@ -361,7 +370,7 @@ export class VistaEditorMER {
             return relacionFinal;
         } catch (error) {
             handlearError(error, this);
-            return relacion;
+            return null;
         }
     }
 

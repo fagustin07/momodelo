@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   border: 0;
@@ -68,7 +69,8 @@ main {
     }
   }
 
-  .atributo:hover, .relacion polygon:hover {
+  .atributo:hover,
+  .relacion polygon:hover {
     --color-resaltado: rgba(245, 19, 19, 0.5);
     cursor: pointer;
     box-shadow: 0 0 10px var(--color-resaltado);
@@ -99,7 +101,10 @@ main {
     }
   }
 
-  .atributo, .relacion, line:not(.linea-feedback), .cardinalidad-texto {
+  .atributo,
+  .relacion,
+  line:not(.linea-feedback),
+  .cardinalidad-texto {
     filter: blur(3px);
   }
 }
@@ -108,12 +113,18 @@ main {
 .diagrama-mer[data-interaccion-en-curso='Crear Entidad'] {
   cursor: pointer;
 
-  .entidad, .atributo, .relacion, line:not(.linea-feedback), .cardinalidad-texto {
+  .entidad,
+  .atributo,
+  .relacion,
+  line:not(.linea-feedback),
+  .cardinalidad-texto {
     filter: blur(3px);
   }
 }
 
-.atributo, .relacion, line:not(.linea-feedback) {
+.atributo,
+.relacion,
+line:not(.linea-feedback) {
   transition: filter 0.2s;
 }
 
@@ -127,7 +138,9 @@ main {
 }
 
 .diagrama-mer.accion-en-curso {
-  .entidad, svg {
+
+  .entidad,
+  svg {
     pointer-events: none;
   }
 
@@ -151,7 +164,8 @@ main {
     }
   }
 
-  .agarrando.entidad-debil, .agarrando .atributo.atributo-multivaluado {
+  .agarrando.entidad-debil,
+  .agarrando .atributo.atributo-multivaluado {
     box-shadow: 0 0 0 4px white, 0 0 0 5px gray;
   }
 
@@ -215,7 +229,7 @@ main {
     border: none;
   }
 
-  & > div:last-child {
+  &>div:last-child {
     position: absolute;
     top: 0;
     left: 0;
@@ -407,7 +421,8 @@ main {
   text-transform: uppercase;
 }
 
-.tecla-activa {
+.tecla-activa,
+.inspector-grupo-teclas label.tecla:has(.tecla-radio-oculto:checked) {
   background-color: #3b82f6;
   color: #fff;
   border-color: #2563eb;
@@ -477,6 +492,10 @@ main {
   margin: 1rem 0;
 }
 
+.inspector-cardinalidad {
+  border: none;
+}
+
 .inspector-mientras-que {
   font-size: 0.85rem;
   color: #4b5563;
@@ -501,15 +520,7 @@ main {
   color: #9ca3af;
 }
 
-.inspector-grupo-teclas label.tecla:has(.tecla-radio-oculto:checked) {
-  background-color: #3b82f6;
-  color: #fff;
-  border-color: #2563eb;
 
-  &:hover {
-    background-color: #2563eb;
-  }
-}
 
 .inspector-grupo-teclas-tipo {
   display: flex;

@@ -111,37 +111,27 @@ describe("[MER] Inspector de Elementos", () => {
         expect(inspector.innerHTML).toContain("Barco");
     });
 
-    it("Al seleccionar una relación por primera vez, entonces la participación de ambas entidades es la menos restrictiva", () => {
+    it("Al crear una relación, entonces la participación de ambas entidades es la menos restrictiva", () => {
         const [inputRelacion] = getInputRelaciones();
         fireEvent.click(inputRelacion);
 
         const inspector = document.getElementById("panel-inspector")!;
 
-        const contenedorOrigen = within(inspector).getByTestId("Cardinalidad origen");
-        const contenedorDestino = within(inspector).getByTestId("Cardinalidad destino");
+        const contenedorOrigen = within(inspector).getByRole("group", {name: /Para las instancias de Pirata/i});
+        const contenedorDestino = within(inspector).getByRole("group", {name: /Para las instancias de Barco/i});
 
-        const participaciónMínimaOpcionalOrigen = within(contenedorOrigen).getByLabelText(/Parcial/i) as HTMLInputElement;
-        const participaciónMínimaObligatoriaOrigen = within(contenedorOrigen).getByLabelText(/Total/i) as HTMLInputElement;
+        const radioParcialOrigen = within(contenedorOrigen).getByRole("radio", {name: /Parcial/i});
+        const radioMuchasOrigen = within(contenedorOrigen).getByRole("radio", {name: /Muchas veces/i});
 
-        const participaciónMáximaRestringidaOrigen = within(contenedorOrigen).getByLabelText(/Una vez/i) as HTMLInputElement;
-        const participaciónMáximaLibreOrigen = within(contenedorOrigen).getByLabelText(/Muchas/i) as HTMLInputElement;
+        const radioParcialDestino = within(contenedorDestino).getByRole("radio", {name: /Parcial/i});
+        const radioMuchasDestino = within(contenedorDestino).getByRole("radio", {name: /Muchas veces/i});
 
-        const participaciónMínimaOpcionalDestino = within(contenedorDestino).getByLabelText(/Parcial/i) as HTMLInputElement;
-        const participaciónMínimaObligatoriaDestino = within(contenedorDestino).getByLabelText(/Total/i) as HTMLInputElement;
+        expect(radioParcialOrigen).toBeChecked();
+        expect(radioMuchasOrigen).toBeChecked();
 
-        const participaciónMáximaRestringidaDestino = within(contenedorDestino).getByLabelText(/Una vez/i) as HTMLInputElement;
-        const participaciónMáximaLibreDestino = within(contenedorDestino).getByLabelText(/Muchas/i) as HTMLInputElement;
-
-        expect(participaciónMínimaOpcionalOrigen.checked).toBeTruthy();
-        expect(participaciónMínimaObligatoriaOrigen.checked).toBeFalsy();
-        expect(participaciónMáximaLibreOrigen.checked).toBeTruthy();
-        expect(participaciónMáximaRestringidaOrigen.checked).toBeFalsy();
-
-        expect(participaciónMínimaOpcionalDestino.checked).toBeTruthy();
-        expect(participaciónMínimaObligatoriaDestino.checked).toBeFalsy();
-        expect(participaciónMáximaLibreDestino.checked).toBeTruthy();
-        expect(participaciónMáximaRestringidaDestino.checked).toBeFalsy();
-    })
+        expect(radioParcialDestino).toBeChecked();
+        expect(radioMuchasDestino).toBeChecked();
+    });
 
     it("Al deseleccionar un elemento, el Inspector se oculta", () => {
         const [elementoPirata] = getElementoEntidades();
@@ -336,7 +326,7 @@ describe("[MER] Inspector de Elementos", () => {
     it("Al seleccionar una relación débil, el inspector muestra los controles correctos", () => {
         const relacionDebil = new Relacion(entidadPirata, entidadBarco, "Depende", ['1','1'], ['0','N'], undefined, 'débil');
         entidadPirata.marcarComoDebil();
-        
+
         document.body.innerHTML = '';
         elementoRaíz = document.createElement('div');
         document.body.append(elementoRaíz);
@@ -395,11 +385,11 @@ describe("[MER] Inspector de Elementos", () => {
         const entidadNaruto = new Entidad("Naruto", [], coordenada(100, 100));
         const entidadSasuke = new Entidad("Sasuke", [], coordenada(300, 100));
         const entidadSakura = new Entidad("Sakura", [], coordenada(500, 100));
-        
+
         const relEquipo7A = new Relacion(entidadSasuke, entidadNaruto, "Equipo7A", ['1','1'], ['0','N'], undefined, 'débil');
         const relEquipo7B = new Relacion(entidadSakura, entidadSasuke, "Equipo7B", ['1','1'], ['0','N'], undefined, 'débil');
         const relRival = new Relacion(entidadNaruto, entidadSakura, "Rival");
-        
+
         entidadSasuke.marcarComoDebil();
         entidadSakura.marcarComoDebil();
 

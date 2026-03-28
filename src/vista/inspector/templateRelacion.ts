@@ -2,7 +2,7 @@ import {ElementoMER} from "../../modelo/elementoMER";
 import {Relacion} from "../../modelo/relacion";
 import {VistaEditorMER} from "../vistaEditorMER.ts";
 import {createElement} from "../dom/createElement.ts";
-import {Cardinalidad, CardinalidadMinima, CardinalidadMáxima} from "../../tipos/tipos";
+import {Cardinalidad, CardinalidadMinima, CardinalidadMáxima, TipoRelacion} from "../../tipos/tipos";
 import {handlearError} from "../../servicios/handlearError.ts";
 import {TemplateInspector} from "./templateInspector.ts";
 
@@ -25,38 +25,29 @@ export class TemplateRelacion extends TemplateInspector {
 
     representarseEn(contenedor: HTMLElement): TemplateRelacion {
         this._inputCon(this.relacion.nombre());
-        this._inputNombre!.oninput = () =>
-            this.vistaEditor.renombrarRelacion(this._inputNombre!.value, this.relacion);
-
-        const [origen, destino] = this.relacion.entidades().map(e => e.nombre());
+        this._inputNombre!.oninput = () => this.vistaEditor.renombrarRelacion(this._inputNombre!.value, this.relacion);
 
         contenedor.append(
             this._titulo("Relaciones"),
             this._separador(),
-            this._subtitulo("NOMBRE"),
-            this._inputNombre!,
+            ...this._secciónIdentidad(),
             this._separador(),
             ...this._seccionTipo(),
             this._separador(),
-            ...this._seccionCardinalidades(origen, destino),
+            ...this._seccionCardinalidades(),
         );
 
         return this;
     }
 
     private _seccionTipo(): HTMLElement[] {
-        const teclaFuerte = this._tecla("Fuerte", "Cambiar a relación fuerte", this.relacion.esFuerte(), () => {
-            const relacionFinal = this.vistaEditor.cambiarTipoDeRelacion(this.relacion, 'fuerte');
-            this.onRerenderizar(relacionFinal);
-        });
-
-        const teclaDebil = this._tecla("Débil", "Cambiar a relación débil", this.relacion.esDebil(), () => {
-            const relacionFinal = this.vistaEditor.cambiarTipoDeRelacion(this.relacion, 'débil');
-            this.onRerenderizar(relacionFinal);
-        });
-
-        const grupoTeclas = createElement("div", {className: "tecla-grupo-segmentado"});
-        grupoTeclas.append(teclaFuerte, teclaDebil);
+        const grupoTeclas = createElement(
+            "div",
+            {className: "tecla-grupo-segmentado"},
+            [
+                this._botónParaCambiarA('fuerte', this.relacion.esFuerte(), this._cambiarTipo),
+                this._botónParaCambiarA('débil', this.relacion.esDebil(), this._cambiarTipo)
+            ]);
 
         const contenedor = createElement("div", {className: "inspector-grupo-teclas-tipo"});
         contenedor.append(grupoTeclas);
@@ -64,51 +55,14 @@ export class TemplateRelacion extends TemplateInspector {
         return [this._subtitulo("TIPO"), contenedor];
     }
 
-    private _seccionCardinalidades(origen: string, destino: string): HTMLElement[] {
-        const titulo = this._subtitulo("CARDINALIDADES");
-
-        if (this.relacion.esDebil()) {
-            return [
-                titulo,
-                this._formularioCardinalidad(
-                    `Para las instancias de ${destino}`,
-                    () => this.relacion.cardinalidadDestino(),
-                    (c) => this.relacion.cambiarCardinalidadDestinoA(c),
-                    "Cardinalidad destino",
-                ),
-                createElement("p", {textContent: "Mientras que...", className: "inspector-mientras-que"}),
-                this._cardinalidadOrigenFija(origen),
-                this._separador(),
-                this._botonInvertirDependencia(),
-            ];
-        }
-
+    private _seccionCardinalidades(): HTMLElement[] {
         return [
-            titulo,
-            this._formularioCardinalidad(
-                `Para las instancias de ${destino}`,
-                () => this.relacion.cardinalidadDestino(),
-                (c) => this.relacion.cambiarCardinalidadDestinoA(c),
-                "Cardinalidad destino",
-            ),
+            this._subtitulo("CARDINALIDADES"),
+            this._renderCardinalidadDestino(),
             createElement("p", {textContent: "Mientras que...", className: "inspector-mientras-que"}),
-            this._formularioCardinalidad(
-                `Para las instancias de ${origen}`,
-                () => this.relacion.cardinalidadOrigen(),
-                (c) => this.relacion.cambiarCardinalidadOrigenA(c),
-                "Cardinalidad origen",
-            ),
+            this._renderCardinalidadOrigen(),
+            ...(this.relacion.esDebil() ? [this._separador(), this._botonInvertirDependencia()] : [])
         ];
-    }
-
-    private _cardinalidadOrigenFija(origen: string): HTMLElement {
-        const etiqueta = createElement("p", {
-            className: "inspector-cardinalidad-label",
-            innerHTML: `Para las instancias de ${origen}, su participación es <strong>TOTAL</strong> y pueden hacerlo como máximo <strong>UNA VEZ</strong> para su identificación en el modelo.`,
-        });
-        const contenedor = createElement("div", {className: "inspector-cardinalidad"});
-        contenedor.append(etiqueta);
-        return contenedor;
     }
 
     private _botonInvertirDependencia(): HTMLButtonElement {
@@ -130,86 +84,128 @@ export class TemplateRelacion extends TemplateInspector {
 
     private _formularioCardinalidad(
         etiqueta: string,
-        obtener: () => Cardinalidad,
-        cambiar: (c: Cardinalidad) => void,
-        testId: string,
+        getCardinalidad: () => Cardinalidad,
+        alCambiarCardinalidad: (c: Cardinalidad) => void,
+        rolEnLaRelación: string,
     ): HTMLElement {
-        const label = createElement("p", {
-            textContent: etiqueta,
-            className: "inspector-cardinalidad-label",
-        });
+        const [min, max] = getCardinalidad();
 
-        const filaMinima = this._filaTeclas(
-            "Su participación es",
-            [
-                {labelText: "Parcial", valor: "0"},
-                {labelText: "Total", valor: "1"},
-            ],
-            `cardinalidad-minima-${testId}`,
-            obtener()[0],
-            (v) => cambiar([v as CardinalidadMinima, obtener()[1]]),
-        );
+        return createElement("fieldset", {className: "inspector-cardinalidad"}, [
+            createElement("legend", {textContent: etiqueta, className: "inspector-cardinalidad-label"}),
 
-        const filaMaxima = this._filaTeclas(
-            "Y pueden hacerlo como máximo",
-            [
-                {labelText: "Una vez", valor: "1"},
-                {labelText: "Muchas veces", valor: "N"},
-            ],
-            `cardinalidad-maxima-${testId}`,
-            obtener()[1],
-            (v) => cambiar([obtener()[0], v as CardinalidadMáxima]),
-        );
+            this._filaOpciones("Su participación es", [
+                    {etiqueta: "Parcial", valor: "0"},
+                    {etiqueta: "Total", valor: "1"}
+                ], `min-${rolEnLaRelación}`,
+                min,
+                (nuevaMínima) => alCambiarCardinalidad([nuevaMínima as CardinalidadMinima, max])),
 
-        const formulario = createElement("div", {className: "inspector-cardinalidad"});
-        formulario.setAttribute("data-testid", testId);
-        formulario.append(label, filaMinima, filaMaxima);
-        return formulario;
+            this._filaOpciones("Y pueden hacerlo como máximo", [
+                    {etiqueta: "Una vez", valor: "1"},
+                    {etiqueta: "Muchas veces", valor: "N"}
+                ], `max-${rolEnLaRelación}`,
+                max,
+                (nuevaMáxima) => alCambiarCardinalidad([min, nuevaMáxima as CardinalidadMáxima]))
+        ]);
     }
 
-    private _filaTeclas(
-        textoLabel: string,
-        opciones: { labelText: string; valor: string }[],
-        name: string,
-        valorActual: string,
-        onChange: (valor: string) => void,
-    ): HTMLElement {
-        const fila = createElement("div", {className: "inspector-teclas-fila"});
+    private _botónParaCambiarA(tipoRelación: TipoRelacion, activo: boolean, onClick: (tipo: TipoRelacion) => void): HTMLButtonElement {
+        return createElement("button", {
+            textContent: this._primerLetraMayúscula(tipoRelación),
+            title: `Cambiar a relación ${tipoRelación.toUpperCase()}`,
+            className: activo ? "tecla tecla-activa" : "tecla tecla-inactiva",
+            onclick: () => onClick(tipoRelación),
+        });
+    }
 
-        const marca = createElement("span", {textContent: "–", className: "inspector-marcador-fila"});
-        const label = createElement("span", {textContent: textoLabel, className: "inspector-teclas-label"});
-        fila.append(marca, label);
+    private _cambiarTipo = (tipo: TipoRelacion): void => {
+        const relacionFinal = this.vistaEditor.cambiarTipoDeRelacion(this.relacion, tipo);
+        if (relacionFinal)
+            this.onRerenderizar(relacionFinal);
+    }
 
-        const grupo = createElement("div", {className: "inspector-grupo-teclas tecla-grupo-segmentado"});
+    private _secciónIdentidad(): HTMLElement[] {
+        return [this._subtitulo("NOMBRE"), this._inputNombre!];
+    }
 
-        for (const opcion of opciones) {
-            const radio = createElement("input", {
-                type: "radio",
-                name,
-                value: opcion.valor,
-                className: "tecla-radio-oculto",
-            });
-            if (opcion.valor === valorActual) radio.checked = true;
+    private _renderCardinalidadDestino() {
+        return this._formularioCardinalidad(
+            `Para las instancias de ${this.relacion.entidadDestino().nombre()}`,
+            () => this.relacion.cardinalidadDestino(),
+            (nuevaCardinalidad) => {
+                this.vistaEditor.cambiarCardinalidadDestinoA(this.relacion, nuevaCardinalidad);
+                this.onRerenderizar(this.relacion);
+            },
+            "destino"
+        );
+    }
 
-            const etiqueta = createElement("label", {
-                textContent: opcion.labelText,
-                className: radio.checked ? "tecla tecla-activa" : "tecla tecla-inactiva",
-            });
-            etiqueta.appendChild(radio);
+    private _renderCardinalidadOrigen(): HTMLElement {
+        const nombreEntidad = this.relacion.entidadOrigen().nombre();
 
-            radio.onchange = () => {
-                grupo.querySelectorAll<HTMLLabelElement>("label.tecla").forEach(l => {
-                    l.classList.replace("tecla-activa", "tecla-inactiva");
-                });
-                etiqueta.classList.replace("tecla-inactiva", "tecla-activa");
-                onChange(opcion.valor);
-            };
-
-            grupo.append(etiqueta);
+        if (this.relacion.esDebil()) {
+            return createElement(
+                "div",
+                {className: "inspector-cardinalidad"},
+                [
+                    createElement("p", {
+                        className: "inspector-cardinalidad-label",
+                        innerHTML: `Para las instancias de ${nombreEntidad}, su participación es <strong>TOTAL</strong> y pueden hacerlo como máximo <strong>UNA VEZ</strong> para su identificación en el modelo.`,
+                    })
+                ]);
+        } else {
+            return this._formularioCardinalidad(
+                `Para las instancias de ${nombreEntidad}`,
+                () => this.relacion.cardinalidadOrigen(),
+                (nuevaCardinalidad) => {
+                    this.vistaEditor.cambiarCardinalidadOrigenA(this.relacion, nuevaCardinalidad);
+                    this.onRerenderizar(this.relacion);
+                },
+                "origen"
+            );
         }
+    }
 
-        fila.append(grupo);
-        return fila;
+    private _filaOpciones(
+        titulo: string,
+        opciones: { etiqueta: string; valor: string }[],
+        nombre: string,
+        valorActual: string,
+        onChange: (valor: string) => void
+    ): HTMLElement {
+        return createElement("div", {className: "inspector-teclas-fila"}, [
+            createElement("span", {textContent: "–", className: "inspector-marcador-fila"}),
+            createElement("span", {textContent: titulo, className: "inspector-teclas-label"}),
+            createElement("div", {className: "inspector-grupo-teclas tecla-grupo-segmentado"},
+                opciones.map(opción =>
+                    this._crearRadioSegmentado(opción, nombre, valorActual === opción.valor, onChange))
+            )
+        ]);
+    }
+
+    private _crearRadioSegmentado(
+        {etiqueta, valor}: { etiqueta: string, valor: string },
+        name: string,
+        estaActivo: boolean,
+        onChange: (v: string) => void
+    ): HTMLElement {
+        const radio = createElement("input", {
+            type: "radio",
+            name,
+            value: valor,
+            checked: estaActivo,
+            className: "tecla-radio-oculto",
+            onchange: (e) => onChange((e.currentTarget as HTMLInputElement).value)
+        });
+
+        return createElement("label", {
+            textContent: etiqueta,
+            className: "tecla tecla-inactiva"
+        }, [radio]);
+    }
+
+    private _primerLetraMayúscula(texto: string) {
+        return texto.charAt(0).toUpperCase() + texto.slice(1);
     }
 }
 
