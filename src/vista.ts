@@ -2,6 +2,8 @@ import {Entidad} from "./modelo/entidad.ts";
 import {ModeloER} from "./servicios/modelador.ts";
 import {Relacion} from "./modelo/relacion.ts";
 import {VistaEditorMER} from "./vista/vistaEditorMER.ts";
+import {createElement} from "./vista/dom/createElement.ts";
+import {GestorModulos} from "./vista/gestorModulos.ts";
 
 function crearElementoSvgParaRelaciones() {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -13,8 +15,20 @@ function crearElementoSvgParaRelaciones() {
     return svg;
 }
 
-// ToDo: Esto debería encapsularse en el constructor de VistaEditorMER?
-export function init(elementoRaiz: HTMLElement, entidadesEnModelo: Entidad[], relaciones: Relacion[]) {
-    const svg = crearElementoSvgParaRelaciones();
-    return new VistaEditorMER(new ModeloER(entidadesEnModelo, relaciones), elementoRaiz, svg);
+export function init(elementoRaíz: HTMLElement, entidadesEnModelo: Entidad[], relaciones: Relacion[]) {
+    const elementoContenedorMER = createElement("section", {id: "vista-mer"});
+
+    new GestorModulos(
+        elementoRaíz,
+        elementoContenedorMER,
+        createElement("section", {
+            id: "vista-mr",
+            innerHTML: `
+            <div class="mr-placeholder">
+                <h2>Modelo Relacional</h2>
+            </div>`
+        })
+    );
+
+    return new VistaEditorMER(new ModeloER(entidadesEnModelo, relaciones), elementoContenedorMER, crearElementoSvgParaRelaciones());
 }

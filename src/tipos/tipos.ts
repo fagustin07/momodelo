@@ -6,3 +6,5 @@ export type Cardinalidad = [CardinalidadMinima, CardinalidadMáxima];
 export type TipoRelacion = 'fuerte' | 'débil';
 
 export type TipoAtributo = 'simple' | 'pk' | 'multivaluado';
+
+export type MóduloMomodelo = 'MER' | 'MR' | 'SPLIT';

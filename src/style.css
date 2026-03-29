@@ -5,15 +5,72 @@ body {
   border: 0;
 }
 
-main {
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-  margin: 0;
+#vista-mer, #vista-mr {
+  flex: 1;
+  position: relative;
   background: whitesmoke;
   overflow: clip;
+  min-width: 0;
+  height: 100vh;
+}
+
+.layout-split {
+  display: flex;
+  flex-direction: row-reverse;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+
+  #vista-mer {
+    border-left: 2px solid #ccc;
+  }
+}
+
+.vista-oculta {
+  display: none;
+}
+
+.tabs-modulos {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  border: 1px solid #1d4ed8;
+  z-index: 100;
+  background: #eee;
+  border-radius: 0 8px 0 0;
+  overflow: hidden;
+
+  .tab-boton {
+    padding: 8px 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #666;
+    font: 600 13px sans-serif;
+    border-right: 1px solid #ccc;
+  }
+
+  .tab-boton:last-child {
+    border-right: none;
+  }
+
+  .tab-boton:not(.activa):hover {
+    background: #ddd;
+  }
+
+  .tab-boton.activa {
+    background: #3b82f6;
+    color: #fff;
+  }
+}
+
+.mr-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-family: sans-serif;
 }
 
 .entidad.seleccionado {
