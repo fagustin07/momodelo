@@ -46,3 +46,9 @@ export const SIMBOLOS: Record<string, TipoTokenMR> = {
 };
 
 export type ResultadoReconocimiento = { token: TokenMR | null; longitud: number };
+ 
+export type RelacionMR = { nombre: string; atributos: string[] };
+ 
+export type ModeloMR = RelacionMR[];
+
+
