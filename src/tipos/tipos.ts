@@ -47,8 +47,12 @@ export const SIMBOLOS: Record<string, TipoTokenMR> = {
 
 export type ResultadoReconocimiento = { token: TokenMR | null; longitud: number };
  
-export type RelacionMR = { nombre: string; atributos: string[] };
- 
-export type ModeloMR = RelacionMR[];
+export class AtributoSimple { constructor(public readonly nombre: string) {} }
 
-
+export class AtributoPK { constructor(public readonly nombre: string) {} }
+
+export type AtributoMR = AtributoSimple | AtributoPK;
+
+export type RelacionMR = { nombre: string; atributos: AtributoMR[] };
+ 
+export type ModeloRelacional = RelacionMR[];

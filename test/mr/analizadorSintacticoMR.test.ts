@@ -1,10 +1,10 @@
-import { describe, expect, it } from "vitest";
-import { AnalizadorSintácticoMR } from "../../src/mr/analizadorSintacticoMR.ts";
-import { ErrorSintácticoMR } from "../../src/servicios/errores";
+import {describe, expect, it} from "vitest";
+import {AnalizadorSintácticoMR} from "../../src/mr/analizadorSintacticoMR.ts";
+import {AtributoPK, AtributoSimple} from "../../src/tipos/tipos.ts";
+import {ErrorSintácticoMR} from "../../src/servicios/errores";
 
 describe("AnalizadorSintácticoMR", () => {
     const analizador = new AnalizadorSintácticoMR();
-
 
     it("el analizador reconoce múltiples relaciones con diversos espacios y saltos de línea", () => {
         const input = `
@@ -42,6 +42,28 @@ describe("AnalizadorSintácticoMR", () => {
     it("el analizador falla si hay una coma pero falta el nombre del atributo posterior", () => {
         expect(() => analizador.analizarSintaxisDe("REL < a1, >"))
             .toThrow("Se esperaba nombre de un atributo en la fila 1, posición 11");
+    });
+
+    it("el analizador reconoce atributos marcados como clave primaria", () => {
+        const input = "ESTUDIANTE < legajo (PK \n ), nombre (PK) >";
+        const modelo = analizador.analizarSintaxisDe(input);
+
+        expect(modelo[0].atributos[0]).toEqual(new AtributoPK("legajo"));
+        expect(modelo[0].atributos[1]).toEqual(new AtributoSimple("nombre"));
+
+    });
+
+    it("el analizador falla si la restricción de clave primaria está mal formada", () => {
+        expect(() => analizador.analizarSintaxisDe("REL < atr (PK >"))
+            .toThrow("Se esperaba ')' en la fila 1, posición 15");
+
+
+        expect(() => analizador.analizarSintaxisDe("REL < atr ( FK ) >"))
+            .toThrow("Se esperaba 'PK' en la fila 1, posición 13");
+
+        expect(() => analizador.analizarSintaxisDe("REL < atr PK ) >"))
+            .toThrow("Se esperaba '(' en la fila 1, posición 11");
+
     });
 
     it("el analizador falla si una relación no comienza con un nombre", () => {

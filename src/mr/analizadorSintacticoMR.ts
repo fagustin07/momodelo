@@ -1,4 +1,5 @@
-import {ModeloMR, RelacionMR, TipoTokenMR, TokenMR} from "../tipos/tipos.ts";
+import {AtributoMR, AtributoPK, AtributoSimple, ModeloRelacional, RelacionMR, TipoTokenMR, TokenMR} from "../tipos/tipos.ts";
+
 import {TokenizadorMR} from "./tokenizadorMR.ts";
 import {ErrorSintácticoMR} from "../servicios/errores.ts";
 
@@ -7,12 +8,12 @@ export class AnalizadorSintácticoMR {
     private _actual = 0;
     private _inputOriginal = "";
 
-    analizarSintaxisDe(input: string): ModeloMR {
+    analizarSintaxisDe(input: string): ModeloRelacional {
         this._inputOriginal = input;
         this._tokens = new TokenizadorMR().ejecutarseCon(input);
         this._actual = 0;
 
-        const relaciones: ModeloMR = [];
+        const relaciones: ModeloRelacional = [];
         while (!this._esFin()) {
             relaciones.push(this._relacion());
         }
@@ -28,16 +29,36 @@ export class AnalizadorSintácticoMR {
         return {nombre, atributos};
     }
 
-    private _listaAtributos(): string[] {
-        const atributos: string[] = [];
-        atributos.push(this._consumir("NOMBRE", "nombre de un atributo").valor);
+    private _listaAtributos(): AtributoMR[] {
+        const atributos: AtributoMR[] = [];
+        atributos.push(this._atributo());
 
         while (!this._es("RANGLE")) {
+            if (this._es("NOMBRE")) {
+                this._consumir("COMA", "','");
+            }
             this._consumir("COMA", "','");
-            atributos.push(this._consumir("NOMBRE", "nombre de un atributo").valor);
+            atributos.push(this._atributo());
         }
 
         return atributos;
+    }
+
+    private _atributo(): AtributoMR {
+        const nombre = this._consumir("NOMBRE", "nombre de un atributo").valor;
+
+        if (this._es("LPAREN")) {
+            this._avanzar();
+            this._consumir("PK", "'PK'");
+            this._consumir("RPAREN", "')'");
+            return new AtributoPK(nombre);
+        }
+
+        if (this._es("PK")) {
+            this._consumir("LPAREN", "'('");
+        }
+
+        return new AtributoSimple(nombre);
     }
 
 
