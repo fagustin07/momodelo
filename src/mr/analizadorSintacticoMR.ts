@@ -1,5 +1,5 @@
-import {AtributoMR, AtributoPK, AtributoSimple, ModeloRelacional, RelacionMR, TipoTokenMR, TokenMR} from "../tipos/tipos.ts";
-
+import {TipoTokenMR, TokenMR} from "../tipos/tipos.ts";
+import {AtributoMR, AtributoPK, AtributoSimple, ModeloRelacional, RelacionMR} from "./modeloSintacticoMR.ts";
 import {TokenizadorMR} from "./tokenizadorMR.ts";
 import {ErrorSintácticoMR} from "../servicios/errores.ts";
 
@@ -13,11 +13,12 @@ export class AnalizadorSintácticoMR {
         this._tokens = new TokenizadorMR().ejecutarseCon(input);
         this._actual = 0;
 
-        const relaciones: ModeloRelacional = [];
+        const relaciones: RelacionMR[] = [];
         while (!this._esFin()) {
             relaciones.push(this._relacion());
         }
-        return relaciones;
+
+        return new ModeloRelacional(relaciones);
     }
 
     private _relacion(): RelacionMR {
@@ -26,7 +27,7 @@ export class AnalizadorSintácticoMR {
         const atributos = this._listaAtributos();
         this._consumir("RANGLE", "'>'");
 
-        return {nombre, atributos};
+        return new RelacionMR(nombre, atributos);
     }
 
     private _listaAtributos(): AtributoMR[] {

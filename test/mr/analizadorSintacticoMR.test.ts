@@ -1,9 +1,9 @@
 import {describe, expect, it} from "vitest";
 import {AnalizadorSintácticoMR} from "../../src/mr/analizadorSintacticoMR.ts";
-import {AtributoPK, AtributoSimple} from "../../src/tipos/tipos.ts";
+import {AtributoPK} from "../../src/mr/modeloSintacticoMR.ts";
 import {ErrorSintácticoMR} from "../../src/servicios/errores";
 
-describe("AnalizadorSintácticoMR", () => {
+describe("[Modelo Relacional] Analizador Sintáctico", () => {
     const analizador = new AnalizadorSintácticoMR();
 
     it("el analizador reconoce múltiples relaciones con diversos espacios y saltos de línea", () => {
@@ -13,9 +13,9 @@ describe("AnalizadorSintácticoMR", () => {
         `;
         const modelo = analizador.analizarSintaxisDe(input);
 
-        expect(modelo).toHaveLength(2);
-        expect(modelo[0].nombre).toBe("ESTUDIANTE");
-        expect(modelo[1].nombre).toBe("PROFESOR");
+        expect(modelo.relaciones).toHaveLength(2);
+        expect(modelo.relaciones[0].nombre).toBe("ESTUDIANTE");
+        expect(modelo.relaciones[1].nombre).toBe("PROFESOR");
     });
 
     it("el analizador falla lanzando ErrorSintácticoMR ante sintaxis inválida", () => {
@@ -48,10 +48,10 @@ describe("AnalizadorSintácticoMR", () => {
         const input = "ESTUDIANTE < legajo (PK \n ), nombre (PK) >";
         const modelo = analizador.analizarSintaxisDe(input);
 
-        expect(modelo[0].atributos[0]).toEqual(new AtributoPK("legajo"));
-        expect(modelo[0].atributos[1]).toEqual(new AtributoSimple("nombre"));
-
+        expect(modelo.relaciones[0].atributos[0]).toEqual(new AtributoPK("legajo"));
+        expect(modelo.relaciones[0].atributos[1]).toEqual(new AtributoPK("nombre"));
     });
+
 
     it("el analizador falla si la restricción de clave primaria está mal formada", () => {
         expect(() => analizador.analizarSintaxisDe("REL < atr (PK >"))
