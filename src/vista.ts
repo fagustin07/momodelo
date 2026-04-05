@@ -1,5 +1,5 @@
 import {Entidad} from "./modelo/entidad.ts";
-import {ModeloER} from "./servicios/modelador.ts";
+import {ModeloER} from "./servicios/modeloER.ts";
 import {Relacion} from "./modelo/relacion.ts";
 import {VistaEditorMER} from "./vista/vistaEditorMER.ts";
 import {createElement} from "./vista/dom/createElement.ts";

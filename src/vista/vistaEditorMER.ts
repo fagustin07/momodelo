@@ -2,7 +2,7 @@ import {Entidad} from "../modelo/entidad";
 import {Atributo} from "../modelo/atributo";
 import {Relacion} from "../modelo/relacion";
 import {coordenada, coordenadaInicial, Posicion} from "../posicion";
-import {ModeloER} from "../servicios/modelador";
+import {ModeloER} from "../servicios/modeloER.ts";
 import {VistaEntidad} from "./vistaEntidad";
 import {VistaRelacion} from "./vistaRelacion";
 import {VistaAtributo} from "./vistaAtributo";

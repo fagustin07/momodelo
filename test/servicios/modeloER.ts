@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import {Entidad} from "../../src/modelo/entidad.ts";
 import {coordenada} from "../../src/posicion.ts";
-import {ModeloER} from "../../src/servicios/modelador.ts";
+import {ModeloER} from "../../src/servicios/modeloER.ts";
 import {
     CicloDeRelacionesDébilesError,
     EliminarRelacionIdentificadoraError,
@@ -11,7 +11,7 @@ import {
 } from "../../src/servicios/errores.ts";
 import {Relacion} from "../../src/modelo/relacion.ts";
 
-describe("[MER] Modelador", () => {
+describe("[MER] Modelo Entidad Relación", () => {
 
     let modeloER: ModeloER;
 
