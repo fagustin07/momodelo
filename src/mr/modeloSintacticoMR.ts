@@ -8,6 +8,10 @@ export class RelacionMR {
     clavesPrimarias(): AtributoPK[] {
         return this.atributos.filter(atr => atr.esClavePrimaria()) as AtributoPK[];
     }
+
+    atributosSimples(): AtributoSimple[] {
+        return this.atributos.filter(atr => !atr.esClavePrimaria()) as AtributoSimple[];
+    }
 }
 
 export abstract class AtributoMR {
