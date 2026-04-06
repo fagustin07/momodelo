@@ -14,7 +14,7 @@ body {
   height: 100vh;
 }
 
-.layout-split {
+.layout-mer-mr {
   display: flex;
   flex-direction: row-reverse;
   width: 100vw;

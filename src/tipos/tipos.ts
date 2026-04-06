@@ -7,7 +7,7 @@ export type TipoRelacion = 'fuerte' | 'débil';
 
 export type TipoAtributo = 'simple' | 'pk' | 'multivaluado';
 
-export type MóduloMomodelo = 'MER' | 'MR' | 'SPLIT';
+export type MóduloMomodelo = 'MER' | 'MR' | 'MER/MR';
 
 export type TipoTokenMR =
     | "NOMBRE"

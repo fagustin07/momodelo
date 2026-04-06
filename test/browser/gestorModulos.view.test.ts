@@ -42,7 +42,7 @@ describe("[Módulos] Gestor de Navegación", () => {
     });
 
     it("El gestor sabe segmentar la vista para todos los módulos.", () => {
-        const botonSplit = screen.getByRole("button", {name: "SPLIT"});
+        const botonSplit = screen.getByRole("button", {name: "MER/MR"});
 
         fireEvent.click(botonSplit);
 
@@ -51,13 +51,13 @@ describe("[Módulos] Gestor de Navegación", () => {
 
         expect(contenedorMER).not.toHaveClass("vista-oculta");
         expect(contenedorMR).not.toHaveClass("vista-oculta");
-        expect(elementoRaíz).toHaveClass("layout-split");
+        expect(elementoRaíz).toHaveClass("layout-mer-mr");
     });
 
     it("El gestor sabe marcar como 'activa' la sección seleccionada", () => {
         const botonMER = screen.getByRole("button", {name: "MER"});
         const botonMR = screen.getByRole("button", {name: "MR"});
-        const botonSplit = screen.getByRole("button", {name: "SPLIT"});
+        const botonSplit = screen.getByRole("button", {name: "MER/MR"});
 
         fireEvent.click(botonMR);
         expect(botonMR).toHaveClass("activa");
@@ -69,7 +69,7 @@ describe("[Módulos] Gestor de Navegación", () => {
     });
 
     it("El gestor sabe ocultar elementos entre navegaciones a módulos específicos", () => {
-        const botonSplit = screen.getByRole("button", {name: "SPLIT"});
+        const botonSplit = screen.getByRole("button", {name: "MER/MR"});
         const botonMER = screen.getByRole("button", {name: "MER"});
 
         fireEvent.click(botonSplit);
@@ -77,6 +77,6 @@ describe("[Módulos] Gestor de Navegación", () => {
 
         const contenedorMR = document.getElementById("vista-mr");
         expect(contenedorMR).toHaveClass("vista-oculta");
-        expect(elementoRaíz).not.toHaveClass("layout-split");
+        expect(elementoRaíz).not.toHaveClass("layout-mer-mr");
     });
 });
