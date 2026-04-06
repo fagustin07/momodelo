@@ -40,6 +40,10 @@ export class MenuHamburguesa {
         elementoRaíz.prepend(this._menúContainer);
     }
 
+    setVisible(visible: boolean): void {
+        this._menúContainer.style.display = visible ? "" : "none";
+    }
+
     private _crearIconoHamburguesa(): HTMLElement {
         const linea1 = createSvgElement("line", {
             x1: 3,

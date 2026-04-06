@@ -90,6 +90,24 @@ export class VistaEditorMER {
         return this._interacción.estáEnProceso();
     }
 
+    get elementoContenedor(): HTMLElement {
+        return this._elementoRaíz;
+    }
+
+    activarModoLectura(): void {
+        this.finalizarInteracción();
+        this.deseleccionar();
+        this._topbar.style.display = "none";
+        this._menuHamburguesa.setVisible(false);
+        this._elementoRaíz.classList.add("mer-solo-lectura");
+    }
+
+    desactivarModoLectura(): void {
+        this._topbar.style.display = "";
+        this._menuHamburguesa.setVisible(true);
+        this._elementoRaíz.classList.remove("mer-solo-lectura");
+    }
+
     vistaDeEntidad(entidad: Entidad): VistaEntidad {
         const vistaEntidad = this._entidadesVisuales.get(entidad);
         if (!vistaEntidad) {

@@ -30,6 +30,16 @@ body {
   display: none;
 }
 
+.mer-solo-lectura {
+  .entidad,
+  .atributo,
+  .relacion,
+  .cardinalidad-texto,
+  .relacion polygon {
+    pointer-events: none !important;
+  }
+}
+
 .tabs-modulos {
   position: fixed;
   bottom: 0;

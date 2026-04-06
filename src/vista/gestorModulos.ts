@@ -1,21 +1,24 @@
 import {MóduloMomodelo} from "../tipos/tipos.ts";
 import {createElement} from "./dom/createElement.ts";
+import {VistaEditorMER} from "./vistaEditorMER.ts";
 
 export class GestorModulos {
     private readonly _elementoRaíz: HTMLElement;
     private _modulos: Map<MóduloMomodelo, HTMLElement> = new Map();
     private _modoActivo: MóduloMomodelo | null = null;
     private readonly _elementoNavegación: HTMLElement;
+    private readonly _vistaMER: VistaEditorMER;
 
     constructor(
         elementoRaíz: HTMLElement,
-        elementoContenedorMER: HTMLElement,
-        elementoContenedorMR: HTMLElement
+        vistaMER: VistaEditorMER,
+        contenedorMR: HTMLElement
     ) {
         this._elementoRaíz = elementoRaíz;
+        this._vistaMER = vistaMER;
 
-        this._registrarMódulo("MER", elementoContenedorMER);
-        this._registrarMódulo("MR", elementoContenedorMR);
+        this._registrarMódulo("MER", vistaMER.elementoContenedor);
+        this._registrarMódulo("MR", contenedorMR);
 
         this._elementoNavegación = this._crearNavegación();
         this._elementoRaíz.append(this._elementoNavegación);
@@ -27,8 +30,10 @@ export class GestorModulos {
         if (this._modoActivo === id) return;
 
         if (id === 'MER/MR') {
+            this._vistaMER.activarModoLectura();
             this._activarModoMERMR();
         } else {
+            this._vistaMER.desactivarModoLectura();
             this._activarModoUnico(id);
         }
 

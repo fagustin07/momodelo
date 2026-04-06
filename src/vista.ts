@@ -17,18 +17,16 @@ function crearElementoSvgParaRelaciones() {
 
 export function init(elementoRaíz: HTMLElement, entidadesEnModelo: Entidad[], relaciones: Relacion[]) {
     const elementoContenedorMER = createElement("section", {id: "vista-mer"});
+    const elementoContenedorMR = createElement("section", {
+        id: "vista-mr",
+        innerHTML: `<div class="mr-placeholder"><h2>Modelo Relacional</h2></div>`
+    });
 
-    new GestorModulos(
-        elementoRaíz,
-        elementoContenedorMER,
-        createElement("section", {
-            id: "vista-mr",
-            innerHTML: `
-            <div class="mr-placeholder">
-                <h2>Modelo Relacional</h2>
-            </div>`
-        })
-    );
+    elementoRaíz.append(elementoContenedorMER);
 
-    return new VistaEditorMER(new ModeloER(entidadesEnModelo, relaciones), elementoContenedorMER, crearElementoSvgParaRelaciones());
+    const vistaMER = new VistaEditorMER(new ModeloER(entidadesEnModelo, relaciones), elementoContenedorMER, crearElementoSvgParaRelaciones());
+
+    new GestorModulos(elementoRaíz, vistaMER, elementoContenedorMR);
+
+    return vistaMER;
 }
