@@ -68,4 +68,10 @@ export class ErrorSintácticoMR extends MomodeloError {
     }
 }
 
-
+export class ErroresValidaciónMR extends MomodeloError {
+    constructor(public readonly errores: string[]) {
+        super(errores.join('\n'));
+    }
+}
+
+

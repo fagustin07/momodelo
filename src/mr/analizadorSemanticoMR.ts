@@ -1,8 +1,9 @@
 import "../utils/extensionesArray.ts";
 import {ModeloRelacional} from "./modeloSintacticoMR.ts";
+import {ErroresValidaciónMR} from "../servicios/errores.ts";
 
 export class AnalizadorSemánticoMR {
-    validar(modelo: ModeloRelacional): string[] {
+    validar(modelo: ModeloRelacional): void {
         const errores: string[] = [];
 
         modelo.relaciones.forEach(relacion => {
@@ -11,6 +12,7 @@ export class AnalizadorSemánticoMR {
             }
         });
 
-        return errores;
+        if (errores.length > 0)
+            throw new ErroresValidaciónMR(errores);
     }
 }

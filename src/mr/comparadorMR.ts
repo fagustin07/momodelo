@@ -1,13 +1,17 @@
 import {ModeloER} from "../servicios/modeloER.ts";
 import {ModeloRelacional, RelacionMR} from "./modeloSintacticoMR.ts";
 import {Entidad} from "../modelo/entidad.ts";
+import {ErroresValidaciónMR} from "../servicios/errores.ts";
 
 export class ComparadorMR {
-    comparar(modeloER: ModeloER, modeloMR: ModeloRelacional): string[] {
-        return modeloER.entidades.flatMap(entidad => {
+    esConsistente(modeloER: ModeloER, modeloMR: ModeloRelacional): void {
+        const errores = modeloER.entidades.flatMap(entidad => {
             const error = this._obtenerErrorDeEntidad(entidad, modeloMR);
             return error ? [error] : [];
         });
+
+        if (errores.length > 0)
+            throw new ErroresValidaciónMR(errores);
     }
 
     private _obtenerErrorDeEntidad(entidad: Entidad, modeloMR: ModeloRelacional): string | null {
