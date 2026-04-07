@@ -74,13 +74,138 @@ body {
   }
 }
 
-.mr-placeholder {
+.mr-editor-wrapper {
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  font-family: sans-serif;
+}
+
+.mr-consola-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.mr-consola-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
-  font-family: sans-serif;
+  gap: 8px;
+  font: 12px sans-serif;
+  color: #6b7280;
+  backdrop-filter: blur(1px);
+  z-index: 10;
+
+  &::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    border: 2px solid #d1d5db;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: mr-spin 0.6s linear infinite;
+    flex-shrink: 0;
+  }
+}
+
+@keyframes mr-spin {
+  to { transform: rotate(360deg); }
+}
+
+.mr-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border-bottom: 1px solid #d1d5db;
+  background: #f9fafb;
+}
+
+.mr-topbar-titulo {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.mr-btn-ejecutar {
+  padding: 5px 14px;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font: 600 12px sans-serif;
+  cursor: pointer;
+
+  &:hover {
+    background: #2563eb;
+  }
+
+  &:active {
+    background: #1d4ed8;
+  }
+}
+
+.mr-codemirror-wrapper {
+  flex: 1;
+  overflow: auto;
+
+  .cm-editor {
+    height: 100%;
+  }
+}
+
+.mr-consola-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 14px;
+  background: #f3f4f6;
+  border-top: 1px solid #d1d5db;
+}
+
+.mr-consola-header-titulo {
+  font-weight: 600;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.mr-consola-btn-limpiar {
+  padding: 2px 8px;
+  background: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 3px;
+  color: #9ca3af;
+  font: 11px sans-serif;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #9ca3af;
+    color: #6b7280;
+  }
+}
+
+.mr-consola {
+  height: 20vh;
+  overflow-y: auto;
+  background: #fff;
+  padding: 10px 14px 48px;
+  border-top: 1px solid #d1d5db;
+  font: 12px/1.5 monospace;
+
+  .mr-consola-info {
+    color: #6b7280;
+    font-style: italic;
+  }
+
+  .mr-consola-error {
+    color: #dc2626;
+  }
+
+  .mr-consola-exito {
+    color: #16a34a;
+  }
 }
 
 .entidad.seleccionado {

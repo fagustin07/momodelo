@@ -1,6 +1,7 @@
 import {MóduloMomodelo} from "../tipos/tipos.ts";
 import {createElement} from "./dom/createElement.ts";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
+import {VistaEditorMR} from "./vistaEditorMR.ts";
 
 export class GestorModulos {
     private readonly _elementoRaíz: HTMLElement;
@@ -8,17 +9,19 @@ export class GestorModulos {
     private _modoActivo: MóduloMomodelo | null = null;
     private readonly _elementoNavegación: HTMLElement;
     private readonly _vistaMER: VistaEditorMER;
+    private readonly _vistaMR: VistaEditorMR;
 
     constructor(
         elementoRaíz: HTMLElement,
         vistaMER: VistaEditorMER,
-        contenedorMR: HTMLElement
+        vistaMR: VistaEditorMR
     ) {
         this._elementoRaíz = elementoRaíz;
         this._vistaMER = vistaMER;
+        this._vistaMR = vistaMR;
 
         this._registrarMódulo("MER", vistaMER.elementoContenedor);
-        this._registrarMódulo("MR", contenedorMR);
+        this._registrarMódulo("MR", vistaMR.elementoContenedor);
 
         this._elementoNavegación = this._crearNavegación();
         this._elementoRaíz.append(this._elementoNavegación);
@@ -26,19 +29,24 @@ export class GestorModulos {
         this.mostrarModulo("MER");
     }
 
-    private mostrarModulo(id: MóduloMomodelo) {
-        if (this._modoActivo === id) return;
+    private mostrarModulo(módulo: MóduloMomodelo) {
+        if (this._modoActivo === módulo) return;
 
-        if (id === 'MER/MR') {
+        if (módulo === 'MER/MR') {
             this._vistaMER.activarModoLectura();
+            this._vistaMR.setModeloER(this._vistaMER.modeloER);
             this._activarModoMERMR();
+        } else if (módulo === 'MR') {
+            this._vistaMER.desactivarModoLectura();
+            this._vistaMR.setModeloER(null);
+            this._activarModoÚnico(módulo);
         } else {
             this._vistaMER.desactivarModoLectura();
-            this._activarModoUnico(id);
+            this._activarModoÚnico(módulo);
         }
 
-        this._actualizarEstadoPestañas(id);
-        this._modoActivo = id;
+        this._actualizarEstadoPestañas(módulo);
+        this._modoActivo = módulo;
     }
 
     private _registrarMódulo(id: MóduloMomodelo, elemento: HTMLElement) {
@@ -63,7 +71,7 @@ export class GestorModulos {
         this._modulos.forEach(el => el.classList.remove("vista-oculta"));
     }
 
-    private _activarModoUnico(id: MóduloMomodelo) {
+    private _activarModoÚnico(id: MóduloMomodelo) {
         this._elementoRaíz.classList.remove("layout-mer-mr");
         this._modulos.forEach((elementoContenedorMódulo, key) => {
             if (key === id) {
