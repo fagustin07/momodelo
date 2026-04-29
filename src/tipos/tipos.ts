@@ -13,6 +13,12 @@ export type TipoTokenMR =
     | "NOMBRE"
     | "PK"
     | "FK"
+    | "INSERTAR"
+    | "EN"
+    | "VERDADERO"
+    | "FALSO"
+    | "NUMERO"
+    | "CADENA"
     | "LANGLE"
     | "RANGLE"
     | "LBRACE"
@@ -30,9 +36,19 @@ export type TokenMR = {
 
 export const PATRON_NOMBRE = /^[A-Za-záéíóúÁÉÍÓÚñÑ_][A-Za-záéíóúÁÉÍÓÚñÑ0-9_]*\??/;
 
+export const PATRON_NUMERO = /^\d+(\.\d+)?/;
+
+export const PATRON_CADENA = /^'([^']*)'/;
+
 export const PALABRAS_RESERVADAS: Record<string, TipoTokenMR> = {
     PK: "PK",
     FK: "FK",
+    INSERTAR: "INSERTAR",
+    EN: "EN",
+    VERDADERO: "VERDADERO",
+    TRUE: "VERDADERO",
+    FALSO: "FALSO",
+    FALSE: "FALSO",
 };
 
 export const SIMBOLOS: Record<string, TipoTokenMR> = {

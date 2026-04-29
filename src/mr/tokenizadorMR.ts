@@ -1,4 +1,4 @@
-import {PALABRAS_RESERVADAS, PATRON_NOMBRE, ResultadoReconocimiento, SIMBOLOS, TokenMR} from "../tipos/tipos.ts";
+import {PALABRAS_RESERVADAS, PATRON_CADENA, PATRON_NOMBRE, PATRON_NUMERO, ResultadoReconocimiento, SIMBOLOS, TokenMR} from "../tipos/tipos.ts";
 
 export class TokenizadorMR {
 
@@ -18,6 +18,8 @@ export class TokenizadorMR {
 
         return (
             this._reconocerEspacio(caracter) ??
+            this._reconocerCadena(texto, pos) ??
+            this._reconocerNúmero(texto, pos) ??
             this._reconocerNombre(texto, pos) ??
             this._reconocerSímbolo(caracter, pos) ??
             this._reconocerDesconocido(caracter, pos)
@@ -33,8 +35,26 @@ export class TokenizadorMR {
         if (!lexema) return null;
 
         return {
-            token: {tipo: PALABRAS_RESERVADAS[lexema] ?? "NOMBRE", valor: lexema, posicion: pos},
+            token: {tipo: PALABRAS_RESERVADAS[lexema.toUpperCase()] ?? "NOMBRE", valor: lexema, posicion: pos},
             longitud: lexema.length
+        };
+    }
+
+    private _reconocerNúmero(texto: string, pos: number): ResultadoReconocimiento | null {
+        const lexema = this._matchNúmero(texto, pos);
+        if (!lexema) return null;
+        return {
+            token: {tipo: "NUMERO", valor: lexema, posicion: pos},
+            longitud: lexema.length
+        };
+    }
+
+    private _reconocerCadena(texto: string, pos: number): ResultadoReconocimiento | null {
+        const match = PATRON_CADENA.exec(texto.slice(pos));
+        if (!match) return null;
+        return {
+            token: {tipo: "CADENA", valor: match[1], posicion: pos},
+            longitud: match[0].length
         };
     }
 
@@ -47,7 +67,15 @@ export class TokenizadorMR {
     }
 
     private _matchNombre(texto: string, pos: number): string | null {
-        const match = PATRON_NOMBRE.exec(texto.slice(pos));
+        return this._matchPatrón(PATRON_NOMBRE, texto, pos);
+    }
+
+    private _matchNúmero(texto: string, pos: number): string | null {
+        return this._matchPatrón(PATRON_NUMERO, texto, pos);
+    }
+
+    private _matchPatrón(patrón: RegExp, texto: string, pos: number): string | null {
+        const match = patrón.exec(texto.slice(pos));
         return match ? match[0] : null;
     }
 
