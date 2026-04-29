@@ -57,3 +57,21 @@ export class EliminarRelacionIdentificadoraError extends MomodeloLogicaError {
         super("No se puede eliminar una relación identificadora porque una entidad depende de ella.");
     }
 }
+
+export class ErrorSintácticoMR extends MomodeloError {
+    constructor(
+        public readonly fila: number,
+        public readonly columna: number,
+        public readonly esperado: string
+    ) {
+        super(`Se esperaba ${esperado} en la fila ${fila}, posición ${columna}`);
+    }
+}
+
+export class ErroresValidaciónMR extends MomodeloError {
+    constructor(public readonly errores: string[]) {
+        super(errores.join('\n'));
+    }
+}
+
+

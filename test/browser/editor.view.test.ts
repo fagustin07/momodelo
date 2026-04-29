@@ -2,7 +2,7 @@ import {beforeEach, describe, expect, it} from "vitest";
 import {Entidad} from "../../src/modelo/entidad.ts";
 import {Relacion} from "../../src/modelo/relacion.ts";
 import {coordenada} from "../../src/posicion.ts";
-import {ModeloER} from "../../src/servicios/modelador.ts";
+import {ModeloER} from "../../src/servicios/modeloER.ts";
 import {VistaEditorMER} from "../../src/vista/vistaEditorMER.ts";
 import "../../src/style.css";
 
