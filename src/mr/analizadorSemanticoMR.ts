@@ -1,12 +1,12 @@
 import "../utils/extensionesArray.ts";
-import {ModeloRelacional} from "./modeloSintacticoMR.ts";
+import {ProgramaMR} from "./modeloSintacticoMR.ts";
 import {ErroresValidaciónMR} from "../servicios/errores.ts";
 
 export class AnalizadorSemánticoMR {
-    validar(modelo: ModeloRelacional): void {
+    validar(programa: ProgramaMR): void {
         const errores: string[] = [];
 
-        modelo.relaciones.forEach(relacion => {
+        programa.relaciones().forEach(relacion => {
             if (relacion.clavesPrimarias().isEmpty()) {
                 errores.push(`Falta clave primaria en '${relacion.nombre}'.`);
             }

@@ -1,10 +1,10 @@
 import {ModeloER} from "../servicios/modeloER.ts";
-import {ModeloRelacional, RelacionMR} from "./modeloSintacticoMR.ts";
+import {ProgramaMR, RelacionMR} from "./modeloSintacticoMR.ts";
 import {Entidad} from "../modelo/entidad.ts";
 import {ErroresValidaciónMR} from "../servicios/errores.ts";
 
 export class ComparadorMR {
-    esConsistente(modeloER: ModeloER, modeloMR: ModeloRelacional): void {
+    esConsistente(modeloER: ModeloER, modeloMR: ProgramaMR): void {
         const errores = modeloER.entidades.flatMap(entidad => {
             const error = this._obtenerErrorDeEntidad(entidad, modeloMR);
             return error ? [error] : [];
@@ -14,9 +14,9 @@ export class ComparadorMR {
             throw new ErroresValidaciónMR(errores);
     }
 
-    private _obtenerErrorDeEntidad(entidad: Entidad, modeloMR: ModeloRelacional): string | null {
+    private _obtenerErrorDeEntidad(entidad: Entidad, modeloMR: ProgramaMR): string | null {
         const nombreEntidad = entidad.nombre().toLowerCase();
-        const relacionAsociada = modeloMR.relaciones.find(rel => rel.nombre.toLowerCase() === nombreEntidad);
+        const relacionAsociada = modeloMR.relaciones().find(rel => rel.nombre.toLowerCase() === nombreEntidad);
 
         if (!relacionAsociada) {
             return `Falta la relación '${entidad.nombre()}' en el modelo relacional.`;
