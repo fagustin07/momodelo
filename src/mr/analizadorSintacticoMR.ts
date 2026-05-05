@@ -1,5 +1,5 @@
 import {TipoTokenMR, TokenMR} from "../tipos/tipos.ts";
-import {AtributoMR, AtributoPK, AtributoSimple, DefiniciónRelación, ProgramaMR, RelacionMR, SentenciaMR} from "./modeloSintacticoMR.ts";
+import {AtributoMR, AtributoPK, AtributoSimple, DefiniciónRelación, FilaMR, InsertarEn, ProgramaMR, RelacionMR, SentenciaMR, ValorMR} from "./modeloSintacticoMR.ts";
 import {TokenizadorMR} from "./tokenizadorMR.ts";
 import {ErrorSintácticoMR} from "../servicios/errores.ts";
 
@@ -15,10 +15,55 @@ export class AnalizadorSintácticoMR {
 
         const sentencias: SentenciaMR[] = [];
         while (!this._esFin()) {
-            sentencias.push(new DefiniciónRelación(this._relacion()));
+            if (this._es("INSERTAR"))
+                sentencias.push(this._insertarEn());
+            else
+                sentencias.push(new DefiniciónRelación(this._relacion()));
         }
 
         return new ProgramaMR(sentencias);
+    }
+
+    private _insertarEn(): InsertarEn {
+        this._consumir("INSERTAR", "'INSERTAR'");
+        this._consumir("EN", "'EN'");
+        const nombreRelacion = this._consumir("NOMBRE", "nombre de una relación").valor;
+        this._consumir("LANGLE", "'<'");
+        const filas = this._listaFilas();
+        this._consumir("RANGLE", "'>'");
+        return new InsertarEn(nombreRelacion, filas);
+    }
+
+    private _listaFilas(): FilaMR[] {
+        const filas: FilaMR[] = [];
+        filas.push(this._fila());
+        while (this._es("COMA")) {
+            this._avanzar();
+            filas.push(this._fila());
+        }
+        return filas;
+    }
+
+    private _fila(): FilaMR {
+        this._consumir("LPAREN", "'('");
+        const valores: ValorMR[] = [];
+        valores.push(this._valor());
+        while (this._es("COMA")) {
+            this._avanzar();
+            valores.push(this._valor());
+        }
+        this._consumir("RPAREN", "')'");
+        return new FilaMR(valores);
+    }
+
+    private _valor(): ValorMR {
+        if (this._es("CADENA"))  return this._avanzar().valor;
+        if (this._es("NUMERO"))  return parseFloat(this._avanzar().valor);
+        if (this._es("VERDADERO")) { this._avanzar(); return true; }
+        if (this._es("FALSO"))   { this._avanzar(); return false; }
+        const pos = this._esFin() ? this._inputOriginal.length : this._ver().posicion;
+        const [fila, columna] = this._obtenerFilaYColumna(pos);
+        throw new ErrorSintácticoMR(fila, columna, "un valor (cadena, número o booleano)");
     }
 
     private _relacion(): RelacionMR {
