@@ -1,10 +1,11 @@
 import {describe, expect, it} from "vitest";
 import {ComparadorMR} from "../../src/mr/comparadorMR.ts";
 import {ModeloER} from "../../src/servicios/modeloER.ts";
-import {AtributoPK, AtributoSimple, DefiniciónRelación, ProgramaMR, RelacionMR} from "../../src/mr/modeloSintacticoMR";
+import {AtributoPK, AtributoSimple, ProgramaMR, RelacionMR} from "../../src/mr/modeloSintacticoMR";
 import {Entidad} from "../../src/modelo/entidad.ts";
 import {coordenada} from "../../src/posicion.ts";
 import {ErroresValidaciónMR} from "../../src/servicios/errores.ts";
+import {DefiniciónRelación} from "../../src/mr/sentenciaMR.ts";
 
 function entidad(nombre: string, pks: string[] = [], simples: string[] = [], multivaluados: string[] = []): Entidad {
     const nuevaEntidad = new Entidad(nombre);

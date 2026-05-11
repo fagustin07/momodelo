@@ -1,18 +1,17 @@
 import "../utils/extensionesArray.ts";
-import {ProgramaMR} from "./modeloSintacticoMR.ts";
+import {ProgramaMR, ProgramaMRValidado, RelacionMR} from "./modeloSintacticoMR.ts";
 import {ErroresValidaciónMR} from "../servicios/errores.ts";
 
 export class AnalizadorSemánticoMR {
-    validar(programa: ProgramaMR): void {
+    validar(programa: ProgramaMR): ProgramaMRValidado {
         const errores: string[] = [];
+        const relacionesDefinidas = new Map<string, RelacionMR>();
 
-        programa.relaciones().forEach(relacion => {
-            if (relacion.clavesPrimarias().isEmpty()) {
-                errores.push(`Falta clave primaria en '${relacion.nombre}'.`);
-            }
-        });
+        programa.sentencias.forEach(s => s.validarseCon(relacionesDefinidas, errores));
 
         if (errores.length > 0)
             throw new ErroresValidaciónMR(errores);
+
+        return new ProgramaMRValidado(programa);
     }
 }

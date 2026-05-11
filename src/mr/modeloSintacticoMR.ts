@@ -1,54 +1,27 @@
+import {DefiniciónRelación, InsertarEn, SentenciaMR} from "./sentenciaMR.ts";
+
 export type ValorMR = string | number | boolean;
 
 export class FilaMR {
     constructor(public readonly valores: ValorMR[]) {}
 }
 
-export abstract class SentenciaMR {
-    esDefinición(): boolean {
-        return false;
-    }
-
-    esInserción(): boolean {
-        return false;
-    }
-}
-
-export class DefiniciónRelación extends SentenciaMR {
-    constructor(public readonly relacion: RelacionMR) {
-        super();
-    }
-
-    esDefinición(): boolean {
-        return true;
-    }
-}
-
-export class InsertarEn extends SentenciaMR {
-    constructor(
-        public readonly nombreRelacion: string,
-        public readonly filas: FilaMR[]
-    ) {
-        super();
-    }
-
-    esInserción(): boolean {
-        return true;
-    }
-}
-
 export class ProgramaMR {
-    constructor(public readonly sentencias: SentenciaMR[]) {
+    constructor(private readonly _sentencias: SentenciaMR[]) {
+    }
+
+    get sentencias(): SentenciaMR[] {
+        return this._sentencias;
     }
 
     relaciones(): RelacionMR[] {
-        return this.sentencias
+        return this._sentencias
             .filter(s => s.esDefinición())
             .map(s => (s as DefiniciónRelación).relacion);
     }
 
     inserciones(): InsertarEn[] {
-        return this.sentencias
+        return this._sentencias
             .filter(s => s.esInserción()) as InsertarEn[];
     }
 }
@@ -79,4 +52,8 @@ export class AtributoPK extends AtributoMR {
     esClavePrimaria(): boolean {
         return true;
     }
+}
+
+export class ProgramaMRValidado {
+    constructor(private readonly _programa: ProgramaMR) {}
 }

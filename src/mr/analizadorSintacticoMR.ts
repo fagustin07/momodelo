@@ -1,7 +1,8 @@
 import {TipoTokenMR, TokenMR} from "../tipos/tipos.ts";
-import {AtributoMR, AtributoPK, AtributoSimple, DefiniciónRelación, FilaMR, InsertarEn, ProgramaMR, RelacionMR, SentenciaMR, ValorMR} from "./modeloSintacticoMR.ts";
+import {AtributoMR, AtributoPK, AtributoSimple, FilaMR, ProgramaMR, RelacionMR, ValorMR} from "./modeloSintacticoMR.ts";
 import {TokenizadorMR} from "./tokenizadorMR.ts";
 import {ErrorSintácticoMR} from "../servicios/errores.ts";
+import {DefiniciónRelación, InsertarEn, SentenciaMR} from "./sentenciaMR.ts";
 
 export class AnalizadorSintácticoMR {
     private _tokens: TokenMR[] = [];
