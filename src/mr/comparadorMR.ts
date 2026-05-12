@@ -5,13 +5,31 @@ import {ErroresValidaciónMR} from "../servicios/errores.ts";
 
 export class ComparadorMR {
     esConsistente(modeloER: ModeloER, modeloMR: ProgramaMR): void {
-        const errores = modeloER.entidades.flatMap(entidad => {
-            const error = this._obtenerErrorDeEntidad(entidad, modeloMR);
-            return error ? [error] : [];
-        });
+        const nombreEntidades = modeloER.entidades.map(e => e.nombre().toLowerCase());
+        const errores = [
+            ...this._erroresPorEntidadesSinRelación(modeloER, modeloMR),
+            ...this._erroresPorRelacionesSinEntidad(modeloMR, nombreEntidades),
+            ...this._erroresPorInsercionesSinEntidad(modeloMR, nombreEntidades),
+        ];
+        if (errores.length > 0) throw new ErroresValidaciónMR(errores);
+    }
 
-        if (errores.length > 0)
-            throw new ErroresValidaciónMR(errores);
+    private _erroresPorEntidadesSinRelación(modeloER: ModeloER, modeloMR: ProgramaMR): string[] {
+        return modeloER.entidades
+            .map(e => this._obtenerErrorDeEntidad(e, modeloMR))
+            .filter((e): e is string => e !== null);
+    }
+
+    private _erroresPorRelacionesSinEntidad(modeloMR: ProgramaMR, nombreEntidades: string[]): string[] {
+        return modeloMR.relaciones()
+            .filter(r => !nombreEntidades.includes(r.nombre.toLowerCase()))
+            .map(r => `La relación '${r.nombre}' no tiene correspondencia en el MER.`);
+    }
+
+    private _erroresPorInsercionesSinEntidad(modeloMR: ProgramaMR, nombreEntidades: string[]): string[] {
+        return modeloMR.inserciones()
+            .filter(i => !nombreEntidades.includes(i.nombreRelacion.toLowerCase()))
+            .map(i => `No se puede insertar en '${i.nombreRelacion}': no tiene correspondencia en el MER.`);
     }
 
     private _obtenerErrorDeEntidad(entidad: Entidad, modeloMR: ProgramaMR): string | null {
@@ -40,8 +58,8 @@ export class ComparadorMR {
             .filter(atr => atr.esPK())
             .map(atr => atr.nombre().toLowerCase());
 
-        return pksEsperadas.length === pksEncontradas.length &&
-               pksEsperadas.every(pk => pksEncontradas.includes(pk));
+        return pksEsperadas.length === pksEncontradas.length
+            && pksEsperadas.every(pk => pksEncontradas.includes(pk));
     }
 
     private _tienenMismosAtributosSimples(entidad: Entidad, relacion: RelacionMR): boolean {
@@ -51,9 +69,6 @@ export class ComparadorMR {
             .map(atr => atr.nombre().toLowerCase());
 
         return simplesEsperados.length === simplesEncontrados.length &&
-               simplesEsperados.every(nombre => simplesEncontrados.includes(nombre));
+            simplesEsperados.every(nombre => simplesEncontrados.includes(nombre));
     }
 }
-
-
-

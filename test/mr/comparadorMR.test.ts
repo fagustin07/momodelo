@@ -55,4 +55,32 @@ describe("[Modelo Relacional] Comparador MR", () => {
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("Falta la relación 'CLIENTE' en el modelo relacional.");
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("Falta la relación 'VENTA' en el modelo relacional.");
     });
+
+    it("se levanta una excepción cuando se define una relación en el MR que no tiene correspondencia en el MER", () => {
+        const modeloER = mer(entidad("CLIENTE", ["id"]));
+        const modeloMR = programa(
+            definición(relación("CLIENTE", pk("id"))),
+            definición(relación("FANTASMA", pk("id"))),
+        );
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidaciónMR);
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("La relación 'FANTASMA' no tiene correspondencia en el MER.");
+    });
+
+    it("se levanta una excepción cuando se describe una inserción en una relación sin correspondencia en el MER", () => {
+        const modeloER = mer(entidad("CLIENTE", ["id"]));
+        const modeloMR = programa(
+            definición(relación("CLIENTE", pk("id"))),
+            inserción("FANTASMA", fila(1)),
+        );
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidaciónMR);
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("No se puede insertar en 'FANTASMA': no tiene correspondencia en el MER.");
+    });
+
+    it("el comparador acumula los errores del MER y del MR para levantar una única excepción", () => {
+        const modeloER = mer(entidad("CLIENTE", ["id"]));
+        const modeloMR = programa(inserción("FANTASMA", fila(1)));
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidaciónMR);
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("Falta la relación 'CLIENTE' en el modelo relacional.");
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("No se puede insertar en 'FANTASMA': no tiene correspondencia en el MER.");
+    });
 });
