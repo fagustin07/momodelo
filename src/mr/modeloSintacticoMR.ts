@@ -56,4 +56,8 @@ export class AtributoPK extends AtributoMR {
 
 export class ProgramaMRValidado {
     constructor(private readonly _programa: ProgramaMR) {}
+
+    get sentencias() {
+        return this._programa.sentencias;
+    }
 }

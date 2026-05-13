@@ -4,8 +4,7 @@ import {Prec} from "@codemirror/state";
 import {autocompletion, CompletionContext, CompletionResult} from "@codemirror/autocomplete";
 import {ModeloER} from "../servicios/modeloER.ts";
 import {AnalizadorSintácticoMR} from "../mr/analizadorSintacticoMR.ts";
-import {AnalizadorSemánticoMR} from "../mr/analizadorSemanticoMR.ts";
-import {ComparadorMR} from "../mr/comparadorMR.ts";
+import {ValidadorSemánticoMR} from "../mr/validadorSemanticoMR.ts";
 import {ErrorSintácticoMR, ErroresValidaciónMR} from "../servicios/errores.ts";
 import {createElement} from "./dom/createElement.ts";
 
@@ -91,14 +90,13 @@ export class VistaEditorMR {
 
             try {
                 const modeloMR = new AnalizadorSintácticoMR().analizarSintaxisDe(input);
-                new AnalizadorSemánticoMR().validar(modeloMR);
 
-                if (this._modeloER !== null) {
-                    new ComparadorMR().esConsistente(this._modeloER, modeloMR);
-                    this._mostrarÉxito("[OK] Su Modelo Relacional tiene correspondencia con el MER provisto.");
-                } else {
-                    this._mostrarÉxito("[OK] Modelo relacional válido.");
-                }
+                new ValidadorSemánticoMR().ejecutarsePara(modeloMR, this._modeloER);
+
+                const mensaje = this._modeloER !== null
+                    ? "[OK] Su Modelo Relacional tiene correspondencia con el MER provisto."
+                    : "[OK] Modelo relacional válido.";
+                this._mostrarÉxito(mensaje);
             } catch (e) {
                 if (e instanceof ErrorSintácticoMR) {
                     this._mostrarError(e.message);
