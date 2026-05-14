@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import {AnalizadorSemánticoMR} from "../../src/mr/analizadorSemanticoMR";
 import {ProgramaMRValidado} from "../../src/mr/modeloSintacticoMR";
-import {ErroresValidaciónMR} from "../../src/servicios/errores";
+import {ErroresValidación} from "../../src/servicios/errores";
 import {definición, fila, inserción, pk, programa, relación, simple} from "./helpers";
 
 describe("[Modelo Relacional] Analizador Semántico", () => {
@@ -29,7 +29,7 @@ describe("[Modelo Relacional] Analizador Semántico", () => {
             definición(relación("pirata", simple("attr"))),
         );
 
-        expect(() => analizador.validar(modelo)).toThrow(ErroresValidaciónMR);
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
         expect(() => analizador.validar(modelo)).toThrow("Falta clave primaria en 'pirata'.");
     });
 
@@ -40,7 +40,7 @@ describe("[Modelo Relacional] Analizador Semántico", () => {
             definición(relación("MARINERO", simple("attr"), simple("attr2"))),
         );
 
-        expect(() => analizador.validar(modelo)).toThrow(ErroresValidaciónMR);
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
         expect(() => analizador.validar(modelo)).toThrow("Falta clave primaria en 'pirata'.");
         expect(() => analizador.validar(modelo)).toThrow("Falta clave primaria en 'MARINERO'.");
     });
@@ -59,7 +59,7 @@ describe("[Modelo Relacional] Analizador Semántico", () => {
             inserción("INEXISTENTE", fila(1)),
         );
 
-        expect(() => analizador.validar(modelo)).toThrow(ErroresValidaciónMR);
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
         expect(() => analizador.validar(modelo)).toThrow("Relación 'INEXISTENTE' no definida.");
     });
 
@@ -69,7 +69,7 @@ describe("[Modelo Relacional] Analizador Semántico", () => {
             definición(relación("CLIENTE", pk("id"))),
         );
 
-        expect(() => analizador.validar(modelo)).toThrow(ErroresValidaciónMR);
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
         expect(() => analizador.validar(modelo)).toThrow("Relación 'CLIENTE' no definida.");
     });
 
@@ -79,7 +79,7 @@ describe("[Modelo Relacional] Analizador Semántico", () => {
             inserción("CLIENTE", fila(1, 2), fila(3, 4, 'padre')),
         );
 
-        expect(() => analizador.validar(modelo)).toThrow(ErroresValidaciónMR);
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
         expect(() => analizador.validar(modelo)).toThrow("La 1ª inserción en 'CLIENTE' tiene 2 atributos pero la relación espera 1.");
         expect(() => analizador.validar(modelo)).toThrow("La 2ª inserción en 'CLIENTE' tiene 3 atributos pero la relación espera 1.");
     });
@@ -91,7 +91,7 @@ describe("[Modelo Relacional] Analizador Semántico", () => {
             inserción("pirATA", fila(1, 2)),
         );
 
-        expect(() => analizador.validar(modelo)).toThrow(ErroresValidaciónMR);
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
         expect(() => analizador.validar(modelo)).toThrow("Falta clave primaria en 'pirata'.");
         expect(() => analizador.validar(modelo)).toThrow("Relación 'INEXISTENTE' no definida.");
         expect(() => analizador.validar(modelo)).toThrow("La 1ª inserción en 'pirATA' tiene 2 atributos pero la relación espera 1.");

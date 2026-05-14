@@ -1,5 +1,5 @@
 import {TipoTokenMR, TokenMR} from "../tipos/tipos.ts";
-import {AtributoMR, AtributoPK, AtributoSimple, FilaMR, ProgramaMR, RelacionMR, ValorMR} from "./modeloSintacticoMR.ts";
+import {AtributoMR, AtributoPK, AtributoSimple, Fila, ProgramaMR, RelacionMR, Valor} from "./modeloSintacticoMR.ts";
 import {TokenizadorMR} from "./tokenizadorMR.ts";
 import {ErrorSintácticoMR} from "../servicios/errores.ts";
 import {DefiniciónRelación, InsertarEn, SentenciaMR} from "./sentenciaMR.ts";
@@ -35,8 +35,8 @@ export class AnalizadorSintácticoMR {
         return new InsertarEn(nombreRelacion, filas);
     }
 
-    private _listaFilas(): FilaMR[] {
-        const filas: FilaMR[] = [];
+    private _listaFilas(): Fila[] {
+        const filas: Fila[] = [];
         filas.push(this._fila());
         while (this._es("COMA")) {
             this._avanzar();
@@ -45,19 +45,19 @@ export class AnalizadorSintácticoMR {
         return filas;
     }
 
-    private _fila(): FilaMR {
+    private _fila(): Fila {
         this._consumir("LPAREN", "'('");
-        const valores: ValorMR[] = [];
+        const valores: Valor[] = [];
         valores.push(this._valor());
         while (this._es("COMA")) {
             this._avanzar();
             valores.push(this._valor());
         }
         this._consumir("RPAREN", "')'");
-        return new FilaMR(valores);
+        return new Fila(valores);
     }
 
-    private _valor(): ValorMR {
+    private _valor(): Valor {
         if (this._es("CADENA"))  return this._avanzar().valor;
         if (this._es("NUMERO"))  return parseFloat(this._avanzar().valor);
         if (this._es("VERDADERO")) { this._avanzar(); return true; }

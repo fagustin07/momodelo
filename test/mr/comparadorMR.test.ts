@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {ComparadorMR} from "../../src/mr/comparadorMR.ts";
-import {ErroresValidaciónMR} from "../../src/servicios/errores.ts";
+import {ErroresValidación} from "../../src/servicios/errores.ts";
 import {definición, entidad, fila, inserción, mer, pk, programa, relación, simple} from "./helpers.ts";
 
 describe("[Modelo Relacional] Comparador MR", () => {
@@ -15,14 +15,14 @@ describe("[Modelo Relacional] Comparador MR", () => {
     it("el comparador levanta una excepción si falta al menos una relación correspondiente a una entidad del MER", () => {
         const modeloER = mer(entidad("PIRATA"));
         const modeloMR = programa();
-        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidaciónMR);
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("Falta la relación 'PIRATA' en el modelo relacional.");
     });
 
     it("el comparador levanta una excepción si las claves primarias de alguna relación no coinciden con las de la entidad", () => {
         const modeloER = mer(entidad("FRUTA", ["codigo"]));
         const modeloMR = programa(definición(relación("FRUTA", pk("id"))));
-        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidaciónMR);
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("La relación 'FRUTA' tiene una clave primaria incorrecta.");
     });
 
@@ -35,7 +35,7 @@ describe("[Modelo Relacional] Comparador MR", () => {
     it("el comparador levanta una excepción si faltan atributos simples de la entidad en el MR", () => {
         const modeloER = mer(entidad("BARCO", ["id"], ["nombre"]));
         const modeloMR = programa(definición(relación("BARCO", pk("id"))));
-        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidaciónMR);
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("La relación 'BARCO' no contiene los mismos atributos simples que la entidad.");
     });
 
@@ -51,7 +51,7 @@ describe("[Modelo Relacional] Comparador MR", () => {
     it("el comparador acumula errores de múltiples entidades inconsistentes en una única excepción", () => {
         const modeloER = mer(entidad("CLIENTE", ["id"]), entidad("VENTA", ["nro"]));
         const modeloMR = programa();
-        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidaciónMR);
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("Falta la relación 'CLIENTE' en el modelo relacional.");
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("Falta la relación 'VENTA' en el modelo relacional.");
     });
@@ -62,7 +62,7 @@ describe("[Modelo Relacional] Comparador MR", () => {
             definición(relación("CLIENTE", pk("id"))),
             definición(relación("FANTASMA", pk("id"))),
         );
-        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidaciónMR);
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("La relación 'FANTASMA' no tiene correspondencia en el MER.");
     });
 
@@ -72,14 +72,14 @@ describe("[Modelo Relacional] Comparador MR", () => {
             definición(relación("CLIENTE", pk("id"))),
             inserción("FANTASMA", fila(1)),
         );
-        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidaciónMR);
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("No se puede insertar en 'FANTASMA': no tiene correspondencia en el MER.");
     });
 
     it("el comparador acumula los errores del MER y del MR para levantar una única excepción", () => {
         const modeloER = mer(entidad("CLIENTE", ["id"]));
         const modeloMR = programa(inserción("FANTASMA", fila(1)));
-        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidaciónMR);
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("Falta la relación 'CLIENTE' en el modelo relacional.");
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("No se puede insertar en 'FANTASMA': no tiene correspondencia en el MER.");
     });

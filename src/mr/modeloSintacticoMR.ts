@@ -1,9 +1,9 @@
 import {DefiniciónRelación, InsertarEn, SentenciaMR} from "./sentenciaMR.ts";
 
-export type ValorMR = string | number | boolean;
+export type Valor = string | number | boolean;
 
-export class FilaMR {
-    constructor(public readonly valores: ValorMR[]) {}
+export class Fila {
+    constructor(public readonly valores: Valor[]) {}
 }
 
 export class ProgramaMR {

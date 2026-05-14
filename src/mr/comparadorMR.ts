@@ -1,7 +1,7 @@
 import {ModeloER} from "../servicios/modeloER.ts";
 import {ProgramaMR, RelacionMR} from "./modeloSintacticoMR.ts";
 import {Entidad} from "../modelo/entidad.ts";
-import {ErroresValidaciónMR} from "../servicios/errores.ts";
+import {ErroresValidación} from "../servicios/errores.ts";
 
 export class ComparadorMR {
     esConsistente(modeloER: ModeloER, modeloMR: ProgramaMR): void {
@@ -11,7 +11,7 @@ export class ComparadorMR {
             ...this._erroresPorRelacionesSinEntidad(modeloMR, nombreEntidades),
             ...this._erroresPorInsercionesSinEntidad(modeloMR, nombreEntidades),
         ];
-        if (errores.length > 0) throw new ErroresValidaciónMR(errores);
+        if (errores.length > 0) throw new ErroresValidación(errores);
     }
 
     private _erroresPorEntidadesSinRelación(modeloER: ModeloER, modeloMR: ProgramaMR): string[] {

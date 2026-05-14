@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {ValidadorSemánticoMR} from "../../src/mr/validadorSemanticoMR.ts";
-import {ErroresValidaciónMR} from "../../src/servicios/errores.ts";
+import {ErroresValidación} from "../../src/servicios/errores.ts";
 import {definición, entidad, fila, inserción, mer, pk, programa, relación, simple} from "./helpers.ts";
 
 describe("[Modelo Relacional] Validador Semántico MR", () => {
@@ -17,7 +17,7 @@ describe("[Modelo Relacional] Validador Semántico MR", () => {
 
     it("se levanta una excepción cuando una relación no tiene clave primaria", () => {
         const programaMR = programa(definición(relación("CLIENTE")));
-        expect(() => validador.ejecutarsePara(programaMR, null)).toThrow(ErroresValidaciónMR);
+        expect(() => validador.ejecutarsePara(programaMR, null)).toThrow(ErroresValidación);
     });
 
     it("se levanta una excepción con el nombre de la relación que carece de clave primaria", () => {
@@ -30,7 +30,7 @@ describe("[Modelo Relacional] Validador Semántico MR", () => {
             definición(relación("CLIENTE", pk("id"), simple("nombre"))),
             inserción("CLIENTE", fila(1)),
         );
-        expect(() => validador.ejecutarsePara(programaMR, null)).toThrow(ErroresValidaciónMR);
+        expect(() => validador.ejecutarsePara(programaMR, null)).toThrow(ErroresValidación);
     });
 
     it("se levanta una excepción con todos los errores de las relaciones que carecen de clave primaria", () => {
@@ -62,7 +62,7 @@ describe("[Modelo Relacional] Validador Semántico MR", () => {
     it("se levanta una excepción cuando una relación no tiene entidad correspondiente en el MER", () => {
         const programaMR = programa(definición(relación("FANTASMA", pk("id"))));
         const modeloER = mer(entidad("CLIENTE", ["id"]));
-        expect(() => validador.ejecutarsePara(programaMR, modeloER)).toThrow(ErroresValidaciónMR);
+        expect(() => validador.ejecutarsePara(programaMR, modeloER)).toThrow(ErroresValidación);
     });
 
     it("se levanta una excepción con el nombre de la relación que no tiene entidad en el MER", () => {
@@ -77,7 +77,7 @@ describe("[Modelo Relacional] Validador Semántico MR", () => {
             inserción("FANTASMA", fila(1)),
         );
         const modeloER = mer(entidad("CLIENTE", ["id"]));
-        expect(() => validador.ejecutarsePara(programaMR, modeloER)).toThrow(ErroresValidaciónMR);
+        expect(() => validador.ejecutarsePara(programaMR, modeloER)).toThrow(ErroresValidación);
     });
 
     it("se levanta una excepción con el nombre de la relación cuya inserción no tiene entidad en el MER", () => {

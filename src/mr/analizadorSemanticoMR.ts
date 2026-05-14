@@ -1,6 +1,6 @@
 import "../utils/extensionesArray.ts";
 import {ProgramaMR, ProgramaMRValidado, RelacionMR} from "./modeloSintacticoMR.ts";
-import {ErroresValidaciónMR} from "../servicios/errores.ts";
+import {ErroresValidación} from "../servicios/errores.ts";
 
 export class AnalizadorSemánticoMR {
     validar(programa: ProgramaMR): ProgramaMRValidado {
@@ -10,7 +10,7 @@ export class AnalizadorSemánticoMR {
         programa.sentencias.forEach(s => s.validarseCon(relacionesDefinidas, errores));
 
         if (errores.length > 0)
-            throw new ErroresValidaciónMR(errores);
+            throw new ErroresValidación(errores);
 
         return new ProgramaMRValidado(programa);
     }

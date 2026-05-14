@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {AnalizadorSintácticoMR} from "../../src/mr/analizadorSintacticoMR.ts";
-import {AtributoPK, FilaMR} from "../../src/mr/modeloSintacticoMR.ts";
+import {AtributoPK, Fila} from "../../src/mr/modeloSintacticoMR.ts";
 import {ErrorSintácticoMR} from "../../src/servicios/errores";
 
 describe("[Modelo Relacional] Analizador Sintáctico", () => {
@@ -81,7 +81,7 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
         expect(insercion.esInserción()).toBeTruthy();
         expect(insercion.nombreRelacion).toBe("Persona");
         expect(insercion.filas).toHaveLength(1);
-        expect(insercion.filas[0]).toEqual(new FilaMR(["Juan", "Pérez"]));
+        expect(insercion.filas[0]).toEqual(new Fila(["Juan", "Pérez"]));
     });
 
     it("los literales numéricos y booleanos dentro de una fila conservan su tipo", () => {
@@ -90,7 +90,7 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
         );
 
         const insercion = programa.inserciones()[0];
-        expect(insercion.filas[0]).toEqual(new FilaMR(["Ana", 30, true]));
+        expect(insercion.filas[0]).toEqual(new Fila(["Ana", 30, true]));
     });
 
     it("true y false son alias en inglés equivalentes a verdadero y falso en inserciones", () => {
@@ -98,7 +98,7 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
             "INSERTAR EN T<(true, false)>"
         );
 
-        expect(programa.inserciones()[0].filas[0]).toEqual(new FilaMR([true, false]));
+        expect(programa.inserciones()[0].filas[0]).toEqual(new Fila([true, false]));
     });
 
     it("una sentencia INSERTAR EN puede contener múltiples filas separadas por coma", () => {
@@ -108,8 +108,8 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
 
         const insercion = programa.inserciones()[0];
         expect(insercion.filas).toHaveLength(2);
-        expect(insercion.filas[0]).toEqual(new FilaMR(["Juan", 25]));
-        expect(insercion.filas[1]).toEqual(new FilaMR(["María", 30]));
+        expect(insercion.filas[0]).toEqual(new Fila(["Juan", 25]));
+        expect(insercion.filas[1]).toEqual(new Fila(["María", 30]));
     });
 
     it("definiciones de relaciones e inserciones de datos pueden coexistir en el mismo programa conservando su orden", () => {

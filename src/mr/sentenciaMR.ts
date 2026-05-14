@@ -1,4 +1,5 @@
-import {FilaMR, RelacionMR} from "./modeloSintacticoMR.ts";
+import {Fila, RelacionMR} from "./modeloSintacticoMR.ts";
+import {ModeloRelacionalMaterializado, RelacionMaterializada} from "./modeloRelacionalMaterializado.ts";
 
 export abstract class SentenciaMR {
     esDefinición(): boolean {
@@ -32,7 +33,7 @@ export class DefiniciónRelación extends SentenciaMR {
 export class InsertarEn extends SentenciaMR {
     constructor(
         public readonly nombreRelacion: string,
-        public readonly filas: FilaMR[]
+        public readonly filas: Fila[]
     ) {
         super();
     }

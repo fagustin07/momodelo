@@ -2,7 +2,7 @@ import {
     AtributoMR,
     AtributoPK,
     AtributoSimple,
-    FilaMR,
+    Fila,
     ProgramaMR,
     RelacionMR,
 } from "../../src/mr/modeloSintacticoMR";
@@ -27,12 +27,12 @@ export function definición(r: RelacionMR): DefiniciónRelación {
     return new DefiniciónRelación(r);
 }
 
-export function inserción(nombre: string, ...filas: FilaMR[]): InsertarEn {
+export function inserción(nombre: string, ...filas: Fila[]): InsertarEn {
     return new InsertarEn(nombre, filas);
 }
 
-export function fila(...valores: (string | number | boolean)[]): FilaMR {
-    return new FilaMR(valores);
+export function fila(...valores: (string | number | boolean)[]): Fila {
+    return new Fila(valores);
 }
 
 export function programa(...sentencias: SentenciaMR[]): ProgramaMR {

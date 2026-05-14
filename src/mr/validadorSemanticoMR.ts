@@ -2,7 +2,7 @@ import {AnalizadorSemánticoMR} from "./analizadorSemanticoMR.ts";
 import {ComparadorMR} from "./comparadorMR.ts";
 import {ProgramaMR, ProgramaMRValidado} from "./modeloSintacticoMR.ts";
 import {ModeloER} from "../servicios/modeloER.ts";
-import {ErroresValidaciónMR} from "../servicios/errores.ts";
+import {ErroresValidación} from "../servicios/errores.ts";
 
 export class ValidadorSemánticoMR {
     ejecutarsePara(programa: ProgramaMR, modeloER: ModeloER | null): ProgramaMRValidado {
@@ -11,7 +11,7 @@ export class ValidadorSemánticoMR {
 
         const errores = [...erroresSemánticos, ...erroresConsistencia];
         if (errores.length > 0)
-            throw new ErroresValidaciónMR(errores);
+            throw new ErroresValidación(errores);
         return validado!;
     }
 
@@ -19,7 +19,7 @@ export class ValidadorSemánticoMR {
         try {
             return [new AnalizadorSemánticoMR().validar(programa), []];
         } catch (e) {
-            if (e instanceof ErroresValidaciónMR) return [null, e.errores];
+            if (e instanceof ErroresValidación) return [null, e.errores];
             throw e;
         }
     }
@@ -29,7 +29,7 @@ export class ValidadorSemánticoMR {
             new ComparadorMR().esConsistente(modeloER, programa);
             return [];
         } catch (e) {
-            if (e instanceof ErroresValidaciónMR)
+            if (e instanceof ErroresValidación)
                 return e.errores;
 
             throw e;

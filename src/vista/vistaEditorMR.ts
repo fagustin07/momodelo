@@ -5,7 +5,7 @@ import {autocompletion, CompletionContext, CompletionResult} from "@codemirror/a
 import {ModeloER} from "../servicios/modeloER.ts";
 import {AnalizadorSintácticoMR} from "../mr/analizadorSintacticoMR.ts";
 import {ValidadorSemánticoMR} from "../mr/validadorSemanticoMR.ts";
-import {ErrorSintácticoMR, ErroresValidaciónMR} from "../servicios/errores.ts";
+import {ErrorSintácticoMR, ErroresValidación} from "../servicios/errores.ts";
 import {createElement} from "./dom/createElement.ts";
 
 export class VistaEditorMR {
@@ -100,7 +100,7 @@ export class VistaEditorMR {
             } catch (e) {
                 if (e instanceof ErrorSintácticoMR) {
                     this._mostrarError(e.message);
-                } else if (e instanceof ErroresValidaciónMR) {
+                } else if (e instanceof ErroresValidación) {
                     e.errores.forEach(msg => this._mostrarError(msg));
                 } else {
                     throw e;
