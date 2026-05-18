@@ -34,7 +34,7 @@ export default defineConfig({
       extends: true,
       test: {
         name: "model-side",
-        include: ["test/modelo/*.test.ts", "test/servicios/*.test.ts"],
+        include: ["test/modelo/*.test.ts", "test/servicios/*.test.ts", "test/mr/*.test.ts"],
       },
     }],
   },

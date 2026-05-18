@@ -1,4 +1,4 @@
-import {ModeloER} from "./modelador.ts";
+import {ModeloER} from "./modeloER.ts";
 import {Cardinalidad, TipoAtributo, TipoRelacion} from "../tipos/tipos.ts";
 
 type JsonEntidad = {

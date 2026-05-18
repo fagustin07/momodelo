@@ -2,7 +2,7 @@ import {Entidad} from "../modelo/entidad";
 import {Atributo} from "../modelo/atributo";
 import {Relacion} from "../modelo/relacion";
 import {coordenada, coordenadaInicial, Posicion} from "../posicion";
-import {ModeloER} from "../servicios/modelador";
+import {ModeloER} from "../servicios/modeloER.ts";
 import {VistaEntidad} from "./vistaEntidad";
 import {VistaRelacion} from "./vistaRelacion";
 import {VistaAtributo} from "./vistaAtributo";
@@ -88,6 +88,24 @@ export class VistaEditorMER {
 
     hayUnaInteraccionEnProceso() {
         return this._interacción.estáEnProceso();
+    }
+
+    get elementoContenedor(): HTMLElement {
+        return this._elementoRaíz;
+    }
+
+    activarModoLectura(): void {
+        this.finalizarInteracción();
+        this.deseleccionar();
+        this._topbar.style.display = "none";
+        this._menuHamburguesa.setVisible(false);
+        this._elementoRaíz.classList.add("mer-solo-lectura");
+    }
+
+    desactivarModoLectura(): void {
+        this._topbar.style.display = "";
+        this._menuHamburguesa.setVisible(true);
+        this._elementoRaíz.classList.remove("mer-solo-lectura");
     }
 
     vistaDeEntidad(entidad: Entidad): VistaEntidad {

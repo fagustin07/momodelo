@@ -7,7 +7,7 @@ import {init} from "../../src/vista.ts";
 import "../../src/style.css";
 
 function getEntidadesDOM() {
-    return [...document.querySelectorAll<HTMLElement>(".entidad")];
+    return [...document.getElementById("vista-mer")!.querySelectorAll<HTMLElement>(".entidad")];
 }
 
 function getRelacionesDOM() {
@@ -33,9 +33,10 @@ describe("[MER] Interacciones y selección", () => {
 
     it("cuando se crea una entidad, entonces queda seleccionada", () => {
         const botón = screen.getByRole("button", { name: /\+entidad/i });
+        const contenedorMER = elementoRaiz.querySelector("#vista-mer") as HTMLElement;
         fireEvent.click(botón);
 
-        fireEvent.click(elementoRaiz, { clientX: 200, clientY: 200 });
+        fireEvent.click(contenedorMER, { clientX: 200, clientY: 200 });
 
         const entidades = getEntidadesDOM();
         const nuevaEntidad = entidades[entidades.length - 1];

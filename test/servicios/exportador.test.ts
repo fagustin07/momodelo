@@ -2,7 +2,7 @@ import {describe, expect, it} from "vitest";
 import {coordenada, coordenadaInicial} from "../../src/posicion.ts";
 import {Entidad} from "../../src/modelo/entidad.ts";
 import {exportar} from "../../src/servicios/exportador.ts";
-import {ModeloER} from "../../src/servicios/modelador.ts";
+import {ModeloER} from "../../src/servicios/modeloER.ts";
 import {Atributo} from "../../src/modelo/atributo.ts";
 import {Relacion} from "../../src/modelo/relacion.ts";
 

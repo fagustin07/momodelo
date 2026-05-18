@@ -12,7 +12,8 @@ function agregarEntidadVisualEn(elementoRaiz: HTMLElement, posicion: Posicion) {
 
     botonAgregarEntidad.click();
 
-    fireEvent.click(elementoRaiz, posicion);
+    const contenedorMER = elementoRaiz.querySelector("#vista-mer") as HTMLElement;
+    fireEvent.click(contenedorMER, posicion);
 
     const entidades = getElementoEntidades();
     const nuevaEntidad = entidades[entidades.length - 1];
@@ -20,7 +21,7 @@ function agregarEntidadVisualEn(elementoRaiz: HTMLElement, posicion: Posicion) {
 }
 
 function getElementoEntidades() {
-    return [...document.querySelectorAll<HTMLElement>(".entidad")];
+    return [...document.getElementById("vista-mer")!.querySelectorAll<HTMLElement>(".entidad")];
 }
 
 function getInputRelaciones(): HTMLInputElement[] {

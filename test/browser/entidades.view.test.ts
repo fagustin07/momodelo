@@ -8,7 +8,7 @@ import "../../src/style.css";
 import {VistaEditorMER} from "../../src/vista/vistaEditorMER.ts";
 
 export function getElementoEntidades() {
-    return [...document.querySelectorAll<HTMLElement>(".entidad")];
+    return [...document.getElementById("vista-mer")!.querySelectorAll<HTMLElement>(".entidad")];
 }
 
 function campoNombreDe(elementoEntidad: HTMLElement) {
@@ -39,10 +39,11 @@ function agregarAtributoEn(elementoEntidad: HTMLElement, nombreAtributoNuevo: st
 
 function realizarGestoParaAgregarEntidadEn(elementoRaiz: HTMLElement, posicion: Posicion) {
     const botonAgregarEntidad = screen.getByRole('button', {name: /\+entidad/i});
+    const contenedorMER = elementoRaiz.querySelector("#vista-mer") as HTMLElement;
 
     botonAgregarEntidad.click();
 
-    fireEvent.click(elementoRaiz, posicion);
+    fireEvent.click(contenedorMER, posicion);
 
     const entidades = getElementoEntidades();
     const nuevaEntidad = entidades[entidades.length - 1];
