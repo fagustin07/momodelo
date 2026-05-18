@@ -5,12 +5,14 @@ import {autocompletion, CompletionContext, CompletionResult} from "@codemirror/a
 import {ModeloER} from "../servicios/modeloER.ts";
 import {AnalizadorSintácticoMR} from "../mr/analizadorSintacticoMR.ts";
 import {ValidadorSemánticoMR} from "../mr/validadorSemanticoMR.ts";
-import {ErrorSintácticoMR, ErroresValidación} from "../servicios/errores.ts";
+import {IntérpreteMR} from "../mr/interpretadorMR.ts";
+import {ErrorPKDuplicada, ErrorSintácticoMR, ErroresValidación} from "../servicios/errores.ts";
 import {createElement} from "./dom/createElement.ts";
 
 export class VistaEditorMR {
     private readonly _elementoRaíz: HTMLElement;
     private readonly _consola: HTMLElement;
+    private readonly _consolaWrapper: HTMLElement;
     private readonly _overlay: HTMLElement;
     private readonly _editorView: EditorView;
     private _modeloER: ModeloER | null = null;
@@ -27,6 +29,7 @@ export class VistaEditorMR {
             createElement("button", {
                 className: "mr-btn-ejecutar",
                 textContent: "▶︎ Ejecutar",
+                title: "Ctrl + Enter",
                 onclick: () => this._ejecutar()
             })
         ]);
@@ -40,7 +43,7 @@ export class VistaEditorMR {
             })
         ]);
 
-        const consolaWrapper = createElement("div", {className: "mr-consola-wrapper"}, [
+        this._consolaWrapper = createElement("div", {className: "mr-consola-wrapper", style: {display: "none"}}, [
             consolaHeader,
             this._consola,
             this._overlay
@@ -49,7 +52,7 @@ export class VistaEditorMR {
         const editorWrapper = createElement("div", {className: "mr-editor-wrapper"}, [
             topbar,
             codemirrorWrapper,
-            consolaWrapper
+            this._consolaWrapper
         ]);
 
         this._elementoRaíz.append(editorWrapper);
@@ -66,7 +69,6 @@ export class VistaEditorMR {
             parent: codemirrorWrapper
         });
 
-        this._mostrarMensajeDefault();
     }
 
     get elementoContenedor(): HTMLElement {
@@ -76,7 +78,7 @@ export class VistaEditorMR {
     setModeloER(modeloER: ModeloER | null): void {
         this._modeloER = modeloER;
         this._limpiarConsola();
-        this._mostrarMensajeDefault();
+        this._consolaWrapper.style.display = "none";
     }
 
     private _ejecutar(): void {
@@ -85,23 +87,22 @@ export class VistaEditorMR {
         requestAnimationFrame(() => setTimeout(() => {
             this._overlay.style.display = "none";
             this._limpiarConsola();
+            this._consolaWrapper.style.display = "";
 
             const input = this._editorView.state.doc.toString();
 
             try {
-                const modeloMR = new AnalizadorSintácticoMR().analizarSintaxisDe(input);
-
-                new ValidadorSemánticoMR().ejecutarsePara(modeloMR, this._modeloER);
-
-                const mensaje = this._modeloER !== null
-                    ? "[OK] Su Modelo Relacional tiene correspondencia con el MER provisto."
-                    : "[OK] Modelo relacional válido.";
-                this._mostrarÉxito(mensaje);
+                const programaMR = new AnalizadorSintácticoMR().analizarSintaxisDe(input);
+                const programaValidado = new ValidadorSemánticoMR().ejecutarsePara(programaMR, this._modeloER);
+                new IntérpreteMR().ejecutar(programaValidado);
+                this._mostrarÉxito("[OK] Ejecutado correctamente. No hay resultados para mostrar.");
             } catch (e) {
                 if (e instanceof ErrorSintácticoMR) {
                     this._mostrarError(e.message);
                 } else if (e instanceof ErroresValidación) {
                     e.errores.forEach(msg => this._mostrarError(msg));
+                } else if (e instanceof ErrorPKDuplicada) {
+                    this._mostrarError(e.message);
                 } else {
                     throw e;
                 }
@@ -134,12 +135,6 @@ export class VistaEditorMR {
 
     private _limpiarConsola(): void {
         this._consola.innerHTML = "";
-    }
-
-    private _mostrarMensajeDefault(): void {
-        this._consola.append(
-            createElement("div", {className: "mr-consola-linea mr-consola-info", textContent: "Presioná Ctrl+Enter (o el botón Ejecutar) para validar el modelo."})
-        );
     }
 
     private _mostrarError(mensaje: string): void {
