@@ -11,6 +11,7 @@ export abstract class SentenciaMR {
     }
 
     abstract validarseCon(relacionesDefinidas: Map<string, RelacionMR>, errores: string[]): void;
+    abstract interpretarseCon(modelo: ModeloRelacionalMaterializado): void;
 }
 
 export class DefiniciónRelación extends SentenciaMR {
@@ -28,6 +29,10 @@ export class DefiniciónRelación extends SentenciaMR {
         }
         relacionesDefinidas.set(this.relacion.nombre.toLowerCase(), this.relacion);
     }
+
+    interpretarseCon(modelo: ModeloRelacionalMaterializado): void {
+        modelo.registrarRelacion(new RelacionMaterializada(this.relacion));
+    }
 }
 
 export class InsertarEn extends SentenciaMR {
@@ -40,6 +45,10 @@ export class InsertarEn extends SentenciaMR {
 
     esInserción(): boolean {
         return true;
+    }
+
+    interpretarseCon(modelo: ModeloRelacionalMaterializado): void {
+        this.filas.forEach(fila => modelo.obtenerRelacion(this.nombreRelacion).insertarFila(fila));
     }
 
     validarseCon(relacionesDefinidas: Map<string, RelacionMR>, errores: string[]): void {
