@@ -74,6 +74,12 @@ export class ErroresValidación extends MomodeloError {
     }
 }
 
+export class ErrorSintácticoAR extends MomodeloError {
+    constructor(mensaje: string) {
+        super(mensaje);
+    }
+}
+
 export class ErrorPKDuplicada extends MomodeloLogicaError {
     constructor(nombreRelacion: string, valoresPK: (string | number | boolean)[]) {
         super(`Clave primaria duplicada en '${nombreRelacion}': (${valoresPK.join(', ')}).`);
