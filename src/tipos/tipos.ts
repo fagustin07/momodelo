@@ -62,3 +62,14 @@ export const SIMBOLOS: Record<string, TipoTokenMR> = {
 };
 
 export type ResultadoReconocimiento = { token: TokenMR | null; longitud: number };
+
+export type TipoTokenAR =
+    | "NOMBRE"
+    | "EOF"
+    | "DESCONOCIDO";
+
+export type TokenAR = {
+    readonly tipo: TipoTokenAR;
+    readonly valor: string;
+    readonly posicion: number;
+};
