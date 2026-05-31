@@ -96,4 +96,41 @@ describe("[Modelo Relacional] Analizador Semántico", () => {
         expect(() => analizador.validar(modelo)).toThrow("Relación 'INEXISTENTE' no definida.");
         expect(() => analizador.validar(modelo)).toThrow("La 1ª inserción en 'pirATA' tiene 2 atributos pero la relación espera 1.");
     });
+
+    it("una relación con un atributo duplicado levanta una excepción semántica", () => {
+        const modelo = programa(
+            definición(relación("EMPLEADO", pk("id"), simple("nombre"), simple("nombre"))),
+        );
+
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
+        expect(() => analizador.validar(modelo)).toThrow("La relación 'EMPLEADO' tiene atributos duplicados: 'nombre'.");
+    });
+
+    it("la detección de atributos duplicados es insensible a mayúsculas y minúsculas", () => {
+        const modelo = programa(
+            definición(relación("EMPLEADO", pk("id"), simple("nombre"), simple("NOMBRE"))),
+        );
+
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
+        expect(() => analizador.validar(modelo)).toThrow("La relación 'EMPLEADO' tiene atributos duplicados: 'NOMBRE'.");
+    });
+
+    it("una relación con múltiples atributos duplicados acumula todos en el mismo error", () => {
+        const modelo = programa(
+            definición(relación("VENTA", pk("id"), simple("fecha"), simple("fecha"), simple("monto"), simple("monto"))),
+        );
+
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
+        expect(() => analizador.validar(modelo)).toThrow("La relación 'VENTA' tiene atributos duplicados: 'fecha', 'monto'.");
+    });
+
+    it("los errores de atributos duplicados y falta de PK se acumulan en una única excepción", () => {
+        const modelo = programa(
+            definición(relación("PIEZA", simple("tipo"), simple("tipo"))),
+        );
+
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
+        expect(() => analizador.validar(modelo)).toThrow("Falta clave primaria en 'PIEZA'.");
+        expect(() => analizador.validar(modelo)).toThrow("La relación 'PIEZA' tiene atributos duplicados: 'tipo'.");
+    });
 });

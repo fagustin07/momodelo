@@ -27,6 +27,12 @@ export class DefiniciónRelación extends SentenciaMR {
         if (this.relacion.clavesPrimarias().isEmpty()) {
             errores.push(`Falta clave primaria en '${this.relacion.nombre}'.`);
         }
+
+        const duplicados = this.relacion.atributosDuplicados();
+        if (!duplicados.isEmpty()) {
+            errores.push(`La relación '${this.relacion.nombre}' tiene atributos duplicados: ${duplicados.map(d => `'${d}'`).join(', ')}.`);
+        }
+
         relacionesDefinidas.set(this.relacion.nombre.toLowerCase(), this.relacion);
     }
 
