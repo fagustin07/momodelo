@@ -36,6 +36,15 @@ export class RelacionMR {
     atributosSimples(): AtributoSimple[] {
         return this.atributos.filter(atr => !atr.esClavePrimaria()) as AtributoSimple[];
     }
+
+    atributosDuplicados(): string[] {
+        return this.atributos
+            .filter((atr, índiceActual) =>
+                this.atributos.slice(0, índiceActual)
+                    .some(prev => prev.nombre.toLowerCase() === atr.nombre.toLowerCase())
+            )
+            .map(atr => atr.nombre);
+    }
 }
 
 export abstract class AtributoMR {

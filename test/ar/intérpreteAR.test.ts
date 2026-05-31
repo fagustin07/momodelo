@@ -1,7 +1,8 @@
 import {describe, expect, it} from "vitest";
 import {IntérpreteAR} from "../../src/ar/intérpreteAR.ts";
 import {NombreDeRelación} from "../../src/ar/modeloSintácticoAR.ts";
-import {ModeloRelacionalMaterializado, RelacionMaterializada} from "../../src/mr/modeloRelacionalMaterializado.ts";
+import {ModeloRelacionalMaterializado} from "../../src/mr/modeloRelacionalMaterializado.ts";
+import {ResultadoConsulta} from "../../src/ar/resultadoConsulta.ts";
 import {MomodeloLogicaError} from "../../src/servicios/errores.ts";
 import {definición, fila, inserción, pk, relación, simple} from "../mr/helpers.ts";
 import {IntérpreteMR} from "../../src/mr/interpretadorMR.ts";
@@ -18,13 +19,13 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
 
     const intérprete = new IntérpreteAR();
 
-    it("un NombreDeRelación retorna la RelacionMaterializada correspondiente", () => {
+    it("un NombreDeRelación retorna un resultado con las tuplas de la relación", () => {
         const modelo = modeloConRelaciones(
             definición(relación("PERSONA", pk("id"), simple("nombre"))),
             inserción("PERSONA", fila(1, "Ana")),
         );
         const resultado = intérprete.ejecutar(new NombreDeRelación("PERSONA"), modelo);
-        expect(resultado).toBeInstanceOf(RelacionMaterializada);
+        expect(resultado).toBeInstanceOf(ResultadoConsulta);
         expect(resultado.nombre).toBe("PERSONA");
         expect(resultado.tuplas).toHaveLength(1);
     });

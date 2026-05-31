@@ -8,7 +8,8 @@ import {ValidadorSemánticoMR} from "../mr/validadorSemanticoMR.ts";
 import {IntérpreteMR} from "../mr/interpretadorMR.ts";
 import {ErrorPKDuplicada, ErrorSintácticoAR, ErrorSintácticoMR, ErroresValidación, MomodeloLogicaError} from "../servicios/errores.ts";
 import {createElement} from "./dom/createElement.ts";
-import {ModeloRelacionalMaterializado, RelacionMaterializada} from "../mr/modeloRelacionalMaterializado.ts";
+import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado.ts";
+import {ResultadoConsulta} from "../ar/resultadoConsulta.ts";
 import {VistaEditorAR} from "./vistaEditorAR.ts";
 
 export class VistaEditorMR {
@@ -156,14 +157,14 @@ export class VistaEditorMR {
         }, 200));
     }
 
-    private _renderizarResultado(relacion: RelacionMaterializada): void {
-        const columnas = relacion.esquema.atributos.map(a => a.nombre);
+    private _renderizarResultado(resultado: ResultadoConsulta): void {
+        const columnas = [...resultado.atributos];
         const thead = createElement("thead", {}, [
             createElement("tr", {}, columnas.map(col => createElement("th", {textContent: col})))
         ]);
-        const tbody = createElement("tbody", {}, relacion.tuplas.map(tupla =>
+        const tbody = createElement("tbody", {}, resultado.tuplas.map(tupla =>
             createElement("tr", {}, columnas.map(col =>
-                createElement("td", {textContent: String(tupla.valor(col))})
+                createElement("td", {textContent: String(tupla[col] ?? "")})
             ))
         ));
         this._consola.append(createElement("table", {className: "mr-tabla-resultado"}, [thead, tbody]));

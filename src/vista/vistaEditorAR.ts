@@ -3,7 +3,8 @@ import {EditorView, keymap} from "@codemirror/view";
 import {Prec} from "@codemirror/state";
 import {parsearConsulta} from "../ar/parserAR.ts";
 import {IntérpreteAR} from "../ar/intérpreteAR.ts";
-import {ModeloRelacionalMaterializado, RelacionMaterializada} from "../mr/modeloRelacionalMaterializado.ts";
+import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado.ts";
+import {ResultadoConsulta} from "../ar/resultadoConsulta.ts";
 import {createElement} from "./dom/createElement.ts";
 
 export class VistaEditorAR {
@@ -63,7 +64,7 @@ export class VistaEditorAR {
         return this._editor.state.doc.toString().trim().length > 0;
     }
 
-    ejecutar(modelo: ModeloRelacionalMaterializado): RelacionMaterializada {
+    ejecutar(modelo: ModeloRelacionalMaterializado): ResultadoConsulta {
         const expresión = parsearConsulta(this._editor.state.doc.toString().trim());
         return new IntérpreteAR().ejecutar(expresión, modelo);
     }

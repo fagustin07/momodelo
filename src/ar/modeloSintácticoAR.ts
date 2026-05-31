@@ -1,7 +1,8 @@
-import {ModeloRelacionalMaterializado, RelacionMaterializada} from "../mr/modeloRelacionalMaterializado.ts";
+import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado.ts";
+import {ResultadoConsulta} from "./resultadoConsulta.ts";
 
 export abstract class ExpresiónAR {
-    abstract interpretarseCon(modelo: ModeloRelacionalMaterializado): RelacionMaterializada;
+    abstract interpretarseCon(modelo: ModeloRelacionalMaterializado): ResultadoConsulta;
 }
 
 export class NombreDeRelación extends ExpresiónAR {
@@ -9,7 +10,11 @@ export class NombreDeRelación extends ExpresiónAR {
         super();
     }
 
-    interpretarseCon(modelo: ModeloRelacionalMaterializado): RelacionMaterializada {
-        return modelo.obtenerRelacion(this.nombre);
+    interpretarseCon(modelo: ModeloRelacionalMaterializado): ResultadoConsulta {
+        const relación = modelo.obtenerRelacion(this.nombre);
+        return new ResultadoConsulta(
+            relación.nombre,
+            relación.esquema.atributos.map(a => a.nombre),
+            relación.tuplas.map(t => t.aRegistro()));
     }
 }

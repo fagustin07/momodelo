@@ -17,6 +17,10 @@ export class Tupla {
         return this._valores[atributo];
     }
 
+    aRegistro(): Record<string, Valor> {
+        return {...this._valores};
+    }
+
     equals(other: Tupla): boolean {
         return Object.keys(this._valores).every(k => this._valores[k] === other._valores[k]);
     }
