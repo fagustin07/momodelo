@@ -42,6 +42,10 @@ export class RelacionMaterializada {
         return this._relacion.nombre;
     }
 
+    get esquema(): RelacionMR {
+        return this._relacion;
+    }
+
     get tuplas(): Tupla[] {
         return this._tuplas;
     }
