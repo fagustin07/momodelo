@@ -9,6 +9,7 @@ import {IntérpreteMR} from "../../src/mr/interpretadorMR.ts";
 import {ValidadorSemánticoMR} from "../../src/mr/validadorSemanticoMR.ts";
 import {programa} from "../mr/helpers.ts";
 import {SentenciaMR} from "../../src/mr/sentenciaMR.ts";
+import {analizarSintácticamente} from "../../src/ar/parserAR.ts";
 
 describe("[Álgebra Relacional] Intérprete AR", () => {
     function modeloConRelaciones(...sentencias: SentenciaMR[]): ModeloRelacionalMaterializado {
@@ -43,5 +44,72 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
         expect(() =>
             intérprete.ejecutar(new NombreDeRelación("INEXISTENTE"), modelo)
         ).toThrow(MomodeloLogicaError);
+    });
+
+    it("una selección retorna solo las tuplas que satisfacen la condición de igualdad", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("CERVEZA", pk("id"), simple("marca"), simple("grad"))),
+            inserción("CERVEZA", fila(1, "Quilmes", 4.9)),
+            inserción("CERVEZA", fila(2, "Stella", 5.2)),
+            inserción("CERVEZA", fila(3, "Quilmes", 5.0)),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("σ<marca='Quilmes'>CERVEZA"), modelo);
+        expect(resultado.tuplas).toHaveLength(2);
+        expect(resultado.tuplas.every(t => t["marca"] === "Quilmes")).toBe(true);
+    });
+
+    it("una selección con condición que no satisface ninguna tupla retorna resultado vacío", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("CERVEZA", pk("id"), simple("marca"))),
+            inserción("CERVEZA", fila(1, "Quilmes")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("σ<marca='Corona'>CERVEZA"), modelo);
+        expect(resultado.tuplas).toHaveLength(0);
+    });
+
+    it("una selección con comparación numérica retorna las tuplas cuyo atributo supera el umbral", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("CERVEZA", pk("id"), simple("marca"), simple("grad"))),
+            inserción("CERVEZA", fila(1, "Baja", 3.5)),
+            inserción("CERVEZA", fila(2, "Media", 4.6)),
+            inserción("CERVEZA", fila(3, "Alta", 6.0)),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("σ<grad>4.6>CERVEZA"), modelo);
+        expect(resultado.tuplas).toHaveLength(1);
+        expect(resultado.tuplas[0]["marca"]).toBe("Alta");
+    });
+
+    it("una selección con condición booleana retorna solo las tuplas con ese valor", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("USUARIO", pk("id"), simple("nombre"), simple("activo"))),
+            inserción("USUARIO", fila(1, "Ana", true)),
+            inserción("USUARIO", fila(2, "Luis", false)),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("σ<activo=TRUE>USUARIO"), modelo);
+        expect(resultado.tuplas).toHaveLength(1);
+        expect(resultado.tuplas[0]["nombre"]).toBe("Ana");
+    });
+
+    it("una selección con conjunción retorna solo las tuplas que satisfacen ambas condiciones", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("CERVEZA", pk("id"), simple("variedad"), simple("grad"))),
+            inserción("CERVEZA", fila(1, "Lager", 4.9)),
+            inserción("CERVEZA", fila(2, "Stout", 5.5)),
+            inserción("CERVEZA", fila(3, "Lager", 3.8)),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("σ<variedad='Lager' ∧ grad>4.0>CERVEZA"), modelo);
+        expect(resultado.tuplas).toHaveLength(1);
+        expect(resultado.tuplas[0]["grad"]).toBe(4.9);
+    });
+
+    it("una selección con disyunción retorna las tuplas que satisfacen al menos una condición", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("CERVEZA", pk("id"), simple("variedad"))),
+            inserción("CERVEZA", fila(1, "Lager")),
+            inserción("CERVEZA", fila(2, "Stout")),
+            inserción("CERVEZA", fila(3, "IPA")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("σ<variedad='Lager' ∨ variedad='Stout'>CERVEZA"), modelo);
+        expect(resultado.tuplas).toHaveLength(2);
     });
 });

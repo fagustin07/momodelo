@@ -14,3 +14,13 @@ export function tokenMapeado(tipo: TipoTokenAR, callback: (tokAR: TokenAR) => Ex
         }
     };
 }
+
+export function elección(reglas: ReglaSintáctica[]): ReglaSintáctica {
+    return (tokens, desde) => {
+        for (const regla of reglas) {
+            const resultado = regla(tokens, desde);
+            if (resultado !== null) return resultado;
+        }
+        return null;
+    };
+}

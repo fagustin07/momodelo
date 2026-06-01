@@ -1,7 +1,7 @@
 import {basicSetup} from "codemirror";
 import {EditorView, keymap} from "@codemirror/view";
 import {Prec} from "@codemirror/state";
-import {parsearConsulta} from "../ar/parserAR.ts";
+import {analizarSintácticamente} from "../ar/parserAR.ts";
 import {IntérpreteAR} from "../ar/intérpreteAR.ts";
 import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado.ts";
 import {ResultadoConsulta} from "../ar/resultadoConsulta.ts";
@@ -65,7 +65,7 @@ export class VistaEditorAR {
     }
 
     ejecutar(modelo: ModeloRelacionalMaterializado): ResultadoConsulta {
-        const expresión = parsearConsulta(this._editor.state.doc.toString().trim());
+        const expresión = analizarSintácticamente(this._editor.state.doc.toString().trim());
         return new IntérpreteAR().ejecutar(expresión, modelo);
     }
 

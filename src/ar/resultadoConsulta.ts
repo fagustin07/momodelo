@@ -14,4 +14,8 @@ export class ResultadoConsulta {
     get tuplas(): ReadonlyArray<Record<string, Valor>> {
         return this._tuplas;
     }
+
+    filtrar(predicado: (t: Record<string, Valor>) => boolean): ResultadoConsulta {
+        return new ResultadoConsulta("", [...this.atributos], this._tuplas.filter(predicado));
+    }
 }
