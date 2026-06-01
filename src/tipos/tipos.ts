@@ -66,7 +66,28 @@ export type ResultadoReconocimiento = { token: TokenMR | null; longitud: number 
 export type TipoTokenAR =
     | "NOMBRE"
     | "EOF"
-    | "DESCONOCIDO";
+    | "DESCONOCIDO"
+    | "SIGMA"
+    | "PI"
+    | "LPAREN"
+    | "RPAREN"
+    | "LANGLE"
+    | "RANGLE"
+    | "COMA"
+    | "OP_COMP"
+    | "AND"
+    | "OR"
+    | "NUMERO"
+    | "CADENA"
+    | "VERDADERO"
+    | "FALSO";
+
+export const PALABRAS_RESERVADAS_AR: Record<string, "VERDADERO" | "FALSO"> = {
+    VERDADERO: "VERDADERO",
+    TRUE: "VERDADERO",
+    FALSO: "FALSO",
+    FALSE: "FALSO",
+};
 
 export type TokenAR = {
     readonly tipo: TipoTokenAR;
