@@ -2,6 +2,7 @@ import {TokenizadorAR} from "./tokenizadorAR.ts";
 import {
     CondiciónAR,
     ComparaciónPrimitiva,
+    CondiciónAtómica,
     Conjunción,
     Disyunción,
     ExpresiónAR,
@@ -9,71 +10,92 @@ import {
     Literal,
     NombreAtributo,
     NombreDeRelación,
+    Operando,
 } from "./modeloSintácticoAR.ts";
-import {elección, ReglaSintáctica, tokenMapeado} from "./combinadores.ts";
+import {elección, ReglaSintáctica, token, mapear, secuencia, seguidoDe} from "./combinadores.ts";
 import {ErrorSintácticoAR} from "../servicios/errores.ts";
-import {TokenAR} from "../tipos/tipos.ts";
 
-type ResultadoCondición = { condición: CondiciónAR; posición: number } | null;
+const operando: ReglaSintáctica<NombreAtributo | Literal> = elección<NombreAtributo | Literal>([
+    mapear(token("NOMBRE"), v => new NombreAtributo(v)),
+    mapear(token("NUMERO"), v => new Literal(Number(v))),
+    mapear(token("CADENA"), v => new Literal(v)),
+    mapear(token("VERDADERO"), () => new Literal(true)),
+    mapear(token("FALSO"), () => new Literal(false))
+]);
 
-function operando(tokens: TokenAR[], desde: number): {
-    operando: NombreAtributo | Literal;
-    posición: number
-} | null {
-    const tok = tokens[desde];
-    if (!tok) return null;
-    if (tok.tipo === "NOMBRE") return {operando: new NombreAtributo(tok.valor), posición: desde + 1};
-    if (tok.tipo === "NUMERO") return {operando: new Literal(Number(tok.valor)), posición: desde + 1};
-    if (tok.tipo === "CADENA") return {operando: new Literal(tok.valor), posición: desde + 1};
-    if (tok.tipo === "VERDADERO") return {operando: new Literal(true), posición: desde + 1};
-    if (tok.tipo === "FALSO") return {operando: new Literal(false), posición: desde + 1};
-    return null;
-}
+const operadorComp: ReglaSintáctica<string> = elección<string>([
+    token("OP_COMP"),
+    token("LANGLE"),
+    token("RANGLE")
+]);
 
-function comparación(tokens: TokenAR[], desde: number): ResultadoCondición {
-    const izq = operando(tokens, desde);
-    if (!izq) return null;
-    const opTok = tokens[izq.posición];
-    const esOp = opTok && (opTok.tipo === "OP_COMP" || opTok.tipo === "LANGLE" || opTok.tipo === "RANGLE");
-    if (!esOp) return null;
-    const der = operando(tokens, izq.posición + 1);
-    if (!der) return null;
-    return {condición: new ComparaciónPrimitiva(izq.operando, opTok.valor, der.operando), posición: der.posición};
-}
+const finDeCondición: ReglaSintáctica<string> = elección<string>([
+    token("RANGLE"),
+    token("AND"),
+    token("OR")
+]);
 
-function condición(tokens: TokenAR[], desde: number): ResultadoCondición {
-    const comp = comparación(tokens, desde);
-    if (!comp) return null;
-    const conector = tokens[comp.posición];
-    if (conector?.tipo === "AND") {
-        const der = condición(tokens, comp.posición + 1);
-        if (!der) return null;
-        return {condición: new Conjunción(comp.condición, der.condición), posición: der.posición};
-    }
-    if (conector?.tipo === "OR") {
-        const der = condición(tokens, comp.posición + 1);
-        if (!der) return null;
-        return {condición: new Disyunción(comp.condición, der.condición), posición: der.posición};
-    }
-    return comp;
-}
+const comparación: ReglaSintáctica<ComparaciónPrimitiva> = (tokens, desde) => {
+    const res = secuencia([
+        operando,
+        operadorComp,
+        operando,
+        seguidoDe(finDeCondición)
+    ])(tokens, desde);
 
-const nombreDeRelación: ReglaSintáctica = tokenMapeado("NOMBRE", t => new NombreDeRelación(t.valor));
+    if (!res) return null;
 
-let expresión: ReglaSintáctica;
-
-const selección: ReglaSintáctica = (tokens, desde) => {
-    if (tokens[desde]?.tipo !== "SIGMA") return null;
-    if (tokens[desde + 1]?.tipo !== "LANGLE") return null;
-    const cond = condición(tokens, desde + 2);
-    if (!cond) return null;
-    if (tokens[cond.posición]?.tipo !== "RANGLE") return null;
-    const subexpr = expresión(tokens, cond.posición + 1);
-    if (!subexpr) return null;
-    return {valor: new ExpresiónSelección(cond.condición, subexpr.valor), posición: subexpr.posición};
+    const [izq, op, der] = res.valor;
+    return {
+        valor: new ComparaciónPrimitiva(izq as Operando, op as string, der as Operando),
+        posición: res.posición
+    };
 };
 
-expresión = elección([selección, nombreDeRelación]);
+const términoCondición: ReglaSintáctica<CondiciónAR> = elección<CondiciónAR>([
+    comparación,
+    mapear(operando, op => new CondiciónAtómica(op))
+]);
+
+const condición: ReglaSintáctica<CondiciónAR> = (tokens, desde) => {
+    return elección<CondiciónAR>([
+        mapear(
+            secuencia([
+                términoCondición,
+                elección<string>([token("AND"), token("OR")]),
+                (toks, d) => condición(toks, d)
+            ]),
+            ([izq, conector, der]) => {
+                if (conector === "∧") {
+                    return new Conjunción(izq, der);
+                } else {
+                    return new Disyunción(izq, der);
+                }
+            }
+        ),
+        términoCondición
+    ])(tokens, desde);
+};
+
+const nombreDeRelación: ReglaSintáctica<NombreDeRelación> = mapear(
+    token("NOMBRE"),
+    v => new NombreDeRelación(v)
+);
+
+let expresión: ReglaSintáctica<ExpresiónAR>;
+
+const selección: ReglaSintáctica<ExpresiónSelección> = mapear(
+    secuencia([
+        token("SIGMA"),
+        token("LANGLE"),
+        condición,
+        token("RANGLE"),
+        (toks, d) => expresión(toks, d)
+    ]),
+    ([_sigma, _langle, cond, _rangle, subexpr]) => new ExpresiónSelección(cond, subexpr)
+);
+
+expresión = elección<ExpresiónAR>([selección, nombreDeRelación]);
 
 export function analizarSintácticamente(texto: string): ExpresiónAR {
     const tokens = new TokenizadorAR().ejecutarseCon(texto);

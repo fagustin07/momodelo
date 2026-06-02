@@ -43,6 +43,14 @@ describe("[Álgebra Relacional] Parser AR", () => {
         expect(analizarSintácticamente("σ<activo=TRUE>Usuario")).toBeInstanceOf(ExpresiónSelección);
     });
 
+    it("una selección con atributo booleano directo es una consulta válida", () => {
+        expect(analizarSintácticamente("σ<activo>Usuario")).toBeInstanceOf(ExpresiónSelección);
+    });
+
+    it("una selección con literal booleano directo es una consulta válida", () => {
+        expect(analizarSintácticamente("σ<TRUE>Usuario")).toBeInstanceOf(ExpresiónSelección);
+    });
+
     it("una selección con condición compuesta por intersección es una consulta válida", () => {
         expect(analizarSintácticamente("σ<variedad='Lager' ∧ grad>4.6>Cerveza")).toBeInstanceOf(ExpresiónSelección);
     });

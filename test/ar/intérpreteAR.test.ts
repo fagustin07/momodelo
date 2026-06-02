@@ -10,8 +10,16 @@ import {ValidadorSemánticoMR} from "../../src/mr/validadorSemanticoMR.ts";
 import {programa} from "../mr/helpers.ts";
 import {SentenciaMR} from "../../src/mr/sentenciaMR.ts";
 import {analizarSintácticamente} from "../../src/ar/parserAR.ts";
+import {AnalizadorSintácticoMR} from "../../src/mr/analizadorSintacticoMR.ts";
 
 describe("[Álgebra Relacional] Intérprete AR", () => {
+    function modeloDesdeMR(textoMR: string): ModeloRelacionalMaterializado {
+        const prog = new AnalizadorSintácticoMR().analizarSintaxisDe(textoMR);
+        return new IntérpreteMR().ejecutar(
+            new ValidadorSemánticoMR().ejecutarsePara(prog, null)
+        );
+    }
+
     function modeloConRelaciones(...sentencias: SentenciaMR[]): ModeloRelacionalMaterializado {
         return new IntérpreteMR().ejecutar(
             new ValidadorSemánticoMR().ejecutarsePara(programa(...sentencias), null)
@@ -110,6 +118,35 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
             inserción("CERVEZA", fila(3, "IPA")),
         );
         const resultado = intérprete.ejecutar(analizarSintácticamente("σ<variedad='Lager' ∨ variedad='Stout'>CERVEZA"), modelo);
+        expect(resultado.tuplas).toHaveLength(2);
+    });
+
+    it("una selección con atributo booleano directo retorna las tuplas donde es verdadero", () => {
+        const modelo = modeloDesdeMR(`
+            USUARIO < id(pk), nombre, activo >
+            insertar en USUARIO <
+                (1, 'Ana', veRDadero),
+                (2, 'Luis', falso),
+                (3, 'Pedro', TRUE),
+                (4, 'Marta', true)
+            >
+        `);
+        const resultado = intérprete.ejecutar(analizarSintácticamente("σ<activo>USUARIO"), modelo);
+        expect(resultado.tuplas).toHaveLength(3);
+        const nombres = resultado.tuplas.map(t => t["nombre"]);
+        expect(nombres).toContain("Ana");
+        expect(nombres).toContain("Pedro");
+        expect(nombres).toContain("Marta");
+        expect(nombres).not.toContain("Luis");
+    });
+
+    it("una selección con literal booleano directo retorna todas las tuplas que satisfacen la condición", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("USUARIO", pk("id"), simple("nombre"))),
+            inserción("USUARIO", fila(1, "Ana")),
+            inserción("USUARIO", fila(2, "Luis")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("σ<verdadero>USUARIO"), modelo);
         expect(resultado.tuplas).toHaveLength(2);
     });
 });

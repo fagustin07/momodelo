@@ -60,6 +60,18 @@ export class ComparaciónPrimitiva extends CondiciónAR {
     }
 }
 
+export class CondiciónAtómica extends CondiciónAR {
+    constructor(readonly operando: Operando) { super(); }
+    evaluarCon(tupla: Record<string, Valor>): boolean {
+        const val = this.operando.resolverCon(tupla);
+        if (typeof val === "boolean") {
+            return val;
+        }
+
+        return false;
+    }
+}
+
 export class Conjunción extends CondiciónAR {
     constructor(readonly izq: CondiciónAR, readonly der: CondiciónAR) { super(); }
     evaluarCon(tupla: Record<string, Valor>): boolean {
