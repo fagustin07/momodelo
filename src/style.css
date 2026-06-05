@@ -102,13 +102,54 @@ body {
 
 .mr-editor-panel-label {
   padding: 3px 14px;
-  font: 600 10px sans-serif;
+  font: 600 12px sans-serif;
   color: #9ca3af;
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
   text-transform: uppercase;
   letter-spacing: .05em;
   flex-shrink: 0;
+}
+
+.mr-ar-toolbar {
+  display: flex;
+  gap: 2%;
+  padding: 1%;
+  background: #f3f4f6;
+  border-bottom: 5px double #e5e7eb;
+  justify-content: center;
+}
+
+.mr-ar-toolbar-btn {
+  padding: 1.5% 2.5%;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font: 600 1rem sans-serif;
+  cursor: pointer;
+  color: #374151;
+  position: relative;
+
+  &:hover {
+    background: #f9fafb;
+  }
+
+  &:active {
+    background: #e5e7eb;
+  }
+}
+
+.mr-ar-toolbar-num {
+  position: absolute;
+  top: 8%;
+  right: 10%;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+.mr-codemirror-wrapper .cm-editor {
+  font-size: 1rem;
 }
 
 .mr-consola-wrapper {

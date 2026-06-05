@@ -82,8 +82,17 @@ export class VistaEditorMR {
             run: () => { this._ejecutar(); return true; }
         }]));
 
+        const tabConEspacios = Prec.highest(keymap.of([{
+            key: "Tab",
+            run: (view) => {
+                view.dispatch(view.state.replaceSelection("   "));
+                return true;
+            }
+        }]));
+
         this._editorMR = new EditorView({
             extensions: [
+                tabConEspacios,
                 basicSetup,
                 autocompletion({override: [ctx => this._completar(ctx)]}),
                 ejecutarKeymap

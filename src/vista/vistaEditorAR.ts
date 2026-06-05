@@ -28,8 +28,16 @@ export class VistaEditorAR {
 
         this._divisor = createElement("div", {className: "mr-editores-divisor", style: {display: "none"}});
 
+        const barraHerramientas = createElement("div", {className: "mr-ar-toolbar"}, [
+            createElement("button", {className: "mr-ar-toolbar-btn", title: "Selección (Ctrl+Shift+1)", onclick: () => this._insertarSímbolo("σ")}, ["σ", createElement("span", {className: "mr-ar-toolbar-num", textContent: "1"})]),
+            createElement("button", {className: "mr-ar-toolbar-btn", title: "Proyección (Ctrl+Shift+2)", onclick: () => this._insertarSímbolo("π")}, ["π", createElement("span", {className: "mr-ar-toolbar-num", textContent: "2"})]),
+            createElement("button", {className: "mr-ar-toolbar-btn", title: "Conjunción (Ctrl+Shift+3)", onclick: () => this._insertarSímbolo("∧")}, ["∧", createElement("span", {className: "mr-ar-toolbar-num", textContent: "3"})]),
+            createElement("button", {className: "mr-ar-toolbar-btn", title: "Disyunción (Ctrl+Shift+4)", onclick: () => this._insertarSímbolo("∨")}, ["∨", createElement("span", {className: "mr-ar-toolbar-num", textContent: "4"})]),
+        ]);
+
         this._panel = createElement("div", {className: "mr-editor-panel", style: {display: "none"}}, [
             createElement("div", {className: "mr-editor-panel-label", textContent: "Álgebra Relacional"}),
+            barraHerramientas,
             wrapper
         ]);
 
@@ -38,8 +46,23 @@ export class VistaEditorAR {
             run: () => { alEjecutar(); return true; }
         }]));
 
+        const atajosParaSímbolos = Prec.highest(keymap.of([
+            { key: "Ctrl-Shift-1", run: () => { this._insertarSímbolo("σ"); return true; } },
+            { key: "Ctrl-Shift-2", run: () => { this._insertarSímbolo("π"); return true; } },
+            { key: "Ctrl-Shift-3", run: () => { this._insertarSímbolo("∧"); return true; } },
+            { key: "Ctrl-Shift-4", run: () => { this._insertarSímbolo("∨"); return true; } },
+        ]));
+
+        const tabConEspacios = Prec.highest(keymap.of([{
+            key: "Tab",
+            run: (view) => {
+                view.dispatch(view.state.replaceSelection("   "));
+                return true;
+            }
+        }]));
+
         this._editor = new EditorView({
-            extensions: [basicSetup, ejecutarKeymap],
+            extensions: [atajosParaSímbolos, tabConEspacios, basicSetup, ejecutarKeymap],
             parent: wrapper
         });
     }
@@ -75,5 +98,14 @@ export class VistaEditorAR {
         this._divisor.style.display = this._activo ? "" : "none";
         this._elementoSwitcher.classList.toggle("mr-toggle-ar--activo", this._activo);
         this.cuandoCambie?.(this._activo);
+    }
+
+    private _insertarSímbolo(símbolo: string): void {
+        const selección = this._editor.state.selection.main;
+        this._editor.dispatch({
+            changes: { from: selección.from, to: selección.to, insert: símbolo },
+            selection: { anchor: selección.from + símbolo.length }
+        });
+        this._editor.focus();
     }
 }
