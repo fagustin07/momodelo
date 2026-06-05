@@ -149,4 +149,20 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
         const resultado = intérprete.ejecutar(analizarSintácticamente("σ<verdadero>USUARIO"), modelo);
         expect(resultado.tuplas).toHaveLength(2);
     });
+
+    it("una selección con condiciones compuestas filtra correctamente las tuplas", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("CLIENTE", pk("id"), simple("edad"), simple("ciudad"), simple("apellido"))),
+            inserción("CLIENTE", fila(1, 30, "Buenos Aires", "Pérez")),
+            inserción("CLIENTE", fila(2, 18, "Córdoba", "Gómez")),
+            inserción("CLIENTE", fila(3, 60, "Rosario", "López")),
+            inserción("CLIENTE", fila(4, 40, "Mendoza", "Sanchez")),
+            inserción("CLIENTE", fila(5, 22, "Salta", "Sanchez")),
+        );
+        const resultado = intérprete.ejecutar(
+            analizarSintácticamente("σ<(edad>23 ∧ ciudad='Buenos Aires') ∨ edad>50 ∨ apellido='Sanchez'>CLIENTE"),
+            modelo,
+        );
+        expect(resultado.tuplas).toHaveLength(4);
+    });
 });

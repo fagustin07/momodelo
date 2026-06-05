@@ -12,7 +12,7 @@ import {
     NombreDeRelación,
     Operando,
 } from "./modeloSintácticoAR.ts";
-import {elección, ReglaSintáctica, token, mapear, secuencia, seguidoDe} from "./combinadores.ts";
+import {elección, encadenar, ReglaSintáctica, token, mapear, secuencia, seguidoDe} from "./combinadores.ts";
 import {ErrorSintácticoAR} from "../servicios/errores.ts";
 
 const operando: ReglaSintáctica<NombreAtributo | Literal> = elección<NombreAtributo | Literal>([
@@ -30,6 +30,7 @@ const operadorComp: ReglaSintáctica<string> = elección<string>([
 ]);
 
 const finDeCondición: ReglaSintáctica<string> = elección<string>([
+    token("RPAREN"),
     token("RANGLE"),
     token("AND"),
     token("OR")
@@ -52,30 +53,28 @@ const comparación: ReglaSintáctica<ComparaciónPrimitiva> = (tokens, desde) =>
     };
 };
 
+let condición: ReglaSintáctica<CondiciónAR>;
+
+const condiciónAgrupada: ReglaSintáctica<CondiciónAR> = mapear(
+    secuencia([
+        token("LPAREN"),
+        (toks, d) => condición(toks, d),
+        token("RPAREN"),
+    ]),
+    ([_lp, cond, _rp]) => cond,
+);
+
 const términoCondición: ReglaSintáctica<CondiciónAR> = elección<CondiciónAR>([
+    condiciónAgrupada,
     comparación,
     mapear(operando, op => new CondiciónAtómica(op))
 ]);
 
-const condición: ReglaSintáctica<CondiciónAR> = (tokens, desde) => {
-    return elección<CondiciónAR>([
-        mapear(
-            secuencia([
-                términoCondición,
-                elección<string>([token("AND"), token("OR")]),
-                (toks, d) => condición(toks, d)
-            ]),
-            ([izq, conector, der]) => {
-                if (conector === "∧") {
-                    return new Conjunción(izq, der);
-                } else {
-                    return new Disyunción(izq, der);
-                }
-            }
-        ),
-        términoCondición
-    ])(tokens, desde);
-};
+condición = encadenar<CondiciónAR, string>(
+    términoCondición,
+    elección<string>([token("AND"), token("OR")]),
+    (izq, op, der) => op === "∧" ? new Conjunción(izq, der) : new Disyunción(izq, der),
+);
 
 const nombreDeRelación: ReglaSintáctica<NombreDeRelación> = mapear(
     token("NOMBRE"),
@@ -88,7 +87,7 @@ const selección: ReglaSintáctica<ExpresiónSelección> = mapear(
     secuencia([
         token("SIGMA"),
         token("LANGLE"),
-        condición,
+        (toks, d) => condición(toks, d),
         token("RANGLE"),
         (toks, d) => expresión(toks, d)
     ]),

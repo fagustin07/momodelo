@@ -7,7 +7,7 @@ export function token(tipo: TipoTokenAR): ReglaSintáctica<string> {
     return (tokens, desde) => {
         const tok = tokens[desde];
         if (tok && tok.tipo === tipo) {
-            return { valor: tok.valor, posición: desde + 1 };
+            return {valor: tok.valor, posición: desde + 1};
         }
         return null;
     };
@@ -17,7 +17,7 @@ export function mapear<T, R>(regla: ReglaSintáctica<T>, transformar: (valor: T)
     return (tokens, desde) => {
         const resultado = regla(tokens, desde);
         if (!resultado) return null;
-        return { valor: transformar(resultado.valor), posición: resultado.posición };
+        return {valor: transformar(resultado.valor), posición: resultado.posición};
     };
 }
 
@@ -31,7 +31,7 @@ export function secuencia<T extends any[]>(reglas: { [K in keyof T]: ReglaSintá
             valores.push(res.valor);
             posicionActual = res.posición;
         }
-        return { valor: valores as T, posición: posicionActual };
+        return {valor: valores as T, posición: posicionActual};
     };
 }
 
@@ -49,8 +49,23 @@ export function seguidoDe(regla: ReglaSintáctica<any>): ReglaSintáctica<null> 
     return (tokens, desde) => {
         const res = regla(tokens, desde);
         if (res !== null) {
-            return { valor: null, posición: desde };
+            return {valor: null, posición: desde};
         }
         return null;
+    };
+}
+
+export function encadenar<T, S>(término: ReglaSintáctica<T>, separador: ReglaSintáctica<S>, combinar: (izq: T, sep: S, der: T) => T): ReglaSintáctica<T> {
+    const restoDeCadena = (tokens: TokenAR[], desde: number, acumulado: T): ResultadoSintáctico<T> => {
+        const sep = separador(tokens, desde);
+        if (sep === null) return {valor: acumulado, posición: desde};
+        const sig = término(tokens, sep.posición);
+        if (sig === null) return {valor: acumulado, posición: desde};
+        return restoDeCadena(tokens, sig.posición, combinar(acumulado, sep.valor, sig.valor));
+    };
+    return (tokens, desde) => {
+        const primero = término(tokens, desde);
+        if (primero === null) return null;
+        return restoDeCadena(tokens, primero.posición, primero.valor);
     };
 }

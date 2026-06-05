@@ -147,4 +147,79 @@ describe("[Álgebra Relacional] Parser AR", () => {
             "σ: se esperaba '<condición>expresión'.",
         );
     });
+
+    it("la condición de una selección puede escribirse entre paréntesis", () => {
+        esperarAnálisisSintácticoAR("σ<(edad>23)>CLIENTE", {
+            condición: {
+                izq: {nombre: "edad"},
+                op: ">",
+                der: {valor: 23},
+            },
+            subexpr: {nombre: "CLIENTE"},
+        });
+    });
+
+    it("se pueden reconocer conjunciones en una condición de selección", () => {
+        esperarAnálisisSintácticoAR("σ<(a=1 ∧ b=2)>CLIENTE", {
+            condición: {
+                izq: {izq: {nombre: "a"}, op: "=", der: {valor: 1}},
+                der: {izq: {nombre: "b"}, op: "=", der: {valor: 2}},
+            },
+            subexpr: {nombre: "CLIENTE"},
+        });
+    });
+
+    it("una condición con paréntesis al inicio y disyunciones subsiguientes asocia a izquierda", () => {
+        esperarAnálisisSintácticoAR(
+            "σ<(edad>23 ∧ ciudad='Buenos Aires') ∨ edad>50 ∨ apellido='Sanchez'>CLIENTE",
+            {
+                condición: {
+                    izq: {
+                        izq: {
+                            izq: {izq: {nombre: "edad"}, op: ">", der: {valor: 23}},
+                            der: {izq: {nombre: "ciudad"}, op: "=", der: {valor: "Buenos Aires"}},
+                        },
+                        der: {izq: {nombre: "edad"}, op: ">", der: {valor: 50}},
+                    },
+                    der: {izq: {nombre: "apellido"}, op: "=", der: {valor: "Sanchez"}},
+                },
+                subexpr: {nombre: "CLIENTE"},
+            },
+        );
+    });
+
+    it("se puede combinar una disyunción entre conjunciones con paréntesis", () => {
+        esperarAnálisisSintácticoAR(
+            "σ<edad>23 ∧ (ciudad='Buenos Aires' ∨ edad>50) ∧ apellido='Sanchez'>CLIENTE",
+            {
+                condición: {
+                    izq: {
+                        izq: {izq: {nombre: "edad"}, op: ">", der: {valor: 23}},
+                        der: {
+                            izq: {izq: {nombre: "ciudad"}, op: "=", der: {valor: "Buenos Aires"}},
+                            der: {izq: {nombre: "edad"}, op: ">", der: {valor: 50}},
+                        },
+                    },
+                    der: {izq: {nombre: "apellido"}, op: "=", der: {valor: "Sanchez"}},
+                },
+                subexpr: {nombre: "CLIENTE"},
+            },
+        );
+    });
+
+    it("se pueden generar condiciones complejas", () => {
+        esperarAnálisisSintácticoAR("σ<(a=1 ∨ b=2) ∧ (c=3 ∨ d=4)>CLIENTE", {
+            condición: {
+                izq: {
+                    izq: {izq: {nombre: "a"}, op: "=", der: {valor: 1}},
+                    der: {izq: {nombre: "b"}, op: "=", der: {valor: 2}},
+                },
+                der: {
+                    izq: {izq: {nombre: "c"}, op: "=", der: {valor: 3}},
+                    der: {izq: {nombre: "d"}, op: "=", der: {valor: 4}},
+                },
+            },
+            subexpr: {nombre: "CLIENTE"},
+        });
+    });
 });
