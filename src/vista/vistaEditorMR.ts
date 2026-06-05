@@ -46,9 +46,9 @@ export class VistaEditorMR {
         const consolaHeader = createElement("div", {className: "mr-consola-header"}, [
             createElement("span", {className: "mr-consola-header-titulo", textContent: "RESULTADO"}),
             createElement("button", {
-                className: "mr-consola-btn-limpiar",
-                textContent: "Limpiar",
-                onclick: () => this._limpiarConsola()
+                className: "mr-consola-btn-cerrar",
+                textContent: "X",
+                onclick: () => { this._consolaWrapper.style.display = "none"; }
             })
         ]);
 

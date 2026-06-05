@@ -196,7 +196,7 @@ body {
 }
 
 .mr-topbar-titulo {
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 600;
 }
 
@@ -209,7 +209,7 @@ body {
 }
 
 .mr-toggle-ar-label {
-  font-size: 12px;
+  font-size: 14px;
   color: #6b7280;
   transition: color 0.15s;
 }
@@ -254,7 +254,7 @@ body {
   color: #fff;
   border: none;
   border-radius: 5px;
-  font: 600 12px sans-serif;
+  font: 600 1rem sans-serif;
   cursor: pointer;
 
   &:hover {
@@ -286,22 +286,22 @@ body {
 
 .mr-consola-header-titulo {
   font-weight: 600;
-  font-size: 11px;
+  font-size: 14px;
   color: #6b7280;
 }
 
-.mr-consola-btn-limpiar {
-  padding: 2px 8px;
+.mr-consola-btn-cerrar {
+  padding: 2px 6px;
   background: transparent;
-  border: 1px solid #d1d5db;
+  border: none;
   border-radius: 3px;
   color: #9ca3af;
-  font: 11px sans-serif;
+  font: 14px sans-serif;
   cursor: pointer;
 
   &:hover {
-    border-color: #9ca3af;
-    color: #6b7280;
+    background: #e5e7eb;
+    color: #374151;
   }
 }
 
@@ -311,7 +311,7 @@ body {
   background: #fff;
   padding: 10px 14px 48px;
   border-top: 1px solid #d1d5db;
-  font: 12px/1.5 monospace;
+  font: 14px/1.5 monospace;
 
   .mr-consola-info {
     color: #6b7280;
