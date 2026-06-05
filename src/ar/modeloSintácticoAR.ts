@@ -23,11 +23,13 @@ export class NombreDeRelación extends ExpresiónAR {
 
 export abstract class Operando {
     abstract resolverCon(tupla: Record<string, Valor>): Valor;
+    nombresDeAtributos(): string[] { return []; }
 }
 
 export class NombreAtributo extends Operando {
     constructor(readonly nombre: string) { super(); }
     resolverCon(tupla: Record<string, Valor>): Valor { return tupla[this.nombre]; }
+    nombresDeAtributos(): string[] { return [this.nombre]; }
 }
 
 export class Literal extends Operando {
@@ -37,6 +39,7 @@ export class Literal extends Operando {
 
 export abstract class CondiciónAR {
     abstract evaluarCon(tupla: Record<string, Valor>): boolean;
+    abstract atributos(): string[];
 }
 
 export class ComparaciónPrimitiva extends CondiciónAR {
@@ -59,6 +62,10 @@ export class ComparaciónPrimitiva extends CondiciónAR {
             default:   return false;
         }
     }
+
+    atributos(): string[] {
+        return [...this.izq.nombresDeAtributos(), ...this.der.nombresDeAtributos()];
+    }
 }
 
 export class CondiciónAtómica extends CondiciónAR {
@@ -71,12 +78,18 @@ export class CondiciónAtómica extends CondiciónAR {
 
         return false;
     }
+    atributos(): string[] {
+        return this.operando.nombresDeAtributos();
+    }
 }
 
 export class Conjunción extends CondiciónAR {
     constructor(readonly izq: CondiciónAR, readonly der: CondiciónAR) { super(); }
     evaluarCon(tupla: Record<string, Valor>): boolean {
         return this.izq.evaluarCon(tupla) && this.der.evaluarCon(tupla);
+    }
+    atributos(): string[] {
+        return [...this.izq.atributos(), ...this.der.atributos()];
     }
 }
 
@@ -85,12 +98,25 @@ export class Disyunción extends CondiciónAR {
     evaluarCon(tupla: Record<string, Valor>): boolean {
         return this.izq.evaluarCon(tupla) || this.der.evaluarCon(tupla);
     }
+    atributos(): string[] {
+        return [...this.izq.atributos(), ...this.der.atributos()];
+    }
 }
 
 export class ExpresiónSelección extends ExpresiónAR {
     constructor(readonly condición: CondiciónAR, readonly subexpr: ExpresiónAR) { super(); }
     interpretarseCon(modelo: ModeloRelacionalMaterializado): ResultadoConsulta {
-        return this.subexpr.interpretarseCon(modelo).filtrar(t => this.condición.evaluarCon(t));
+        const resultado = this.subexpr.interpretarseCon(modelo);
+
+        this.condición.atributos().forEach(attr => {
+            if (!resultado.atributos.includes(attr)) {
+                throw new ErrorSemánticoAR(
+                    `El atributo '${attr}' no existe en la relación.`,
+                );
+            }
+        });
+
+        return resultado.filtrar(t => this.condición.evaluarCon(t));
     }
 }
 

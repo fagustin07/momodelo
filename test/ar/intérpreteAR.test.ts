@@ -229,4 +229,14 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
             {nombre: "Luis", edad: 20},
         ]);
     });
+
+    it("una selección sobre una proyección que no incluye el atributo referenciado lanza error", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("PERSONA", pk("id"), simple("nombre"), simple("edad"))),
+            inserción("PERSONA", fila(1, "Ana", 30)),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("σ<edad>25>π<nombre>PERSONA"), modelo)
+        ).toThrow("El atributo 'edad' no existe en la relación");
+    });
 });
