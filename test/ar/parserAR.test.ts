@@ -222,4 +222,51 @@ describe("[Álgebra Relacional] Parser AR", () => {
             subexpr: {nombre: "CLIENTE"},
         });
     });
+
+    it("se puede reconocer una proyección", () => {
+        esperarAnálisisSintácticoAR("π<nombre>PERSONA", {
+            atributos: ["nombre"],
+            subexpr: {nombre: "PERSONA"},
+        });
+    });
+
+    it("se puede reconocer una proyección con múltiples atributos", () => {
+        esperarAnálisisSintácticoAR("π<nombre,edad,ciudad>PERSONA", {
+            atributos: ["nombre", "edad", "ciudad"],
+            subexpr: {nombre: "PERSONA"},
+        });
+    });
+
+    it("se reconocen selecciones y proyecciones combinadas en una consulta", () => {
+        esperarAnálisisSintácticoAR("π<nombre>σ<edad>30>PERSONA", {
+            atributos: ["nombre"],
+            subexpr: {
+                condición: {izq: {nombre: "edad"}, op: ">", der: {valor: 30}},
+                subexpr: {nombre: "PERSONA"},
+            },
+        });
+    });
+
+    it("una proyección malformada levanta una excepción", () => {
+        esperarErrorSintácticoAR("π<PERSONA", "π: se esperaba '<listaDeAtributos>expresión'.");
+    });
+
+    it("una proyección sin cierre levanta una excepción", () => {
+        esperarErrorSintácticoAR("π<nombre PERSONA", "π: se esperaba '<listaDeAtributos>expresión'.");
+    });
+
+    it("una expresión entre paréntesis parsea correctamente", () => {
+        esperarAnálisisSintácticoAR("(CLIENTE)", {nombre: "CLIENTE"});
+    });
+
+    it("se reconocen expresiones entre paréntesis", () => {
+        esperarAnálisisSintácticoAR("( CLIENTE )", {nombre: "CLIENTE"});
+    });
+
+    it("se reconoce una selección aplicada a una expresión entre paréntesis", () => {
+        esperarAnálisisSintácticoAR("σ<edad>30>(CLIENTE)", {
+            condición: {izq: {nombre: "edad"}, op: ">", der: {valor: 30}},
+            subexpr: {nombre: "CLIENTE"},
+        });
+    });
 });

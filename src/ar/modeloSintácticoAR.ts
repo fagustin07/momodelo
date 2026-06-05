@@ -1,6 +1,7 @@
 import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado.ts";
 import {ResultadoConsulta} from "./resultadoConsulta.ts";
 import {Valor} from "../mr/modeloSintacticoMR.ts";
+import {ErrorSemánticoAR} from "../servicios/errores.ts";
 
 export abstract class ExpresiónAR {
     abstract interpretarseCon(modelo: ModeloRelacionalMaterializado): ResultadoConsulta;
@@ -90,5 +91,30 @@ export class ExpresiónSelección extends ExpresiónAR {
     constructor(readonly condición: CondiciónAR, readonly subexpr: ExpresiónAR) { super(); }
     interpretarseCon(modelo: ModeloRelacionalMaterializado): ResultadoConsulta {
         return this.subexpr.interpretarseCon(modelo).filtrar(t => this.condición.evaluarCon(t));
+    }
+}
+
+export class ExpresiónProyección extends ExpresiónAR {
+    constructor(readonly atributos: string[], readonly subexpr: ExpresiónAR) { super(); }
+    interpretarseCon(modelo: ModeloRelacionalMaterializado): ResultadoConsulta {
+        const resultado = this.subexpr.interpretarseCon(modelo);
+
+        this.atributos.forEach(attr => {
+            if (!resultado.atributos.includes(attr)) {
+                throw new ErrorSemánticoAR(
+                    `El atributo '${attr}' no existe en la relación.`,
+                );
+            }
+        });
+
+        const tuplasProyectadas = resultado.tuplas.map(tupla => {
+            const proyectada: Record<string, Valor> = {};
+            this.atributos.forEach(attr => {
+                proyectada[attr] = tupla[attr];
+            });
+            return proyectada;
+        });
+
+        return new ResultadoConsulta("", [...this.atributos], tuplasProyectadas);
     }
 }

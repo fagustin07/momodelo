@@ -6,9 +6,16 @@ export class ResultadoConsulta {
     private readonly _tuplas: ReadonlyArray<Record<string, Valor>>;
 
     constructor(nombre: string, atributos: string[], tuplas: Array<Record<string, Valor>>) {
+        const visto = new Set<string>();
+        const tuplasSinRepetidos = tuplas.filter(t => {
+            const clave = JSON.stringify(atributos.map(a => t[a]));
+            if (visto.has(clave)) return false;
+            visto.add(clave);
+            return true;
+        });
         this.nombre = nombre;
         this.atributos = atributos;
-        this._tuplas = tuplas;
+        this._tuplas = tuplasSinRepetidos;
     }
 
     get tuplas(): ReadonlyArray<Record<string, Valor>> {

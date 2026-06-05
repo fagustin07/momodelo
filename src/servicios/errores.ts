@@ -85,3 +85,9 @@ export class ErrorPKDuplicada extends MomodeloLogicaError {
         super(`Clave primaria duplicada en '${nombreRelacion}': (${valoresPK.join(', ')}).`);
     }
 }
+
+export class ErrorSemánticoAR extends MomodeloLogicaError {
+    constructor(mensaje: string) {
+        super(mensaje);
+    }
+}

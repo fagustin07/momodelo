@@ -1,5 +1,5 @@
 import {Fila, RelacionMR, Valor} from "./modeloSintacticoMR.ts";
-import {ErrorPKDuplicada, MomodeloLogicaError} from "../servicios/errores.ts";
+import {ErrorPKDuplicada, ErrorSemánticoAR} from "../servicios/errores.ts";
 
 export class Tupla {
     private readonly _valores: Record<string, Valor>;
@@ -77,7 +77,7 @@ export class ModeloRelacionalMaterializado {
     obtenerRelacion(nombre: string): RelacionMaterializada {
         const relacion = this._relaciones.get(nombre.toLowerCase());
         if (relacion === undefined)
-            throw new MomodeloLogicaError(`La relación '${nombre}' no existe en el modelo.`);
+            throw new ErrorSemánticoAR(`La relación '${nombre}' no existe en el modelo.`);
         return relacion;
     }
 

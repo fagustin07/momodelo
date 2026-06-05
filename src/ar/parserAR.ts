@@ -6,6 +6,7 @@ import {
     Conjunción,
     Disyunción,
     ExpresiónAR,
+    ExpresiónProyección,
     ExpresiónSelección,
     Literal,
     NombreAtributo,
@@ -83,6 +84,37 @@ const nombreDeRelación: ReglaSintáctica<NombreDeRelación> = mapear(
 
 let expresión: ReglaSintáctica<ExpresiónAR>;
 
+const expresiónAgrupada: ReglaSintáctica<ExpresiónAR> = mapear(
+    secuencia([
+        token("LPAREN"),
+        (toks, d) => expresión(toks, d),
+        token("RPAREN"),
+    ]),
+    ([_lp, expr, _rp]) => expr,
+);
+
+const expresiónAtómica: ReglaSintáctica<ExpresiónAR> = elección<ExpresiónAR>([
+    expresiónAgrupada,
+    nombreDeRelación,
+]);
+
+const listaDeAtributos: ReglaSintáctica<string[]> = encadenar<string[], null>(
+    mapear(token("NOMBRE"), v => [v]),
+    mapear(token("COMA"), () => null),
+    (acum, _sep, der) => [...acum, ...der],
+);
+
+const proyección: ReglaSintáctica<ExpresiónProyección> = mapear(
+    secuencia([
+        token("PI"),
+        token("LANGLE"),
+        listaDeAtributos,
+        token("RANGLE"),
+        (toks, d) => expresión(toks, d),
+    ]),
+    ([_pi, _langle, attrs, _rangle, subexpr]) => new ExpresiónProyección(attrs, subexpr),
+);
+
 const selección: ReglaSintáctica<ExpresiónSelección> = mapear(
     secuencia([
         token("SIGMA"),
@@ -94,7 +126,13 @@ const selección: ReglaSintáctica<ExpresiónSelección> = mapear(
     ([_sigma, _langle, cond, _rangle, subexpr]) => new ExpresiónSelección(cond, subexpr)
 );
 
-expresión = elección<ExpresiónAR>([selección, nombreDeRelación]);
+const términoExpresión: ReglaSintáctica<ExpresiónAR> = elección<ExpresiónAR>([
+    selección,
+    proyección,
+    expresiónAtómica,
+]);
+
+expresión = términoExpresión;
 
 export function analizarSintácticamente(texto: string): ExpresiónAR {
     const tokens = new TokenizadorAR().ejecutarseCon(texto);
@@ -107,6 +145,9 @@ export function analizarSintácticamente(texto: string): ExpresiónAR {
         }
         if (primero.tipo === "SIGMA") {
             throw new ErrorSintácticoAR("σ: se esperaba '<condición>expresión'.");
+        }
+        if (primero.tipo === "PI") {
+            throw new ErrorSintácticoAR("π: se esperaba '<listaDeAtributos>expresión'.");
         }
         throw new ErrorSintácticoAR(`Se esperaba una expresión pero se encontró '${primero.valor}'.`);
     }

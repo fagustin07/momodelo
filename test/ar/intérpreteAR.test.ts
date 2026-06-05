@@ -3,14 +3,14 @@ import {IntérpreteAR} from "../../src/ar/intérpreteAR.ts";
 import {NombreDeRelación} from "../../src/ar/modeloSintácticoAR.ts";
 import {ModeloRelacionalMaterializado} from "../../src/mr/modeloRelacionalMaterializado.ts";
 import {ResultadoConsulta} from "../../src/ar/resultadoConsulta.ts";
-import {MomodeloLogicaError} from "../../src/servicios/errores.ts";
-import {definición, fila, inserción, pk, relación, simple} from "../mr/helpers.ts";
+import {ErrorSemánticoAR} from "../../src/servicios/errores.ts";
+import {definición, fila, inserción, pk, programa, relación, simple} from "../mr/helpers.ts";
 import {IntérpreteMR} from "../../src/mr/interpretadorMR.ts";
 import {ValidadorSemánticoMR} from "../../src/mr/validadorSemanticoMR.ts";
-import {programa} from "../mr/helpers.ts";
 import {SentenciaMR} from "../../src/mr/sentenciaMR.ts";
 import {analizarSintácticamente} from "../../src/ar/parserAR.ts";
 import {AnalizadorSintácticoMR} from "../../src/mr/analizadorSintacticoMR.ts";
+import {esperarResultadoConsulta} from "./helpers.ts";
 
 describe("[Álgebra Relacional] Intérprete AR", () => {
     function modeloDesdeMR(textoMR: string): ModeloRelacionalMaterializado {
@@ -51,7 +51,7 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
         const modelo = new ModeloRelacionalMaterializado();
         expect(() =>
             intérprete.ejecutar(new NombreDeRelación("INEXISTENTE"), modelo)
-        ).toThrow(MomodeloLogicaError);
+        ).toThrow(ErrorSemánticoAR);
     });
 
     it("una selección retorna solo las tuplas que satisfacen la condición de igualdad", () => {
@@ -164,5 +164,69 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
             modelo,
         );
         expect(resultado.tuplas).toHaveLength(4);
+    });
+
+    it("una proyección retorna solo los atributos especificados", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("PERSONA", pk("id"), simple("nombre"), simple("edad"))),
+            inserción("PERSONA", fila(1, "Ana", 30)),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("π<nombre>PERSONA"), modelo);
+        expect(resultado.atributos).toEqual(["nombre"]);
+        esperarResultadoConsulta(resultado, [{nombre: "Ana"}]);
+    });
+
+    it("una proyección no posee tuplas duplicadas", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("PERSONA", pk("id"), simple("nombre"), simple("ciudad"))),
+            inserción("PERSONA", fila(1, "Ana", "CABA")),
+            inserción("PERSONA", fila(2, "Ana", "CABA")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("π<nombre>PERSONA"), modelo);
+        esperarResultadoConsulta(resultado, [{nombre: "Ana"}]);
+    });
+
+    it("una proyección con atributo inexistente levanta una excepción", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("PERSONA", pk("id"), simple("nombre"))),
+            inserción("PERSONA", fila(1, "Ana")),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("π<apellido>PERSONA"), modelo)
+        ).toThrow(ErrorSemánticoAR);
+    });
+
+    it("una proyección sobre una selección retorna el resultado proyectado y filtrado", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("PERSONA", pk("id"), simple("nombre"), simple("edad"))),
+            inserción("PERSONA", fila(1, "Ana", 30)),
+            inserción("PERSONA", fila(2, "Luis", 20)),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("π<nombre>σ<edad>25>PERSONA"), modelo);
+        expect(resultado.atributos).toEqual(["nombre"]);
+        esperarResultadoConsulta(resultado, [{nombre: "Ana"}]);
+    });
+
+    it("se puede realizar una proyección sobre una expresión entre paréntesis", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("PERSONA", pk("id"), simple("nombre"))),
+            inserción("PERSONA", fila(1, "Ana")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("π<nombre>(PERSONA)"), modelo);
+        esperarResultadoConsulta(resultado, [{nombre: "Ana"}]);
+    });
+
+    it("una proyección con múltiples atributos retorna una relación con las columnas proyectadas", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("PERSONA", pk("id"), simple("nombre"), simple("edad"), simple("ciudad"))),
+            inserción("PERSONA", fila(1, "Ana", 30, "CABA")),
+            inserción("PERSONA", fila(2, "Luis", 20, "Córdoba")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("π<nombre,edad>PERSONA"), modelo);
+        expect(resultado.atributos).toEqual(["nombre", "edad"]);
+        esperarResultadoConsulta(resultado, [
+            {nombre: "Ana", edad: 30},
+            {nombre: "Luis", edad: 20},
+        ]);
     });
 });
