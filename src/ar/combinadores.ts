@@ -1,7 +1,7 @@
 import {TipoTokenAR, TokenAR} from "../tipos/tipos.ts";
 
-export type ResultadoSintáctico<T> = { valor: T; posición: number } | null;
-export type ReglaSintáctica<T> = (tokens: TokenAR[], desde: number) => ResultadoSintáctico<T>;
+export type ResultadoSintáctico<Valor> = { valor: Valor; posición: number } | null;
+export type ReglaSintáctica<Valor> = (tokens: TokenAR[], desde: number) => ResultadoSintáctico<Valor>;
 
 export function token(tipo: TipoTokenAR): ReglaSintáctica<string> {
     return (tokens, desde) => {
@@ -13,7 +13,7 @@ export function token(tipo: TipoTokenAR): ReglaSintáctica<string> {
     };
 }
 
-export function mapear<T, R>(regla: ReglaSintáctica<T>, transformar: (valor: T) => R): ReglaSintáctica<R> {
+export function mapear<ValorOriginal, ValorNuevo>(regla: ReglaSintáctica<ValorOriginal>, transformar: (valor: ValorOriginal) => ValorNuevo): ReglaSintáctica<ValorNuevo> {
     return (tokens, desde) => {
         const resultado = regla(tokens, desde);
         if (!resultado) return null;
@@ -22,6 +22,7 @@ export function mapear<T, R>(regla: ReglaSintáctica<T>, transformar: (valor: T)
 }
 
 export function secuencia<T extends any[]>(reglas: { [K in keyof T]: ReglaSintáctica<T[K]> }): ReglaSintáctica<T> {
+export function secuencia<Tupla extends any[]>(reglas: { [K in keyof Tupla]: ReglaSintáctica<Tupla[K]> }): ReglaSintáctica<Tupla> {
     return (tokens, desde) => {
         const valores: any[] = [];
         let posicionActual = desde;
@@ -31,11 +32,11 @@ export function secuencia<T extends any[]>(reglas: { [K in keyof T]: ReglaSintá
             valores.push(res.valor);
             posicionActual = res.posición;
         }
-        return {valor: valores as T, posición: posicionActual};
+        return {valor: valores as Tupla, posición: posicionActual};
     };
 }
 
-export function elección<T>(reglas: ReglaSintáctica<T>[]): ReglaSintáctica<T> {
+export function elección<Valor>(reglas: ReglaSintáctica<Valor>[]): ReglaSintáctica<Valor> {
     return (tokens, desde) => {
         for (const regla of reglas) {
             const resultado = regla(tokens, desde);
@@ -55,8 +56,8 @@ export function seguidoDe(regla: ReglaSintáctica<any>): ReglaSintáctica<null> 
     };
 }
 
-export function encadenar<T, S>(término: ReglaSintáctica<T>, separador: ReglaSintáctica<S>, combinar: (izq: T, sep: S, der: T) => T): ReglaSintáctica<T> {
-    const restoDeCadena = (tokens: TokenAR[], desde: number, acumulado: T): ResultadoSintáctico<T> => {
+export function encadenar<ValorTérmino, ValorSeparador>(término: ReglaSintáctica<ValorTérmino>, separador: ReglaSintáctica<ValorSeparador>, combinar: (izq: ValorTérmino, sep: ValorSeparador, der: ValorTérmino) => ValorTérmino): ReglaSintáctica<ValorTérmino> {
+    const restoDeCadena = (tokens: TokenAR[], desde: number, acumulado: ValorTérmino): ResultadoSintáctico<ValorTérmino> => {
         const sep = separador(tokens, desde);
         if (sep === null) return {valor: acumulado, posición: desde};
         const sig = término(tokens, sep.posición);
