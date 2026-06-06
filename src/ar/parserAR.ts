@@ -15,6 +15,7 @@ import {
 } from "./modeloSintácticoAR.ts";
 import {elección, encadenar, ReglaSintáctica, token, mapear, secuencia, seguidoDe} from "./combinadores.ts";
 import {ErrorSintácticoAR} from "../servicios/errores.ts";
+import {Intersección, Resta, Unión} from "./modeloSintactico/operadorDeConjuntos.ts";
 
 const operando: ReglaSintáctica<NombreAtributo | Literal> = elección<NombreAtributo | Literal>([
     mapear(token("NOMBRE"), v => new NombreAtributo(v)),
@@ -110,7 +111,7 @@ const proyección: ReglaSintáctica<ExpresiónProyección> = mapear(
         token("LANGLE"),
         listaDeAtributos,
         token("RANGLE"),
-        (toks, d) => expresión(toks, d),
+        (toks, d) => términoExpresión(toks, d),
     ]),
     ([_pi, _langle, attrs, _rangle, subexpr]) => new ExpresiónProyección(attrs, subexpr),
 );
@@ -121,7 +122,7 @@ const selección: ReglaSintáctica<ExpresiónSelección> = mapear(
         token("LANGLE"),
         (toks, d) => condición(toks, d),
         token("RANGLE"),
-        (toks, d) => expresión(toks, d)
+        (toks, d) => términoExpresión(toks, d)
     ]),
     ([_sigma, _langle, cond, _rangle, subexpr]) => new ExpresiónSelección(cond, subexpr)
 );
@@ -132,7 +133,21 @@ const términoExpresión: ReglaSintáctica<ExpresiónAR> = elección<ExpresiónA
     expresiónAtómica,
 ]);
 
-expresión = términoExpresión;
+const operadorConjunto: ReglaSintáctica<string> = elección<string>([
+    token("UNION"),
+    token("INTERSECTION"),
+    token("DIFFERENCE"),
+]);
+
+expresión = encadenar<ExpresiónAR, string>(
+    términoExpresión,
+    operadorConjunto,
+    (izq, op, der) => {
+        if (op === "∪") return new Unión(izq, der);
+        if (op === "∩") return new Intersección(izq, der);
+        return new Resta(izq, der);
+    },
+);
 
 export function analizarSintácticamente(texto: string): ExpresiónAR {
     const tokens = new TokenizadorAR().ejecutarseCon(texto);

@@ -11,10 +11,12 @@ export class TokenizadorAR {
                 continue;
             }
 
-            if (texto[pos] === "σ") { tokens.push({tipo: "SIGMA",  valor: "σ", posicion: pos}); pos++; continue; }
-            if (texto[pos] === "π") { tokens.push({tipo: "PI",     valor: "π", posicion: pos}); pos++; continue; }
-            if (texto[pos] === "∧") { tokens.push({tipo: "AND",    valor: "∧", posicion: pos}); pos++; continue; }
-            if (texto[pos] === "∨") { tokens.push({tipo: "OR",     valor: "∨", posicion: pos}); pos++; continue; }
+            if (texto[pos] === "σ") { tokens.push({tipo: "SIGMA",        valor: "σ", posicion: pos}); pos++; continue; }
+            if (texto[pos] === "π") { tokens.push({tipo: "PI",           valor: "π", posicion: pos}); pos++; continue; }
+            if (texto[pos] === "∧") { tokens.push({tipo: "AND",          valor: "∧", posicion: pos}); pos++; continue; }
+            if (texto[pos] === "∨") { tokens.push({tipo: "OR",           valor: "∨", posicion: pos}); pos++; continue; }
+            if (texto[pos] === "∪") { tokens.push({tipo: "UNION",        valor: "∪", posicion: pos}); pos++; continue; }
+            if (texto[pos] === "∩") { tokens.push({tipo: "INTERSECTION", valor: "∩", posicion: pos}); pos++; continue; }
 
             const dosCaracteres = texto.slice(pos, pos + 2);
             if (dosCaracteres === "<=" || dosCaracteres === ">=" || dosCaracteres === "!=") {
@@ -23,12 +25,13 @@ export class TokenizadorAR {
                 continue;
             }
 
-            if (texto[pos] === "=") { tokens.push({tipo: "OP_COMP", valor: "=",  posicion: pos}); pos++; continue; }
-            if (texto[pos] === "<") { tokens.push({tipo: "LANGLE",  valor: "<",  posicion: pos}); pos++; continue; }
-            if (texto[pos] === ">") { tokens.push({tipo: "RANGLE",  valor: ">",  posicion: pos}); pos++; continue; }
-            if (texto[pos] === "(") { tokens.push({tipo: "LPAREN",  valor: "(",  posicion: pos}); pos++; continue; }
-            if (texto[pos] === ")") { tokens.push({tipo: "RPAREN",  valor: ")",  posicion: pos}); pos++; continue; }
-            if (texto[pos] === ",") { tokens.push({tipo: "COMA",    valor: ",",  posicion: pos}); pos++; continue; }
+            if (texto[pos] === "=") { tokens.push({tipo: "OP_COMP",   valor: "=",  posicion: pos}); pos++; continue; }
+            if (texto[pos] === "-") { tokens.push({tipo: "DIFFERENCE", valor: "-",  posicion: pos}); pos++; continue; }
+            if (texto[pos] === "<") { tokens.push({tipo: "LANGLE",    valor: "<",  posicion: pos}); pos++; continue; }
+            if (texto[pos] === ">") { tokens.push({tipo: "RANGLE",    valor: ">",  posicion: pos}); pos++; continue; }
+            if (texto[pos] === "(") { tokens.push({tipo: "LPAREN",    valor: "(",  posicion: pos}); pos++; continue; }
+            if (texto[pos] === ")") { tokens.push({tipo: "RPAREN",    valor: ")",  posicion: pos}); pos++; continue; }
+            if (texto[pos] === ",") { tokens.push({tipo: "COMA",      valor: ",",  posicion: pos}); pos++; continue; }
 
             const cadena = PATRON_CADENA.exec(texto.slice(pos));
             if (cadena) {

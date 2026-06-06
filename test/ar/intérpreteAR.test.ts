@@ -239,4 +239,193 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
             intérprete.ejecutar(analizarSintácticamente("σ<edad>25>π<nombre>PERSONA"), modelo)
         ).toThrow("El atributo 'edad' no existe en la relación");
     });
+
+    it("la unión de dos relaciones retorna todas las tuplas sin duplicados", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("NARUTO", pk("id"), simple("aldea"))),
+            definición(relación("SASUKE", pk("id"), simple("aldea"))),
+            inserción("NARUTO", fila(1, "Konoha")),
+            inserción("NARUTO", fila(2, "Suna")),
+            inserción("SASUKE", fila(3, "Konoha")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("NARUTO ∪ SASUKE"), modelo);
+        esperarResultadoConsulta(resultado, [
+            {id: 1, aldea: "Konoha"},
+            {id: 2, aldea: "Suna"},
+            {id: 3, aldea: "Konoha"},
+        ]);
+    });
+
+    it("la intersección retorna solo las tuplas comunes", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("GOKU", pk("id"), simple("nombre"))),
+            definición(relación("VEGETA", pk("id"), simple("nombre"))),
+            inserción("GOKU", fila(1, "Goku")),
+            inserción("GOKU", fila(2, "Gohan")),
+            inserción("VEGETA", fila(3, "Goku")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("π<nombre>GOKU ∩ π<nombre>VEGETA"), modelo);
+        esperarResultadoConsulta(resultado, [
+            {nombre: "Goku"},
+        ]);
+    });
+
+    it("la resta retorna las tuplas del primero que no están en el segundo", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("LUFFY", pk("id"), simple("nombre"))),
+            definición(relación("ZORO", pk("id"), simple("nombre"))),
+            inserción("LUFFY", fila(1, "Luffy")),
+            inserción("LUFFY", fila(2, "Ace")),
+            inserción("ZORO", fila(3, "Luffy")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("π<nombre>LUFFY - π<nombre>ZORO"), modelo);
+        esperarResultadoConsulta(resultado, [
+            {nombre: "Ace"},
+        ]);
+    });
+
+    it("la resta entre relaciones con mismo esquema retorna las tuplas que no comparte el conjunto izquierdo", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("LUFFY", pk("id"), simple("nombre"))),
+            definición(relación("ZORO", pk("id"), simple("nombre"))),
+            inserción("LUFFY", fila(1, "Luffy")),
+            inserción("LUFFY", fila(2, "Ace")),
+            inserción("ZORO", fila(1, "Luffy")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("LUFFY - ZORO"), modelo);
+        esperarResultadoConsulta(resultado, [
+            {id: 2, nombre: "Ace"},
+        ]);
+    });
+
+    it("la unión de relaciones con grado incompatible lanza error", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("NARUTO", pk("id"), simple("aldea"))),
+            definición(relación("SASUKE", pk("id"), simple("aldea"), simple("chakra"))),
+            inserción("NARUTO", fila(1, "Konoha")),
+            inserción("SASUKE", fila(2, "Konoha", 200)),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("NARUTO ∪ SASUKE"), modelo)
+        ).toThrow("Unión: las relaciones tienen grado incompatible.");
+    });
+
+    it("la intersección de relaciones con grados distintos lanza error", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("GOKU", pk("id"), simple("nombre"))),
+            definición(relación("VEGETA", pk("id"), simple("nombre"), simple("ki"))),
+            inserción("GOKU", fila(1, "Goku")),
+            inserción("VEGETA", fila(2, "Vegeta", 9000)),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("GOKU ∩ VEGETA"), modelo)
+        ).toThrow("Intersección: las relaciones tienen grado incompatible.");
+    });
+
+    it("la resta de relaciones con grado incompatible lanza error", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("LUFFY", pk("id"), simple("nombre"))),
+            definición(relación("ZORO", pk("id"), simple("nombre"), simple("recompensa"))),
+            inserción("LUFFY", fila(1, "Luffy")),
+            inserción("ZORO", fila(2, "Zoro", 320000)),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("LUFFY - ZORO"), modelo)
+        ).toThrow("Resta: las relaciones tienen grado incompatible.");
+    });
+
+    it("la intersección compara valores posicionalmente cuando los nombres de atributo difieren", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("ICHIGO", pk("id"), simple("zanpakuto"))),
+            definición(relación("RUKIA", pk("id"), simple("bankai"))),
+            inserción("ICHIGO", fila(1, "Zangetsu")),
+            inserción("ICHIGO", fila(2, "Mugetsu")),
+            inserción("RUKIA", fila(3, "Zangetsu")),
+            inserción("RUKIA", fila(4, "Sode no Shirayuki")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("π<zanpakuto>ICHIGO ∩ π<bankai>RUKIA"), modelo);
+        esperarResultadoConsulta(resultado, [
+            {zanpakuto: "Zangetsu"},
+        ]);
+    });
+
+    it("dos selecciones unidas respetan la precedencia sobre el operador de conjunto", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("GOKU", pk("id"), simple("nombre"), simple("ki"))),
+            definición(relación("VEGETA", pk("id"), simple("nombre"), simple("ki"))),
+            inserción("GOKU", fila(1, "Goku", 9000)),
+            inserción("GOKU", fila(2, "Gohan", 5000)),
+            inserción("VEGETA", fila(3, "Vegeta", 8500)),
+            inserción("VEGETA", fila(4, "Trunks", 4000)),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("σ<ki>8000>GOKU ∪ σ<ki>8000>VEGETA"), modelo);
+        esperarResultadoConsulta(resultado, [
+            {id: 1, nombre: "Goku", ki: 9000},
+            {id: 3, nombre: "Vegeta", ki: 8500},
+        ]);
+    });
+
+    it("una selección sobre una unión sin paréntesis aplica la selección solo al primer operando", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("NARUTO", pk("id"), simple("aldea"))),
+            definición(relación("SASUKE", pk("id"), simple("aldea"))),
+            inserción("NARUTO", fila(1, "Konoha")),
+            inserción("NARUTO", fila(2, "Suna")),
+            inserción("SASUKE", fila(3, "Kumo")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("σ<aldea='Konoha'>NARUTO ∪ SASUKE"), modelo);
+        esperarResultadoConsulta(resultado, [
+            {id: 1, aldea: "Konoha"},
+            {id: 3, aldea: "Kumo"},
+        ]);
+    });
+
+    it("una proyección sobre una intersección entre paréntesis retorna las columnas proyectadas", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("LUFFY", pk("id"), simple("nombre"))),
+            definición(relación("ZORO", pk("id"), simple("nombre"))),
+            inserción("LUFFY", fila(1, "Luffy")),
+            inserción("LUFFY", fila(2, "Ace")),
+            inserción("ZORO", fila(3, "Luffy")),
+            inserción("ZORO", fila(4, "Sabo")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("π<nombre>LUFFY ∩ π<nombre>ZORO"), modelo);
+        expect(resultado.atributos).toEqual(["nombre"]);
+        esperarResultadoConsulta(resultado, [{nombre: "Luffy"}]);
+    });
+
+    it("tres operaciones de conjunto encadenadas se evalúan con asociatividad izquierda", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("GOKU", pk("id"), simple("ki"))),
+            definición(relación("VEGETA", pk("id"), simple("ki"))),
+            definición(relación("GOHAN", pk("id"), simple("ki"))),
+            inserción("GOKU", fila(1, 9000)),
+            inserción("GOKU", fila(2, 8000)),
+            inserción("VEGETA", fila(3, 8000)),
+            inserción("VEGETA", fila(4, 7000)),
+            inserción("GOHAN", fila(5, 8000)),
+            inserción("GOHAN", fila(6, 6000)),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("π<ki>GOKU ∪ π<ki>VEGETA ∩ π<ki>GOHAN"), modelo);
+        esperarResultadoConsulta(resultado, [{ki: 8000}]);
+    });
+
+    it("la intersección con proyecciones de distinto nombre de atributo conservan el nombre del primer operando", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("AKUMA", pk("id"), simple("fruta"))),
+            definición(relación("USUARIO", pk("id"), simple("poder"))),
+            inserción("AKUMA", fila(1, "Gomu Gomu")),
+            inserción("AKUMA", fila(2, "Mera Mera")),
+            inserción("AKUMA", fila(3, "Hana Hana")),
+            inserción("USUARIO", fila(4, "Gomu Gomu")),
+            inserción("USUARIO", fila(5, "Yami Yami")),
+            inserción("USUARIO", fila(6, "Hana Hana")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("π<fruta>AKUMA ∩ π<poder>USUARIO"), modelo);
+        expect(resultado.atributos).toEqual(["fruta"]);
+        esperarResultadoConsulta(resultado, [
+            {fruta: "Gomu Gomu"},
+            {fruta: "Hana Hana"},
+        ]);
+    });
 });

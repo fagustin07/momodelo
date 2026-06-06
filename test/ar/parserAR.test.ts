@@ -269,4 +269,162 @@ describe("[Álgebra Relacional] Parser AR", () => {
             subexpr: {nombre: "CLIENTE"},
         });
     });
+
+    it("una unión de dos relaciones es una consulta válida", () => {
+        esperarAnálisisSintácticoAR("NARUTO ∪ SASUKE", {
+            izq: {nombre: "NARUTO"},
+            der: {nombre: "SASUKE"},
+        });
+    });
+
+    it("una intersección de dos relaciones es una consulta válida", () => {
+        esperarAnálisisSintácticoAR("GOKU ∩ VEGETA", {
+            izq: {nombre: "GOKU"},
+            der: {nombre: "VEGETA"},
+        });
+    });
+
+    it("una resta de dos relaciones es una consulta válida", () => {
+        esperarAnálisisSintácticoAR("LUFFY - ZORO", {
+            izq: {nombre: "LUFFY"},
+            der: {nombre: "ZORO"},
+        });
+    });
+
+    it("las operaciones de conjunto encadenan hacia la izquierda", () => {
+        esperarAnálisisSintácticoAR("ICHIGO ∪ RUKIA ∩ RENJI", {
+            izq: {izq: {nombre: "ICHIGO"}, der: {nombre: "RUKIA"}},
+            der: {nombre: "RENJI"},
+        });
+    });
+
+    it("una selección compuesta con unión es una consulta válida", () => {
+        esperarAnálisisSintácticoAR("σ<chakra>100>NARUTO ∪ σ<chakra>100>SASUKE", {
+            izq: {
+                condición: {izq: {nombre: "chakra"}, op: ">", der: {valor: 100}},
+                subexpr: {nombre: "NARUTO"},
+            },
+            der: {
+                condición: {izq: {nombre: "chakra"}, op: ">", der: {valor: 100}},
+                subexpr: {nombre: "SASUKE"},
+            },
+        });
+    });
+
+    it("los paréntesis agrupan operaciones de conjunto", () => {
+        esperarAnálisisSintácticoAR("GOKU ∪ (VEGETA ∩ GOHAN)", {
+            izq: {nombre: "GOKU"},
+            der: {izq: {nombre: "VEGETA"}, der: {nombre: "GOHAN"}},
+        });
+    });
+
+    it("la selección tiene precedencia sobre los operadores de conjunto", () => {
+        esperarAnálisisSintácticoAR("σ<ki>9000>GOKU ∪ VEGETA", {
+            izq: {
+                condición: {izq: {nombre: "ki"}, op: ">", der: {valor: 9000}},
+                subexpr: {nombre: "GOKU"},
+            },
+            der: {nombre: "VEGETA"},
+        });
+    });
+
+    it("la proyección tiene precedencia sobre los operadores de conjunto", () => {
+        esperarAnálisisSintácticoAR("π<aldea>NARUTO ∩ SASUKE", {
+            izq: {
+                atributos: ["aldea"],
+                subexpr: {nombre: "NARUTO"},
+            },
+            der: {nombre: "SASUKE"},
+        });
+    });
+
+    it("los operadores unarios tienen precedencia sobre la resta", () => {
+        esperarAnálisisSintácticoAR("σ<recompensa>1000000>LUFFY - π<recompensa>ZORO", {
+            izq: {
+                condición: {izq: {nombre: "recompensa"}, op: ">", der: {valor: 1000000}},
+                subexpr: {nombre: "LUFFY"},
+            },
+            der: {
+                atributos: ["recompensa"],
+                subexpr: {nombre: "ZORO"},
+            },
+        });
+    });
+
+    it("tres operaciones de conjunto se asocian hacia la izquierda", () => {
+        esperarAnálisisSintácticoAR("GOKU ∪ VEGETA ∩ GOHAN - PICCOLO", {
+            izq: {
+                izq: {izq: {nombre: "GOKU"}, der: {nombre: "VEGETA"}},
+                der: {nombre: "GOHAN"},
+            },
+            der: {nombre: "PICCOLO"},
+        });
+    });
+
+    it("una selección con conjunción y una proyección anidada se combinan con unión", () => {
+        esperarAnálisisSintácticoAR("σ<ki>8000 ∧ chakra>500>NARUTO ∪ π<rango>σ<ninjutsu>100>SASUKE", {
+            izq: {
+                condición: {
+                    izq: {izq: {nombre: "ki"}, op: ">", der: {valor: 8000}},
+                    der: {izq: {nombre: "chakra"}, op: ">", der: {valor: 500}},
+                },
+                subexpr: {nombre: "NARUTO"},
+            },
+            der: {
+                atributos: ["rango"],
+                subexpr: {
+                    condición: {izq: {nombre: "ninjutsu"}, op: ">", der: {valor: 100}},
+                    subexpr: {nombre: "SASUKE"},
+                },
+            },
+        });
+    });
+
+    it("una combinación compleja de proyecciones, uniones e intersecciones respeta paréntesis y precedencia", () => {
+        esperarAnálisisSintácticoAR("π<fruta>LUFFY ∪ π<espada>ZORO ∩ (π<clima>NAMI ∪ π<medicina>σ<recompensa='300'>CHOPPER)", {
+            izq: {
+                izq: {
+                    atributos: ["fruta"],
+                    subexpr: {nombre: "LUFFY"},
+                },
+                der: {
+                    atributos: ["espada"],
+                    subexpr: {nombre: "ZORO"},
+                },
+            },
+            der: {
+                izq: {
+                    atributos: ["clima"],
+                    subexpr: {nombre: "NAMI"},
+                },
+                der: {
+                    atributos: ["medicina"],
+                    subexpr: {
+                        condición: {izq: {nombre: "recompensa"}, op: "=", der: {valor: "300"}},
+                        subexpr: {nombre: "CHOPPER"},
+                    },
+                },
+            },
+        });
+    });
+
+    it("una selección puede aplicarse a una unión agrupada entre paréntesis", () => {
+        esperarAnálisisSintácticoAR("σ<ki>9000>(GOKU ∪ VEGETA)", {
+            condición: {izq: {nombre: "ki"}, op: ">", der: {valor: 9000}},
+            subexpr: {
+                izq: {nombre: "GOKU"},
+                der: {nombre: "VEGETA"},
+            },
+        });
+    });
+
+    it("una proyección puede aplicarse a una intersección agrupada entre paréntesis", () => {
+        esperarAnálisisSintácticoAR("π<aldea>(NARUTO ∩ SASUKE)", {
+            atributos: ["aldea"],
+            subexpr: {
+                izq: {nombre: "NARUTO"},
+                der: {nombre: "SASUKE"},
+            },
+        });
+    });
 });
