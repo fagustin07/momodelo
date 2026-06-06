@@ -11,9 +11,8 @@ import {
     Literal,
     NombreAtributo,
     NombreDeRelación,
-    Operando,
 } from "./modeloSintácticoAR.ts";
-import {elección, encadenar, ReglaSintáctica, token, mapear, secuencia, seguidoDe} from "./combinadores.ts";
+import {elección, encadenar, encadenarCon, ReglaSintáctica, token, mapear, secuencia, seguidoDe} from "./combinadores.ts";
 import {ErrorSintácticoAR} from "../servicios/errores.ts";
 import {Intersección, Resta, Unión} from "./modeloSintactico/operadorDeConjuntos.ts";
 
@@ -38,22 +37,15 @@ const finDeCondición: ReglaSintáctica<string> = elección<string>([
     token("OR")
 ]);
 
-const comparación: ReglaSintáctica<ComparaciónPrimitiva> = (tokens, desde) => {
-    const res = secuencia([
-        operando,
-        operadorComp,
-        operando,
-        seguidoDe(finDeCondición)
-    ])(tokens, desde);
-
-    if (!res) return null;
-
-    const [izq, op, der] = res.valor;
-    return {
-        valor: new ComparaciónPrimitiva(izq as Operando, op as string, der as Operando),
-        posición: res.posición
-    };
-};
+const comparación = encadenarCon(operando, operandoIzquierda =>
+    encadenarCon(operadorComp, operador =>
+        encadenarCon(operando, operandoDerecha =>
+            mapear(seguidoDe(finDeCondición), () =>
+                new ComparaciónPrimitiva(operandoIzquierda, operador, operandoDerecha)
+            )
+        )
+    )
+);
 
 let condición: ReglaSintáctica<CondiciónAR>;
 

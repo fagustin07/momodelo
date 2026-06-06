@@ -21,7 +21,17 @@ export function mapear<ValorOriginal, ValorNuevo>(regla: ReglaSintáctica<ValorO
     };
 }
 
-export function secuencia<T extends any[]>(reglas: { [K in keyof T]: ReglaSintáctica<T[K]> }): ReglaSintáctica<T> {
+export function encadenarCon<ValorActual, ValorSiguiente>(
+    analizadorSintáctico: ReglaSintáctica<ValorActual>,
+    transformar: (valor: ValorActual) => ReglaSintáctica<ValorSiguiente>,
+): ReglaSintáctica<ValorSiguiente> {
+    return (tokens, desde) => {
+        const resultado = analizadorSintáctico(tokens, desde);
+        if (!resultado) return null;
+        return transformar(resultado.valor)(tokens, resultado.posición);
+    };
+}
+
 export function secuencia<Tupla extends any[]>(reglas: { [K in keyof Tupla]: ReglaSintáctica<Tupla[K]> }): ReglaSintáctica<Tupla> {
     return (tokens, desde) => {
         const valores: any[] = [];
