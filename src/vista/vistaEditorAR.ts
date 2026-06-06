@@ -33,6 +33,9 @@ export class VistaEditorAR {
             createElement("button", {className: "mr-ar-toolbar-btn", title: "Proyección (Ctrl+Shift+2)", onclick: () => this._insertarSímbolo("π")}, ["π", createElement("span", {className: "mr-ar-toolbar-num", textContent: "2"})]),
             createElement("button", {className: "mr-ar-toolbar-btn", title: "Conjunción (Ctrl+Shift+3)", onclick: () => this._insertarSímbolo("∧")}, ["∧", createElement("span", {className: "mr-ar-toolbar-num", textContent: "3"})]),
             createElement("button", {className: "mr-ar-toolbar-btn", title: "Disyunción (Ctrl+Shift+4)", onclick: () => this._insertarSímbolo("∨")}, ["∨", createElement("span", {className: "mr-ar-toolbar-num", textContent: "4"})]),
+            createElement("button", {className: "mr-ar-toolbar-btn", title: "Unión (Ctrl+Shift+5)", onclick: () => this._insertarSímbolo("∪")}, ["∪", createElement("span", {className: "mr-ar-toolbar-num", textContent: "5"})]),
+            createElement("button", {className: "mr-ar-toolbar-btn", title: "Intersección (Ctrl+Shift+6)", onclick: () => this._insertarSímbolo("∩")}, ["∩", createElement("span", {className: "mr-ar-toolbar-num", textContent: "6"})]),
+            createElement("button", {className: "mr-ar-toolbar-btn", title: "Resta (Ctrl+Shift+7)", onclick: () => this._insertarSímbolo("-")}, ["−", createElement("span", {className: "mr-ar-toolbar-num", textContent: "7"})]),
         ]);
 
         this._panel = createElement("div", {className: "mr-editor-panel", style: {display: "none"}}, [
@@ -46,12 +49,19 @@ export class VistaEditorAR {
             run: () => { alEjecutar(); return true; }
         }]));
 
-        const atajosParaSímbolos = Prec.highest(keymap.of([
-            { key: "Ctrl-Shift-1", run: () => { this._insertarSímbolo("σ"); return true; } },
-            { key: "Ctrl-Shift-2", run: () => { this._insertarSímbolo("π"); return true; } },
-            { key: "Ctrl-Shift-3", run: () => { this._insertarSímbolo("∧"); return true; } },
-            { key: "Ctrl-Shift-4", run: () => { this._insertarSímbolo("∨"); return true; } },
-        ]));
+        const atajosParaSímbolos = EditorView.domEventHandlers({
+            keydown: (event, _view) => {
+                if (!event.ctrlKey || !event.shiftKey) return false;
+                const símbolo = ({
+                    "Digit1": "σ", "Digit2": "π", "Digit3": "∧", "Digit4": "∨",
+                    "Digit5": "∪", "Digit6": "∩", "Digit7": "-",
+                } as Record<string, string>)[event.code];
+                if (!símbolo) return false;
+                event.preventDefault();
+                this._insertarSímbolo(símbolo);
+                return true;
+            }
+        });
 
         const tabConEspacios = Prec.highest(keymap.of([{
             key: "Tab",
