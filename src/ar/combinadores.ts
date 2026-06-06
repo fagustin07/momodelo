@@ -32,20 +32,6 @@ export function encadenarCon<ValorActual, ValorSiguiente>(
     };
 }
 
-export function secuencia<Tupla extends any[]>(reglas: { [K in keyof Tupla]: ReglaSintáctica<Tupla[K]> }): ReglaSintáctica<Tupla> {
-    return (tokens, desde) => {
-        const valores: any[] = [];
-        let posicionActual = desde;
-        for (const regla of reglas) {
-            const res = regla(tokens, posicionActual);
-            if (!res) return null;
-            valores.push(res.valor);
-            posicionActual = res.posición;
-        }
-        return {valor: valores as Tupla, posición: posicionActual};
-    };
-}
-
 export function elección<Valor>(reglas: ReglaSintáctica<Valor>[]): ReglaSintáctica<Valor> {
     return (tokens, desde) => {
         for (const regla of reglas) {
@@ -64,6 +50,22 @@ export function seguidoDe(regla: ReglaSintáctica<any>): ReglaSintáctica<null> 
         }
         return null;
     };
+}
+
+export function soloDerecha<ValorIzquierda, ValorDerecha>(
+    izquierda: ReglaSintáctica<ValorIzquierda>,
+    derecha: ReglaSintáctica<ValorDerecha>,
+): ReglaSintáctica<ValorDerecha> {
+    return encadenarCon(izquierda, () => derecha);
+}
+
+export function soloIzquierda<ValorIzquierda, ValorDerecha>(
+    izquierda: ReglaSintáctica<ValorIzquierda>,
+    derecha: ReglaSintáctica<ValorDerecha>,
+): ReglaSintáctica<ValorIzquierda> {
+    return encadenarCon(izquierda, valorIzquierda =>
+        mapear(derecha, () => valorIzquierda),
+    );
 }
 
 export function encadenar<ValorTérmino, ValorSeparador>(término: ReglaSintáctica<ValorTérmino>, separador: ReglaSintáctica<ValorSeparador>, combinar: (izq: ValorTérmino, sep: ValorSeparador, der: ValorTérmino) => ValorTérmino): ReglaSintáctica<ValorTérmino> {
