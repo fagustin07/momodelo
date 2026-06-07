@@ -52,6 +52,20 @@ export function seguidoDe(regla: ReglaSintáctica<any>): ReglaSintáctica<null> 
     };
 }
 
+export function muchos<Valor>(parser: ReglaSintáctica<Valor>): ReglaSintáctica<Valor[]> {
+    return (tokens, desde) => {
+        const valores: Valor[] = [];
+        let posiciónActual = desde;
+        while (true) {
+            const resultado = parser(tokens, posiciónActual);
+            if (!resultado) break;
+            valores.push(resultado.valor);
+            posiciónActual = resultado.posición;
+        }
+        return { valor: valores, posición: posiciónActual };
+    };
+}
+
 export function soloDerecha<ValorIzquierda, ValorDerecha>(
     izquierda: ReglaSintáctica<ValorIzquierda>,
     derecha: ReglaSintáctica<ValorDerecha>,

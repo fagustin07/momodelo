@@ -12,7 +12,7 @@ import {
     NombreAtributo,
     NombreDeRelación,
 } from "./modeloSintácticoAR.ts";
-import {elección, encadenar, encadenarCon, ReglaSintáctica, soloDerecha, soloIzquierda, token, mapear, seguidoDe} from "./combinadores.ts";
+import {elección, encadenar, encadenarCon, muchos, ReglaSintáctica, soloDerecha, soloIzquierda, token, mapear, seguidoDe} from "./combinadores.ts";
 import {ErrorSintácticoAR} from "../servicios/errores.ts";
 import {Intersección, Resta, Unión} from "./modeloSintactico/operadorDeConjuntos.ts";
 
@@ -81,10 +81,11 @@ const expresiónAtómica: ReglaSintáctica<ExpresiónAR> = elección<ExpresiónA
     nombreDeRelación,
 ]);
 
-const listaDeAtributos: ReglaSintáctica<string[]> = encadenar<string[], null>(
-    mapear(token("NOMBRE"), v => [v]),
-    mapear(token("COMA"), () => null),
-    (acum, _sep, der) => [...acum, ...der],
+const listaDeAtributos = encadenarCon(token("NOMBRE"), primerNombre =>
+    mapear(
+        muchos(soloDerecha(token("COMA"), token("NOMBRE"))),
+        resto => [primerNombre, ...resto],
+    )
 );
 
 const proyección = soloDerecha(token("PI"),
