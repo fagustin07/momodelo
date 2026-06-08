@@ -632,7 +632,7 @@ line:not(.linea-feedback) {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 9999;
+  z-index: 500;
   pointer-events: none;
   display: flex;
   flex-direction: column;
