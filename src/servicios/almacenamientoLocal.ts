@@ -4,7 +4,7 @@ export const UMBRAL_ADVERTENCIA = 5;
 
 const NOMBRE_AREA_DE_TRABAJO = "momodelo_area_de_trabajo";
 
-export type ModeloGuardado = {
+export type TrabajoGuardado = {
     id: string;
     nombre: string;
     datos: JsonModelo;
@@ -12,7 +12,7 @@ export type ModeloGuardado = {
 };
 
 type AreaDeTrabajo = {
-    modelos: ModeloGuardado[];
+    trabajos: TrabajoGuardado[];
 };
 
 export interface Almacenamiento {
@@ -28,64 +28,55 @@ export class AlmacenamientoLocal {
         this._almacenamiento = almacenamiento;
     }
 
-    listarModelos(): ModeloGuardado[] {
-        return this._leerAreaDeTrabajo().modelos;
+    listarTrabajos(): TrabajoGuardado[] {
+        return this._leerAreaDeTrabajo().trabajos;
     }
 
-    cantidadModelos(): number {
-        return this.listarModelos().length;
+    cantidadTrabajos(): number {
+        return this.listarTrabajos().length;
     }
 
-    guardarModelo(nombre: string, datos: JsonModelo): ModeloGuardado {
+    guardarTrabajo(nombre: string, datos: JsonModelo): TrabajoGuardado {
         const area = this._leerAreaDeTrabajo();
-        const nuevo: ModeloGuardado = {
+        const nuevo: TrabajoGuardado = {
             id: crypto.randomUUID(),
             nombre: nombre.trim() || "Sin nombre",
             datos,
             últimaActualización: new Date().toISOString(),
         };
-        area.modelos.unshift(nuevo);
+        area.trabajos.unshift(nuevo);
         this._escribirAreaDeTrabajo(area);
         return nuevo;
     }
 
-    cargarModelo(id: string): JsonModelo | null {
-        const modelo = this.listarModelos().find(m => m.id === id);
-        return modelo?.datos ?? null;
+    cargarTrabajo(id: string): JsonModelo | null {
+        const trabajo = this.listarTrabajos().find(m => m.id === id);
+        return trabajo?.datos ?? null;
     }
 
-    eliminarModelo(id: string): void {
+    eliminarTrabajo(id: string): void {
         const area = this._leerAreaDeTrabajo();
-        area.modelos = area.modelos.filter(m => m.id !== id);
+        area.trabajos = area.trabajos.filter(m => m.id !== id);
         this._escribirAreaDeTrabajo(area);
     }
 
-    renombrarModelo(id: string, nuevoNombre: string): void {
+    renombrarTrabajo(id: string, nuevoNombre: string): void {
         const area = this._leerAreaDeTrabajo();
-        const modelo = area.modelos.find(m => m.id === id);
-        if (!modelo) return;
-        modelo.nombre = nuevoNombre.trim() || modelo.nombre;
-        modelo.últimaActualización = new Date().toISOString();
+        const trabajo = area.trabajos.find(m => m.id === id);
+        if (!trabajo) return;
+        trabajo.nombre = nuevoNombre.trim() || trabajo.nombre;
+        trabajo.últimaActualización = new Date().toISOString();
         this._escribirAreaDeTrabajo(area);
     }
 
     private _leerAreaDeTrabajo(): AreaDeTrabajo {
         const modeloJson = this._almacenamiento.getItem(NOMBRE_AREA_DE_TRABAJO);
         if (!modeloJson)
-            return {modelos: []};
+            return {trabajos: []};
         try {
-            const area = JSON.parse(modeloJson) as AreaDeTrabajo;
-            // Migración: campo renombrado de actualizadoEn a últimaActualización
-            area.modelos = area.modelos.map(m => {
-                if (!m.últimaActualización) {
-                    const legacy = (m as unknown as Record<string, string>)["actualizadoEn"];
-                    m.últimaActualización = legacy ?? new Date().toISOString();
-                }
-                return m;
-            });
-            return area;
+            return JSON.parse(modeloJson) as AreaDeTrabajo;
         } catch {
-            return {modelos: []};
+            return {trabajos: []};
         }
     }
 

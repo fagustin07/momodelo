@@ -31,9 +31,11 @@ export type JsonModelo = {
     entidades: JsonEntidad[];
     relaciones: JsonRelacion[];
     atributos: JsonAtributo[];
+    mr?: string;
+    ar?: string;
 };
 
-export function exportar(modeloER: ModeloER): JsonModelo {
+export function exportar(modeloER: ModeloER, mr?: string, ar?: string): JsonModelo {
     const atributosJson: JsonAtributo[] = modeloER.entidades.flatMap(entidad =>
         entidad.atributos().map(atributo => ({
             id: atributo.id(),
@@ -65,6 +67,8 @@ export function exportar(modeloER: ModeloER): JsonModelo {
     return {
         entidades: entidadesJson,
         relaciones: relacionesJson,
-        atributos: atributosJson
+        atributos: atributosJson,
+        mr,
+        ar
     };
 }

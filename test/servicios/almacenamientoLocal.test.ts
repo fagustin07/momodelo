@@ -30,18 +30,18 @@ function crearAlmacenamiento(): AlmacenamientoLocal {
     return new AlmacenamientoLocal(new AlmacenamientoEnMemoria());
 }
 
-describe("Almacenamiento de Modelos Entidad Relación", () => {
+describe("Almacenamiento de trabajos", () => {
 
     it("El almacenamiento debe iniciar con un espacio de trabajo vacío", () => {
         const almacenamiento = crearAlmacenamiento();
-        expect(almacenamiento.listarModelos()).toEqual([]);
-        expect(almacenamiento.cantidadModelos()).toBe(0);
+        expect(almacenamiento.listarTrabajos()).toEqual([]);
+        expect(almacenamiento.cantidadTrabajos()).toBe(0);
     });
 
-    it("El almacenamiento permite al usuario preservar un nuevo modelo", () => {
+    it("El almacenamiento permite al usuario preservar un nuevo trabajo", () => {
         const almacenamiento = crearAlmacenamiento();
         const diseño = modeloConNombre("CLIENTE");
-        const guardado = almacenamiento.guardarModelo("Mi Sistema", diseño);
+        const guardado = almacenamiento.guardarTrabajo("Mi Sistema", diseño);
 
         expect(guardado.nombre).toBe("Mi Sistema");
         expect(guardado.datos).toEqual(diseño);
@@ -49,88 +49,88 @@ describe("Almacenamiento de Modelos Entidad Relación", () => {
         expect(guardado.últimaActualización).toBeTruthy();
     });
 
-    it("Cuando el almacenamiento guarda un modelo sin nombre entonces le asigna automáticamente un título por defecto", () => {
+    it("Cuando el almacenamiento guarda un trabajo sin nombre entonces le asigna automáticamente un título por defecto", () => {
         const almacenamiento = crearAlmacenamiento();
 
-        const merGuardado = almacenamiento.guardarModelo("", modeloVacio());
+        const guardado = almacenamiento.guardarTrabajo("", modeloVacio());
 
-        expect(merGuardado.nombre).toBe("Sin nombre");
+        expect(guardado.nombre).toBe("Sin nombre");
     });
 
-    it("El almacenamiento genera identificadores para cada modelo guardado", () => {
+    it("El almacenamiento genera identificadores para cada trabajo guardado", () => {
         const almacenamiento = crearAlmacenamiento();
-        const merUno = almacenamiento.guardarModelo("Ventas", modeloVacio());
-        const merDos = almacenamiento.guardarModelo("Inventario", modeloVacio());
+        const uno = almacenamiento.guardarTrabajo("Ventas", modeloVacio());
+        const dos = almacenamiento.guardarTrabajo("Inventario", modeloVacio());
 
-        expect(merUno.id).not.toBe(merDos.id);
+        expect(uno.id).not.toBe(dos.id);
     });
 
-    it("El almacenamiento mantiene registro de los últimos cambios guardados del modelo trabajado", () => {
+    it("El almacenamiento mantiene registro de los últimos cambios guardados del trabajo", () => {
         const almacenamiento = crearAlmacenamiento();
         const antes = new Date().toISOString();
 
-        const guardado = almacenamiento.guardarModelo("Logística", modeloVacio());
+        const guardado = almacenamiento.guardarTrabajo("Logística", modeloVacio());
         const despues = new Date().toISOString();
 
         expect(guardado.últimaActualización >= antes).toBeTruthy();
         expect(guardado.últimaActualización <= despues).toBeTruthy();
     });
 
-    it("El almacenamiento muestra los modelos ordenados descendentemente por fecha de actualización", () => {
+    it("El almacenamiento muestra los trabajos ordenados descendentemente por fecha de actualización", () => {
         const almacenamiento = crearAlmacenamiento();
-        const primerMERGuardado = "ONE PIECE";
-        const segundoMERGuardado = "STAR TREK";
+        const primero = "ONE PIECE";
+        const segundo = "STAR TREK";
 
-        almacenamiento.guardarModelo(primerMERGuardado, modeloVacio());
-        almacenamiento.guardarModelo(segundoMERGuardado, modeloVacio());
+        almacenamiento.guardarTrabajo(primero, modeloVacio());
+        almacenamiento.guardarTrabajo(segundo, modeloVacio());
 
-        const catalogo = almacenamiento.listarModelos();
-        expect(catalogo[0].nombre).toBe(segundoMERGuardado);
-        expect(catalogo[1].nombre).toBe(primerMERGuardado);
+        const catalogo = almacenamiento.listarTrabajos();
+        expect(catalogo[0].nombre).toBe(segundo);
+        expect(catalogo[1].nombre).toBe(primero);
     });
 
-    it("El almacenamiento recuerda Modelos Entidad Relación", () => {
+    it("El almacenamiento recuerda trabajos guardados", () => {
         const almacenamiento = crearAlmacenamiento();
         const diseño = modeloConNombre("PEDIDO");
-        const guardado = almacenamiento.guardarModelo("Sistema de Pedidos", diseño);
+        const guardado = almacenamiento.guardarTrabajo("Sistema de Pedidos", diseño);
 
-        const cargado = almacenamiento.cargarModelo(guardado.id);
+        const cargado = almacenamiento.cargarTrabajo(guardado.id);
 
         expect(cargado).toEqual(diseño);
     });
 
-    it("El almacenamiento sabe borrar modelos que ya no se desean, preservando los que sí", () => {
+    it("El almacenamiento sabe borrar trabajos que ya no se desean, preservando los que sí", () => {
         const almacenamiento = crearAlmacenamiento();
-        const primerMER = almacenamiento.guardarModelo("HISTORIA ARGENTINA", modeloVacio());
-        const segundoMER = almacenamiento.guardarModelo("No sirve", modeloVacio());
-        const tercerMER = almacenamiento.guardarModelo("CONEXIÓN DE RÍOS", modeloVacio());
+        const primero = almacenamiento.guardarTrabajo("HISTORIA ARGENTINA", modeloVacio());
+        const segundo = almacenamiento.guardarTrabajo("No sirve", modeloVacio());
+        const tercero = almacenamiento.guardarTrabajo("CONEXIÓN DE RÍOS", modeloVacio());
 
-        almacenamiento.eliminarModelo(segundoMER.id);
+        almacenamiento.eliminarTrabajo(segundo.id);
 
-        const idsDisponibles = almacenamiento.listarModelos().map(m => m.id);
-        expect(idsDisponibles).toContain(primerMER.id);
-        expect(idsDisponibles).toContain(tercerMER.id);
-        expect(idsDisponibles).not.toContain(segundoMER.id);
+        const idsDisponibles = almacenamiento.listarTrabajos().map(m => m.id);
+        expect(idsDisponibles).toContain(primero.id);
+        expect(idsDisponibles).toContain(tercero.id);
+        expect(idsDisponibles).not.toContain(segundo.id);
     });
 
-    it("El almacenamiento sabe cambiar los nombres de sus Modelos Entidad Relación guardados", () => {
+    it("El almacenamiento sabe cambiar los nombres de sus trabajos guardados", () => {
         const almacenamiento = crearAlmacenamiento();
-        const guardado = almacenamiento.guardarModelo("Versión 1", modeloVacio());
+        const guardado = almacenamiento.guardarTrabajo("Versión 1", modeloVacio());
         const nuevoNombre = "Versión Final Historia";
 
-        almacenamiento.renombrarModelo(guardado.id, nuevoNombre);
+        almacenamiento.renombrarTrabajo(guardado.id, nuevoNombre);
 
-        const modeloActualizado = almacenamiento.listarModelos().find(m => m.id === guardado.id)!;
-        expect(modeloActualizado.nombre).toBe(nuevoNombre);
+        const trabajoActualizado = almacenamiento.listarTrabajos().find(m => m.id === guardado.id)!;
+        expect(trabajoActualizado.nombre).toBe(nuevoNombre);
     });
 
-    it("El almacenamiento conserva el nombre original del MER si es que al cambiar quedó su nombre vacío", () => {
+    it("El almacenamiento conserva el nombre original del trabajo si es que al cambiar quedó su nombre vacío", () => {
         const almacenamiento = crearAlmacenamiento();
-        const guardado = almacenamiento.guardarModelo("Nombre No Modificado", modeloVacio());
+        const guardado = almacenamiento.guardarTrabajo("Nombre No Modificado", modeloVacio());
 
-        almacenamiento.renombrarModelo(guardado.id, "   ");
+        almacenamiento.renombrarTrabajo(guardado.id, "   ");
 
-        const modelo = almacenamiento.listarModelos().find(m => m.id === guardado.id);
-        expect(modelo?.nombre).toBe("Nombre No Modificado");
+        const trabajo = almacenamiento.listarTrabajos().find(m => m.id === guardado.id);
+        expect(trabajo?.nombre).toBe("Nombre No Modificado");
     });
 });

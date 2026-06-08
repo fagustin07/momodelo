@@ -11,6 +11,7 @@ import {createElement} from "./dom/createElement.ts";
 import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado.ts";
 import {ResultadoConsulta} from "../ar/resultadoConsulta.ts";
 import {VistaEditorAR} from "./vistaEditorAR.ts";
+import {MenuHamburguesa, ProveedorDeTrabajo} from "../componentes/menuHamburguesa.ts";
 
 export class VistaEditorMR {
     private readonly _elementoRaíz: HTMLElement;
@@ -21,8 +22,9 @@ export class VistaEditorMR {
     private readonly _editorAR: VistaEditorAR;
     private _modeloER: ModeloER | null = null;
     private _modeloMaterializado: ModeloRelacionalMaterializado | null = null;
+    private readonly _menuHamburguesa: MenuHamburguesa;
 
-    constructor(contenedor: HTMLElement) {
+    constructor(contenedor: HTMLElement, proveedorMenu: ProveedorDeTrabajo) {
         this._elementoRaíz = contenedor;
 
         const mrWrapper = createElement("div", {className: "mr-codemirror-wrapper"});
@@ -32,9 +34,17 @@ export class VistaEditorMR {
 
         this._editorAR = new VistaEditorAR(() => this._ejecutar());
 
-        const topbar = createElement("div", {className: "mr-topbar"}, [
+        this._menuHamburguesa = new MenuHamburguesa(proveedorMenu);
+
+        const izquierdaTopbar = createElement("div", {className: "mr-topbar-izquierda"}, [
             createElement("span", {className: "mr-topbar-titulo", textContent: "Momodelo"}),
+        ]);
+
+        const centroTopbar = createElement("div", {className: "mr-topbar-centro"}, [
             this._editorAR.elementoSwitcher(),
+        ]);
+
+        const derechaTopbar = createElement("div", {className: "mr-topbar-derecha"}, [
             createElement("button", {
                 className: "mr-btn-ejecutar",
                 textContent: "▶︎ Ejecutar",
@@ -42,6 +52,10 @@ export class VistaEditorMR {
                 onclick: () => this._ejecutar()
             })
         ]);
+
+        const topbar = createElement("div", {className: "mr-topbar"}, [izquierdaTopbar, centroTopbar, derechaTopbar]);
+
+        this._menuHamburguesa.representarseEn(izquierdaTopbar);
 
         const consolaHeader = createElement("div", {className: "mr-consola-header"}, [
             createElement("span", {className: "mr-consola-header-titulo", textContent: "RESULTADO"}),
@@ -118,6 +132,28 @@ export class VistaEditorMR {
         this._modeloMaterializado = null;
         this._limpiarConsola();
         this._consolaWrapper.style.display = "none";
+    }
+
+    getModeloER(): ModeloER | null {
+        return this._modeloER;
+    }
+
+    getTextoMR(): string {
+        return this._editorMR.state.doc.toString();
+    }
+
+    setTextoMR(texto: string): void {
+        this._editorMR.dispatch({
+            changes: { from: 0, to: this._editorMR.state.doc.length, insert: texto }
+        });
+    }
+
+    getTextoAR(): string {
+        return this._editorAR.getTexto();
+    }
+
+    setTextoAR(texto: string): void {
+        this._editorAR.setTexto(texto);
     }
 
     private _ejecutar(): void {

@@ -102,6 +102,16 @@ export class VistaEditorAR {
         return new IntérpreteAR().ejecutar(expresión, modelo);
     }
 
+    getTexto(): string {
+        return this._editor.state.doc.toString();
+    }
+
+    setTexto(texto: string): void {
+        this._editor.dispatch({
+            changes: { from: 0, to: this._editor.state.doc.length, insert: texto }
+        });
+    }
+
     private _togglear(): void {
         this._activo = !this._activo;
         this._panel.style.display = this._activo ? "" : "none";

@@ -18,7 +18,7 @@ import {SeleccionandoEntidadDestinoRelación} from "./interacciones/seleccionand
 import {handlearError} from "../servicios/handlearError.ts";
 import {generarBarraDeInteracciones} from "../topbar.ts";
 import {InspectorElementos} from "./inspectorElementos.ts";
-import {MenuHamburguesa} from "../componentes/menuHamburguesa.ts";
+import {MenuHamburguesa, ProveedorDeTrabajo} from "../componentes/menuHamburguesa.ts";
 import {Cardinalidad, TipoAtributo, TipoRelacion} from "../tipos/tipos.ts";
 import {EliminarRelacionIdentificadoraError, MomodeloLogicaError} from "../servicios/errores.ts";
 import {VistaLineaCreandoRelacion} from "./vistaLineaCreandoRelacion.ts";
@@ -40,7 +40,7 @@ export class VistaEditorMER {
 
     private _lineaCreandoRelacion: VistaLineaCreandoRelacion | null = null;
 
-    constructor(modelador: ModeloER, elementoRaiz: HTMLElement, elementoSvg: SVGElement) {
+    constructor(modelador: ModeloER, elementoRaiz: HTMLElement, elementoSvg: SVGElement, proveedorMenu: ProveedorDeTrabajo) {
         this.modeloER = modelador;
         this._elementoRaíz = elementoRaiz;
         this._elementoSvg = elementoSvg;
@@ -80,7 +80,7 @@ export class VistaEditorMER {
         this._topbar = generarBarraDeInteracciones(this, this._elementoRaíz);
         elementoRaiz.prepend(this._topbar);
 
-        this._menuHamburguesa = new MenuHamburguesa(this);
+        this._menuHamburguesa = new MenuHamburguesa(proveedorMenu);
         this._menuHamburguesa.representarseEn(elementoRaiz);
 
         this._interacción = new SinInteracción(this);

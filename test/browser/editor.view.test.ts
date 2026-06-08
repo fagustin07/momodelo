@@ -4,7 +4,19 @@ import {Relacion} from "../../src/modelo/relacion.ts";
 import {coordenada} from "../../src/posicion.ts";
 import {ModeloER} from "../../src/servicios/modeloER.ts";
 import {VistaEditorMER} from "../../src/vista/vistaEditorMER.ts";
+import {ProveedorDeTrabajo} from "../../src/componentes/menuHamburguesa.ts";
 import "../../src/style.css";
+
+const proveedorNulo: ProveedorDeTrabajo = {
+    getModeloER: () => null!,
+    getTextoMR: () => "",
+    getTextoAR: () => "",
+    reemplazarModelo: () => {},
+    setTextoMR: () => {},
+    setTextoAR: () => {},
+    cancelarInteraccion: () => {},
+    hayInteraccionEnProceso: () => false,
+};
 
 describe("[MER] VistaEditor", () => {
     let elementoRaiz: HTMLElement;
@@ -24,7 +36,7 @@ describe("[MER] VistaEditor", () => {
         const cliente = new Entidad("CLIENTE", [], coordenada(100, 100));
         const producto = new Entidad("PRODUCTO", [], coordenada(400, 100));
         modeloER = new ModeloER([cliente, producto], []);
-        vistaEditorMER = new VistaEditorMER(modeloER, elementoRaiz, elementoSvg);
+        vistaEditorMER = new VistaEditorMER(modeloER, elementoRaiz, elementoSvg, proveedorNulo);
 
         const entidadesDOM = elementoRaiz.querySelectorAll(".entidad");
         expect(entidadesDOM.length).toBe(2);
@@ -36,7 +48,7 @@ describe("[MER] VistaEditor", () => {
         const relacion = new Relacion(cliente, pedido, "REALIZA");
 
         modeloER = new ModeloER([cliente, pedido], [relacion]);
-        vistaEditorMER = new VistaEditorMER(modeloER, elementoRaiz, elementoSvg);
+        vistaEditorMER = new VistaEditorMER(modeloER, elementoRaiz, elementoSvg, proveedorNulo);
 
         expect(vistaEditorMER.modeloER.relaciones).toHaveLength(1);
         expect(vistaEditorMER.modeloER.relaciones[0].nombre()).toBe("REALIZA");
@@ -46,7 +58,7 @@ describe("[MER] VistaEditor", () => {
         const cliente = new Entidad("CLIENTE", []);
         const pedido = new Entidad("PEDIDO", []);
         modeloER = new ModeloER([cliente], []);
-        vistaEditorMER = new VistaEditorMER(modeloER, elementoRaiz, elementoSvg);
+        vistaEditorMER = new VistaEditorMER(modeloER, elementoRaiz, elementoSvg, proveedorNulo);
 
         const nuevasEntidades = [cliente, pedido];
         vistaEditorMER.reemplazarModelo(nuevasEntidades, []);

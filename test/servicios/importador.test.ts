@@ -222,4 +222,21 @@ describe("Importador", () => {
         expect(relAsciende!.entidadOrigen()).toBe(entidadChunin);
         expect(relAsciende!.entidadDestino()).toBe(entidadGenin);
     });
+
+    it("Se importan correctamente el MR y AR en el JSON", () => {
+        const json: JsonModelo = {
+            atributos: [],
+            entidades: [],
+            relaciones: [],
+            mr: "Cliente<id(PK, edad)>",
+            ar: "σ<edad>18>Cliente"
+        };
+
+        const {entidades, relaciones} = importar(json);
+        expect(entidades).toHaveLength(0);
+        expect(relaciones).toHaveLength(0);
+
+        expect(json.mr).toBe("Cliente<id(PK, edad)>");
+        expect(json.ar).toBe("σ<edad>18>Cliente");
+    });
 });

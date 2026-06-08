@@ -1,23 +1,36 @@
 import {createElement, createSvgElement} from "../vista/dom/createElement.ts";
-import {exportar} from "../servicios/exportador.ts";
+import {exportar, JsonModelo} from "../servicios/exportador.ts";
 import {importar} from "../servicios/importador.ts";
-import {VistaEditorMER} from "../vista/vistaEditorMER.ts";
 import {AlmacenamientoLocal} from "../servicios/almacenamientoLocal.ts";
-import {ModalMisModelos} from "./modalMisModelos.ts";
+import {ModalMisTrabajos} from "./modalMisTrabajos.ts";
+import {ModeloER} from "../servicios/modeloER.ts";
+import {Entidad} from "../modelo/entidad.ts";
+import {Relacion} from "../modelo/relacion.ts";
+
+export interface ProveedorDeTrabajo {
+    getModeloER(): ModeloER | null;
+    getTextoMR(): string;
+    getTextoAR(): string;
+    reemplazarModelo(entidades: Entidad[], relaciones: Relacion[]): void;
+    setTextoMR(texto: string): void;
+    setTextoAR(texto: string): void;
+    cancelarInteraccion(): void;
+    hayInteraccionEnProceso(): boolean;
+}
 
 export class MenuHamburguesa {
-    private readonly _vistaEditor: VistaEditorMER;
+    private readonly _proveedor: ProveedorDeTrabajo;
     private readonly _menúContainer: HTMLElement;
     private readonly _menuDesplegable: HTMLElement;
     private readonly _inputJson: HTMLInputElement;
     private readonly _almacenamiento: AlmacenamientoLocal;
-    private readonly _modalMisModelos: ModalMisModelos;
+    private readonly _modalMisTrabajos: ModalMisTrabajos;
     private _menuAbierto = false;
 
-    constructor(vistaEditor: VistaEditorMER) {
-        this._vistaEditor = vistaEditor;
+    constructor(proveedor: ProveedorDeTrabajo) {
+        this._proveedor = proveedor;
         this._almacenamiento = new AlmacenamientoLocal();
-        this._modalMisModelos = new ModalMisModelos(vistaEditor, this._almacenamiento);
+        this._modalMisTrabajos = new ModalMisTrabajos(proveedor, this._almacenamiento);
 
         this._inputJson = createElement("input", {
             type: "file",
@@ -51,21 +64,21 @@ export class MenuHamburguesa {
             x2: 21,
             y2: 6
         });
-        
+
         const linea2 = createSvgElement("line", {
             x1: 3,
             y1: 12,
             x2: 21,
             y2: 12
         });
-        
+
         const linea3 = createSvgElement("line", {
             x1: 3,
             y1: 18,
             x2: 21,
             y2: 18
         });
-        
+
         const svg = createSvgElement("svg", {
             viewBox: "0 0 24 24",
             width: 24,
@@ -85,32 +98,32 @@ export class MenuHamburguesa {
     private _crearMenuDesplegable(): HTMLElement {
         const botonExportar = createElement("button", {
             className: "menu-item",
-            textContent: "Exportar modelo",
-            onclick: () => this._exportarModelo()
+            textContent: "Exportar trabajo",
+            onclick: () => this._exportarTrabajo()
         });
 
         const botonImportar = createElement("button", {
             className: "menu-item",
-            textContent: "Importar modelo",
-            onclick: () => this._importarModelo()
+            textContent: "Importar trabajo",
+            onclick: () => this._importarTrabajo()
         });
 
-        const botonMisModelos = createElement("button", {
+        const botonMisTrabajos = createElement("button", {
             className: "menu-item",
-            textContent: "Mis Modelos",
-            onclick: () => this._abrirMisModelos()
+            textContent: "Mis trabajos",
+            onclick: () => this._abrirMisTrabajos()
         });
 
         return createElement("div", {
             className: "menu-hamburguesa-desplegable"
-        }, [botonMisModelos, botonExportar, botonImportar]);
+        }, [botonMisTrabajos, botonExportar, botonImportar]);
     }
 
     private _toggleMenu(e: MouseEvent): void {
         e.stopPropagation();
-        if (this._vistaEditor.hayUnaInteraccionEnProceso()) return;
+        if (this._proveedor.hayInteraccionEnProceso()) return;
         this._menuAbierto = !this._menuAbierto;
-        
+
         if (this._menuAbierto) {
             this._menuDesplegable.classList.add("abierto");
         } else {
@@ -129,11 +142,12 @@ export class MenuHamburguesa {
         }
     }
 
-    private _exportarModelo(): void {
+    private _exportarTrabajo(): void {
         this._cerrarMenu();
-        this._vistaEditor.cancelarInteracción();
+        this._proveedor.cancelarInteraccion();
 
-        const json = exportar(this._vistaEditor.modeloER);
+        const modeloER = this._proveedor.getModeloER() ?? new ModeloER([], []);
+        const json = exportar(modeloER, this._proveedor.getTextoMR(), this._proveedor.getTextoAR());
         const blob = new Blob([JSON.stringify(json, null, 2)], {type: "application/json"});
         const url = URL.createObjectURL(blob);
 
@@ -144,14 +158,14 @@ export class MenuHamburguesa {
 
         const a = document.createElement("a");
         a.href = url;
-        a.download = `MER_${timestamp}.json`;
+        a.download = `Momodelo_${timestamp}.json`;
         a.click();
         URL.revokeObjectURL(url);
     }
 
-    private _importarModelo(): void {
+    private _importarTrabajo(): void {
         this._cerrarMenu();
-        this._vistaEditor.cancelarInteracción();
+        this._proveedor.cancelarInteraccion();
         this._inputJson.click();
     }
 
@@ -161,17 +175,19 @@ export class MenuHamburguesa {
 
         const file = input.files[0];
         const text = await file.text();
-        const json = JSON.parse(text);
+        const json = JSON.parse(text) as JsonModelo;
 
         const {entidades, relaciones} = importar(json);
-        this._vistaEditor.reemplazarModelo(entidades, relaciones);
+        this._proveedor.reemplazarModelo(entidades, relaciones);
+        this._proveedor.setTextoMR(json.mr ?? "");
+        this._proveedor.setTextoAR(json.ar ?? "");
 
         input.value = "";
     }
 
-    private _abrirMisModelos(): void {
+    private _abrirMisTrabajos(): void {
         this._cerrarMenu();
-        this._vistaEditor.cancelarInteracción();
-        this._modalMisModelos.abrir();
+        this._proveedor.cancelarInteraccion();
+        this._modalMisTrabajos.abrir();
     }
 }

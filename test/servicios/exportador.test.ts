@@ -146,4 +146,20 @@ describe("Exportador", () => {
         expect(json.entidades.filter(e => e.esDebil)).toHaveLength(2);
         expect(json.relaciones.filter(r => r.tipo === 'débil')).toHaveLength(2);
     });
+
+    it("Si se incluye el MR y AR en el JSON de exportación quedan definidos", () => {
+        const modelo = new ModeloER([], []);
+        const json = exportar(modelo, "MR texto", "AR consulta");
+
+        expect(json.mr).toBe("MR texto");
+        expect(json.ar).toBe("AR consulta");
+    });
+
+    it("Se pueden no incluir el MR y AR en el JSON de exportación y no quedan definidos", () => {
+        const modelo = new ModeloER([], []);
+        const json = exportar(modelo);
+
+        expect(json.mr).toBeUndefined();
+        expect(json.ar).toBeUndefined();
+    });
 });

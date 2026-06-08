@@ -62,7 +62,7 @@ export class GestorModulos {
     }
 
     private _crearNavegación(): HTMLElement {
-        const opciones: MóduloMomodelo[] = ["MER", "MR", "MER/MR"];
+        const opciones: MóduloMomodelo[] = ["MER", "MER/MR", "MR"];
         return createElement("nav", {className: "tabs-modulos"},
             opciones.map(id => createElement("button", {
                 className: "tab-boton",
