@@ -222,17 +222,17 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
 
     it("el analizador falla si falta la coma entre dos atributos multivaluados", () => {
         expect(() => analizador.analizarSintaxisDe("REL < {a} {b} >"))
-            .toThrow("Se esperaba ',' en la fila 1, posición 9");
+            .toThrow("Se esperaba ',' en la fila 1, posición 11");
     });
 
     it("el analizador falla si falta el cierre de llave en un multivaluado", () => {
         expect(() => analizador.analizarSintaxisDe("REL < {emails >"))
-            .toThrow("Se esperaba '}' en la fila 1, posición 14");
+            .toThrow("Se esperaba '}' en la fila 1, posición 15");
     });
 
     it("el analizador falla si falta el nombre dentro de las llaves de un multivaluado", () => {
         expect(() => analizador.analizarSintaxisDe("REL < {} >"))
-            .toThrow("Se esperaba nombre de un atributo en la fila 1, posición 7");
+            .toThrow("Se esperaba nombre de un atributo en la fila 1, posición 8");
     });
 
     it("el analizador reconoce restricciones sobre atributos multivaluados", () => {
