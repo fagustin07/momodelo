@@ -189,6 +189,11 @@ export class VistaEditorMR {
                 return;
             }
 
+            if (this._modeloMaterializado!.relaciones().some(r => r.esquema.tieneAtributosMultivaluados())) {
+                this._mostrarError("No se pueden realizar consultas relacionales sobre un esquema con atributos multivaluados", 'AR');
+                return;
+            }
+
             try {
                 const resultado = this._editorAR.ejecutar(this._modeloMaterializado!);
                 this._renderizarResultado(resultado);
