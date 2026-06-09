@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import {ComparadorMR} from "../../src/mr/comparadorMR.ts";
 import {ErroresValidación} from "../../src/servicios/errores.ts";
-import {definición, entidad, fila, inserción, mer, pk, programa, relación, simple} from "./helpers.ts";
+import {definición, entidad, fila, inserción, mer, multivaluado, pk, programa, relación, simple} from "./helpers.ts";
 
 describe("[Modelo Relacional] Comparador MR", () => {
     const comparador = new ComparadorMR();
@@ -26,9 +26,9 @@ describe("[Modelo Relacional] Comparador MR", () => {
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("La relación 'FRUTA' tiene una clave primaria incorrecta.");
     });
 
-    it("el comparador ignora los atributos multivaluados del MER en el esquema MR", () => {
+    it("el comparador valida que los atributos multivaluados del MER estén presentes entre llaves en el MR", () => {
         const modeloER = mer(entidad("BARCO", ["id"], ["nombre"], ["tripulantes"]));
-        const modeloMR = programa(definición(relación("BARCO", pk("id"), simple("nombre"))));
+        const modeloMR = programa(definición(relación("BARCO", pk("id"), simple("nombre"), multivaluado("tripulantes"))));
         expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
     });
 
@@ -82,5 +82,12 @@ describe("[Modelo Relacional] Comparador MR", () => {
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("Falta la relación 'CLIENTE' en el modelo relacional.");
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("No se puede insertar en 'FANTASMA': no tiene correspondencia en el MER.");
+    });
+
+    it("el comparador levanta una excepción si los nombres de los multivaluados no coinciden", () => {
+        const modeloER = mer(entidad("BARCO", ["id"], ["nombre"], ["telefonos"]));
+        const modeloMR = programa(definición(relación("BARCO", pk("id"), simple("nombre"), multivaluado("emails"))));
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("La relación 'BARCO' no contiene los mismos atributos multivaluados que la entidad.");
     });
 });

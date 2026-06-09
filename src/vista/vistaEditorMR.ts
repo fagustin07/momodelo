@@ -173,11 +173,11 @@ export class VistaEditorMR {
             } catch (e) {
                 this._modeloMaterializado = null;
                 if (e instanceof ErrorSintácticoMR) {
-                    this._mostrarError(e.message);
+                    this._mostrarError(e.message, 'MR');
                 } else if (e instanceof ErroresValidación) {
-                    e.errores.forEach(msg => this._mostrarError(msg));
+                    e.errores.forEach(msg => this._mostrarError(msg, 'MR'));
                 } else if (e instanceof ErrorPKDuplicada) {
-                    this._mostrarError(e.message);
+                    this._mostrarError(e.message, 'MR');
                 } else {
                     throw e;
                 }
@@ -194,7 +194,7 @@ export class VistaEditorMR {
                 this._renderizarResultado(resultado);
             } catch (e) {
                 if (e instanceof ErrorSintácticoAR || e instanceof MomodeloLogicaError) {
-                    this._mostrarError(e.message);
+                    this._mostrarError(e.message, 'AR');
                 } else {
                     throw e;
                 }
@@ -237,9 +237,9 @@ export class VistaEditorMR {
         this._consola.innerHTML = "";
     }
 
-    private _mostrarError(mensaje: string): void {
+    private _mostrarError(mensaje: string, módulo: string): void {
         this._consola.append(
-            createElement("div", {className: "mr-consola-linea mr-consola-error", textContent: `[ERROR] ${mensaje}`})
+            createElement("div", {className: "mr-consola-linea mr-consola-error", textContent: `[ERROR-${módulo}] ${mensaje}`})
         );
     }
 

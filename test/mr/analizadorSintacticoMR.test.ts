@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {AnalizadorSintácticoMR} from "../../src/mr/analizadorSintacticoMR.ts";
-import {AtributoPK, Fila} from "../../src/mr/modeloSintacticoMR.ts";
+import {AtributoMultivaluado, AtributoPK, Fila} from "../../src/mr/modeloSintacticoMR.ts";
 import {ErrorSintácticoMR} from "../../src/servicios/errores";
 
 describe("[Modelo Relacional] Analizador Sintáctico", () => {
@@ -174,5 +174,69 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
         const fila = programa.inserciones()[0].filas[0];
         expect(fila.valores[0]).toBe(42);
         expect(fila.valores[1]).toBe(3.14);
+    });
+
+    it("el analizador reconoce atributos multivaluados en una definición", () => {
+        const programa = analizador.analizarSintaxisDe("Persona < {emails}, {telefonos} >");
+
+        const atributos = programa.relaciones()[0].atributos;
+        expect(atributos).toHaveLength(2);
+        expect(atributos[0]).toBeInstanceOf(AtributoMultivaluado);
+        expect(atributos[0].nombre).toBe("emails");
+        expect(atributos[1]).toBeInstanceOf(AtributoMultivaluado);
+        expect(atributos[1].nombre).toBe("telefonos");
+    });
+
+    it("el analizador reconoce definiciones con atributos simples, claves primarias y multivaluados", () => {
+        const programa = analizador.analizarSintaxisDe("Persona < dni(PK), nombre, {emails} >");
+
+        const relacion = programa.relaciones()[0];
+        expect(relacion.atributos).toHaveLength(3);
+        expect(relacion.atributos[0]).toBeInstanceOf(AtributoPK);
+        expect(relacion.atributos[1].nombre).toBe("nombre");
+        expect(relacion.atributos[2]).toBeInstanceOf(AtributoMultivaluado);
+        expect(relacion.tieneAtributosMultivaluados()).toBe(true);
+        expect(relacion.atributosMultivaluados()).toHaveLength(1);
+    });
+
+    it("una relación sin multivaluados reporta correctamente que no los tiene", () => {
+        const programa = analizador.analizarSintaxisDe("Persona < dni(PK), nombre >");
+
+        const relacion = programa.relaciones()[0];
+        expect(relacion.tieneAtributosMultivaluados()).toBe(false);
+        expect(relacion.atributosMultivaluados()).toHaveLength(0);
+    });
+
+    it("los atributos multivaluados no son atributos simples", () => {
+        const programa = analizador.analizarSintaxisDe("Persona < nombre, {emails} >");
+
+        const relacion = programa.relaciones()[0];
+        expect(relacion.atributosSimples()).toHaveLength(1);
+        expect(relacion.atributosSimples()[0].nombre).toBe("nombre");
+    });
+
+    it("el analizador falla si falta la coma antes de un atributo multivaluado", () => {
+        expect(() => analizador.analizarSintaxisDe("REL < a1 {emails} >"))
+            .toThrow("Se esperaba ',' en la fila 1, posición 10");
+    });
+
+    it("el analizador falla si falta la coma entre dos atributos multivaluados", () => {
+        expect(() => analizador.analizarSintaxisDe("REL < {a} {b} >"))
+            .toThrow("Se esperaba ',' en la fila 1, posición 9");
+    });
+
+    it("el analizador falla si falta el cierre de llave en un multivaluado", () => {
+        expect(() => analizador.analizarSintaxisDe("REL < {emails >"))
+            .toThrow("Se esperaba '}' en la fila 1, posición 14");
+    });
+
+    it("el analizador falla si falta el nombre dentro de las llaves de un multivaluado", () => {
+        expect(() => analizador.analizarSintaxisDe("REL < {} >"))
+            .toThrow("Se esperaba nombre de un atributo en la fila 1, posición 7");
+    });
+
+    it("el analizador reconoce restricciones sobre atributos multivaluados", () => {
+        expect(() => analizador.analizarSintaxisDe("REL < {dni}(PK) >"))
+            .toThrow(ErrorSintácticoMR);
     });
 });

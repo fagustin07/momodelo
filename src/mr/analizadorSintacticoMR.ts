@@ -1,5 +1,5 @@
 import {TipoTokenMR, TokenMR} from "../tipos/tipos.ts";
-import {AtributoMR, AtributoPK, AtributoSimple, Fila, ProgramaMR, RelacionMR, Valor} from "./modeloSintacticoMR.ts";
+import {AtributoMR, AtributoMultivaluado, AtributoPK, AtributoSimple, Fila, ProgramaMR, RelacionMR, Valor} from "./modeloSintacticoMR.ts";
 import {TokenizadorMR} from "./tokenizadorMR.ts";
 import {ErrorSintácticoMR} from "../servicios/errores.ts";
 import {DefiniciónRelación, InsertarEn, SentenciaMR} from "./sentenciaMR.ts";
@@ -81,7 +81,7 @@ export class AnalizadorSintácticoMR {
         atributos.push(this._atributo());
 
         while (!this._es("RANGLE")) {
-            if (this._es("NOMBRE")) {
+            if (this._es("NOMBRE") || this._es("LBRACE")) {
                 this._consumir("COMA", "','");
             }
             this._consumir("COMA", "','");
@@ -92,6 +92,13 @@ export class AnalizadorSintácticoMR {
     }
 
     private _atributo(): AtributoMR {
+        if (this._es("LBRACE")) {
+            this._avanzar();
+            const nombre = this._consumir("NOMBRE", "nombre de un atributo").valor;
+            this._consumir("RBRACE", "'}'");
+            return new AtributoMultivaluado(nombre);
+        }
+
         const nombre = this._consumir("NOMBRE", "nombre de un atributo").valor;
 
         if (this._es("LPAREN")) {

@@ -1,5 +1,6 @@
 import {
     AtributoMR,
+    AtributoMultivaluado,
     AtributoPK,
     AtributoSimple,
     Fila,
@@ -17,6 +18,10 @@ export function pk(nombre: string): AtributoPK {
 
 export function simple(nombre: string): AtributoSimple {
     return new AtributoSimple(nombre);
+}
+
+export function multivaluado(nombre: string): AtributoMultivaluado {
+    return new AtributoMultivaluado(nombre);
 }
 
 export function relación(nombre: string, ...atributos: AtributoMR[]): RelacionMR {

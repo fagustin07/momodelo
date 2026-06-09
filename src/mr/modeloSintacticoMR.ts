@@ -34,7 +34,15 @@ export class RelacionMR {
     }
 
     atributosSimples(): AtributoSimple[] {
-        return this.atributos.filter(atr => !atr.esClavePrimaria()) as AtributoSimple[];
+        return this.atributos.filter(atr => !atr.esClavePrimaria() && !atr.esMultivaluado()) as AtributoSimple[];
+    }
+
+    atributosMultivaluados(): AtributoMultivaluado[] {
+        return this.atributos.filter(atr => atr.esMultivaluado()) as AtributoMultivaluado[];
+    }
+
+    tieneAtributosMultivaluados(): boolean {
+        return this.atributos.some(atr => atr.esMultivaluado());
     }
 
     atributosDuplicados(): string[] {
@@ -53,12 +61,22 @@ export abstract class AtributoMR {
     esClavePrimaria(): boolean {
         return false;
     }
+
+    esMultivaluado(): boolean {
+        return false;
+    }
 }
 
 export class AtributoSimple extends AtributoMR { }
 
 export class AtributoPK extends AtributoMR {
     esClavePrimaria(): boolean {
+        return true;
+    }
+}
+
+export class AtributoMultivaluado extends AtributoMR {
+    esMultivaluado(): boolean {
         return true;
     }
 }

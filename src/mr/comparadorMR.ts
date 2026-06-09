@@ -44,6 +44,10 @@ export class ComparadorMR {
             return `La relación '${entidad.nombre()}' tiene una clave primaria incorrecta.`;
         }
 
+        if (!this._tienenMismosAtributosMultivaluados(entidad, relacionAsociada)) {
+            return `La relación '${entidad.nombre()}' no contiene los mismos atributos multivaluados que la entidad.`;
+        }
+
         if (!this._tienenMismosAtributosSimples(entidad, relacionAsociada)) {
             return `La relación '${entidad.nombre()}' no contiene los mismos atributos simples que la entidad.`;
         }
@@ -70,5 +74,15 @@ export class ComparadorMR {
 
         return simplesEsperados.length === simplesEncontrados.length &&
             simplesEsperados.every(nombre => simplesEncontrados.includes(nombre));
+    }
+
+    private _tienenMismosAtributosMultivaluados(entidad: Entidad, relacion: RelacionMR): boolean {
+        const multivaluadosEncontrados = relacion.atributosMultivaluados().map(atr => atr.nombre.toLowerCase());
+        const multivaluadosEsperados = entidad.atributos()
+            .filter(atr => atr.esMultivaluado())
+            .map(atr => atr.nombre().toLowerCase());
+
+        return multivaluadosEsperados.length === multivaluadosEncontrados.length &&
+            multivaluadosEsperados.every(nombre => multivaluadosEncontrados.includes(nombre));
     }
 }
