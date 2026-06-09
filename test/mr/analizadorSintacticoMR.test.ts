@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {AnalizadorSintácticoMR} from "../../src/mr/analizadorSintacticoMR.ts";
-import {AtributoMultivaluado, AtributoPK, Fila} from "../../src/mr/modeloSintacticoMR.ts";
+import {AtributoFK, AtributoMultivaluado, AtributoPK, AtributoPKFK, Fila} from "../../src/mr/modeloSintacticoMR.ts";
 import {ErrorSintácticoMR} from "../../src/servicios/errores";
 
 describe("[Modelo Relacional] Analizador Sintáctico", () => {
@@ -53,16 +53,42 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
     });
 
 
-    it("el analizador falla si la restricción de clave primaria está mal formada", () => {
-        expect(() => analizador.analizarSintaxisDe("REL < atr (PK >"))
-            .toThrow("Se esperaba ')' en la fila 1, posición 15");
+    it("el analizador falla si la restricción no es ni PK ni FK", () => {
+        expect(() => analizador.analizarSintaxisDe("REL < atr ( XYZ ) >"))
+            .toThrow("Se esperaba PK o FK en la fila 1, posición 13");
+    });
 
+    it("el analizador reconoce atributos marcados como FK", () => {
+        const modelo = analizador.analizarSintaxisDe("ESTUDIANTE < legajo(FK), nombre(FK) >");
 
-        expect(() => analizador.analizarSintaxisDe("REL < atr ( FK ) >"))
-            .toThrow("Se esperaba 'PK' en la fila 1, posición 13");
+        expect(modelo.relaciones()[0].atributos[0]).toEqual(new AtributoFK("legajo"));
+        expect(modelo.relaciones()[0].atributos[0].esForánea()).toBe(true);
+        expect(modelo.relaciones()[0].atributos[0].esClavePrimaria()).toBe(false);
+        expect(modelo.relaciones()[0].atributos[1]).toEqual(new AtributoFK("nombre"));
+    });
 
-        expect(() => analizador.analizarSintaxisDe("REL < atr PK ) >"))
-            .toThrow("Se esperaba '(' en la fila 1, posición 11");
+    it("el analizador reconoce atributos marcados como PK y FK a la vez", () => {
+        const modelo = analizador.analizarSintaxisDe("Cursa < legajo(PK, FK), codigo(FK, PK) >");
+
+        const rel = modelo.relaciones()[0];
+
+        expect(rel.atributos[0]).toEqual(new AtributoPKFK("legajo"));
+        expect(rel.atributos[0].esClavePrimaria()).toBe(true);
+        expect(rel.atributos[0].esForánea()).toBe(true);
+        expect(rel.atributos[1]).toEqual(new AtributoPKFK("codigo"));
+
+        expect(rel.clavesPrimarias().map(a => a.nombre)).toEqual(["legajo", "codigo"]);
+        expect(rel.clavesForáneas().map(a => a.nombre)).toEqual(["legajo", "codigo"]);
+    });
+
+    it("una relación con atributos PK, FK, o la combinación de ambos se parsea correctamente", () => {
+        const modelo = analizador.analizarSintaxisDe(
+            "Compra < id(PK), id_cliente(FK), fecha, monto(PK, FK) >"
+        );
+
+        const rel = modelo.relaciones()[0];
+        expect(rel.clavesPrimarias().map(a => a.nombre)).toEqual(["id", "monto"]);
+        expect(rel.clavesForáneas().map(a => a.nombre)).toEqual(["id_cliente", "monto"]);
 
     });
 

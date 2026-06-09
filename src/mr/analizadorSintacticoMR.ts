@@ -1,5 +1,5 @@
 import {TipoTokenMR, TokenMR} from "../tipos/tipos.ts";
-import {AtributoMR, AtributoMultivaluado, AtributoPK, AtributoSimple, Fila, ProgramaMR, RelacionMR, Valor} from "./modeloSintacticoMR.ts";
+import {AtributoFK, AtributoMR, AtributoMultivaluado, AtributoPK, AtributoPKFK, AtributoSimple, Fila, ProgramaMR, RelacionMR, Valor} from "./modeloSintacticoMR.ts";
 import {TokenizadorMR} from "./tokenizadorMR.ts";
 import {ErrorSintácticoMR} from "../servicios/errores.ts";
 import {DefiniciónRelación, InsertarEn, SentenciaMR} from "./sentenciaMR.ts";
@@ -103,15 +103,39 @@ export class AnalizadorSintácticoMR {
 
         if (this._es("LPAREN")) {
             this._avanzar();
-            this._consumir("PK", "'PK'");
+            const restricciones = this._restricciones();
             this._consumir("RPAREN", "')'");
-            return new AtributoPK(nombre);
+            return this._atributoConRestricciones(nombre, restricciones);
         }
 
-        if (this._es("PK")) {
-            this._consumir("LPAREN", "'('");
-        }
+        return new AtributoSimple(nombre);
+    }
 
+    private _restricciones(): string[] {
+        const restricciones: string[] = [];
+        restricciones.push(this._consumirRestricción());
+        while (this._es("COMA")) {
+            this._avanzar();
+            restricciones.push(this._consumirRestricción());
+        }
+        return restricciones;
+    }
+
+    private _consumirRestricción(): string {
+        if (this._es("PK")) return this._avanzar().valor;
+        if (this._es("FK")) return this._avanzar().valor;
+        const pos = this._esFin() ? this._inputOriginal.length : this._ver().posicion;
+        const [fila, columna] = this._obtenerFilaYColumna(pos);
+        throw new ErrorSintácticoMR(fila, columna, "PK o FK");
+    }
+
+    private _atributoConRestricciones(nombre: string, restricciones: string[]): AtributoMR {
+        const tienePK = restricciones.some(r => r.toUpperCase() === "PK");
+        const tieneFK = restricciones.some(r => r.toUpperCase() === "FK");
+
+        if (tienePK && tieneFK) return new AtributoPKFK(nombre);
+        if (tienePK) return new AtributoPK(nombre);
+        if (tieneFK) return new AtributoFK(nombre);
         return new AtributoSimple(nombre);
     }
 

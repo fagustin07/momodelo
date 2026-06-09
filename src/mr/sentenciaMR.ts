@@ -33,11 +33,32 @@ export class DefiniciónRelación extends SentenciaMR {
             errores.push(`La relación '${this.relacion.nombre}' tiene atributos duplicados: ${duplicados.map(d => `'${d}'`).join(', ')}.`);
         }
 
+        this._validarClavesForáneas(relacionesDefinidas, errores);
+
         relacionesDefinidas.set(this.relacion.nombre.toLowerCase(), this.relacion);
     }
 
     interpretarseCon(modelo: ModeloRelacionalMaterializado): void {
         modelo.registrarRelacion(new RelacionMaterializada(this.relacion));
+    }
+
+    private _validarClavesForáneas(relacionesDefinidas: Map<string, RelacionMR>, errores: string[]): void {
+        this.relacion.clavesForáneas()
+            .filter(fk => !this._existePKReferenciada(fk.nombre, relacionesDefinidas))
+            .forEach(fk => errores.push(
+                `El atributo FK '${fk.nombre}' en '${this.relacion.nombre}' no referencia ninguna clave primaria existente al momento de definir la relación.`
+            ));
+    }
+
+    private _existePKReferenciada(nombreFK: string, relacionesDefinidas: Map<string, RelacionMR>): boolean {
+        nombreFK = nombreFK.toLowerCase();
+        return [...relacionesDefinidas].some(([nombreRelacion, relacion]) =>
+            nombreRelacion !== this.relacion.nombre.toLowerCase() &&
+            relacion.clavesPrimarias().some(pk =>
+                pk.nombre.toLowerCase() === nombreFK ||
+                `${pk.nombre.toLowerCase()}_${nombreRelacion}` === nombreFK
+            )
+        );
     }
 }
 

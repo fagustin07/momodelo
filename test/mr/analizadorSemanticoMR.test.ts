@@ -2,7 +2,7 @@ import {describe, expect, it} from "vitest";
 import {AnalizadorSemánticoMR} from "../../src/mr/analizadorSemanticoMR";
 import {ProgramaMRValidado} from "../../src/mr/modeloSintacticoMR";
 import {ErroresValidación} from "../../src/servicios/errores";
-import {definición, fila, inserción, pk, programa, relación, simple} from "./helpers";
+import {definición, fila, fk, inserción, pk, pkfk, programa, relación, simple} from "./helpers";
 
 describe("[Modelo Relacional] Analizador Semántico", () => {
     const analizador = new AnalizadorSemánticoMR();
@@ -132,5 +132,74 @@ describe("[Modelo Relacional] Analizador Semántico", () => {
         expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
         expect(() => analizador.validar(modelo)).toThrow("Falta clave primaria en 'PIEZA'.");
         expect(() => analizador.validar(modelo)).toThrow("La relación 'PIEZA' tiene atributos duplicados: 'tipo'.");
+    });
+
+    it("un FK que referencia una PK por nombre directo es válido", () => {
+        const modelo = programa(
+            definición(relación("CLIENTE", pk("id"))),
+            definición(relación("COMPRA", pk("nro"), fk("id"))),
+        );
+
+        expect(() => analizador.validar(modelo)).not.toThrow();
+    });
+
+    it("un FK que referencia una PK por sufijo de entidad es válido", () => {
+        const modelo = programa(
+            definición(relación("CLIENTE", pk("id"))),
+            definición(relación("COMPRA", pk("nro"), fk("id_cliente"))),
+        );
+
+        expect(() => analizador.validar(modelo)).not.toThrow();
+    });
+
+    it("un FK que no referencia ninguna PK existente lanza error", () => {
+        const modelo = programa(
+            definición(relación("CLIENTE", pk("id"))),
+            definición(relación("COMPRA", pk("nro"), fk("id_vendedor"))),
+        );
+
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
+        expect(() => analizador.validar(modelo)).toThrow("El atributo FK 'id_vendedor' en 'COMPRA' no referencia ninguna clave primaria existente al momento de definir la relación.");
+    });
+
+    it("se reconocen FKs que referencian a las claves de otras relaciones", () => {
+        const modelo = programa(
+            definición(relación("CLIENTE", pk("id"))),
+            definición(relación("PRODUCTO", pk("codigo"))),
+            definición(relación("COMPRA", pk("nro"), fk("id"), fk("codigo"))),
+        );
+
+        expect(() => analizador.validar(modelo)).not.toThrow();
+    });
+
+    it("múltiples FKs inválidas en distintas relaciones acumulan errores", () => {
+        const modelo = programa(
+            definición(relación("CLIENTE", pk("id"))),
+            definición(relación("COMPRA", pk("nro"), fk("fantasma1"))),
+            definición(relación("PEDIDO", pk("codigo"), fk("fantasma2"))),
+        );
+
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
+        expect(() => analizador.validar(modelo)).toThrow("El atributo FK 'fantasma1' en 'COMPRA' no referencia ninguna clave primaria existente al momento de definir la relación.");
+        expect(() => analizador.validar(modelo)).toThrow("El atributo FK 'fantasma2' en 'PEDIDO' no referencia ninguna clave primaria existente al momento de definir la relación.");
+    });
+
+    it("un FK en una relación que referencia una PK definida después es válido si la definición se declara luego", () => {
+        const modelo = programa(
+            definición(relación("COMPRA", pk("nro"), fk("id_cliente"))),
+            definición(relación("CLIENTE", pk("id"))),
+        );
+
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
+        expect(() => analizador.validar(modelo)).toThrow("El atributo FK 'id_cliente' en 'COMPRA' no referencia ninguna clave primaria existente al momento de definir la relación.");
+    });
+
+    it("un PKFK se valida como PK y también como FK", () => {
+        const modelo = programa(
+            definición(relación("CLIENTE", pk("id"))),
+            definición(relación("COMPRA", pkfk("id"))),
+        );
+
+        expect(() => analizador.validar(modelo)).not.toThrow();
     });
 });

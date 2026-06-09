@@ -1,7 +1,9 @@
 import {
+    AtributoFK,
     AtributoMR,
     AtributoMultivaluado,
     AtributoPK,
+    AtributoPKFK,
     AtributoSimple,
     Fila,
     ProgramaMR,
@@ -14,6 +16,14 @@ import {coordenada} from "../../src/posicion.ts";
 
 export function pk(nombre: string): AtributoPK {
     return new AtributoPK(nombre);
+}
+
+export function fk(nombre: string): AtributoFK {
+    return new AtributoFK(nombre);
+}
+
+export function pkfk(nombre: string): AtributoPKFK {
+    return new AtributoPKFK(nombre);
 }
 
 export function simple(nombre: string): AtributoSimple {

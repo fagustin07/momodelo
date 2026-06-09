@@ -29,12 +29,16 @@ export class ProgramaMR {
 export class RelacionMR {
     constructor(public readonly nombre: string, public readonly atributos: AtributoMR[]) {}
 
-    clavesPrimarias(): AtributoPK[] {
-        return this.atributos.filter(atr => atr.esClavePrimaria()) as AtributoPK[];
+    clavesPrimarias(): (AtributoPK | AtributoPKFK)[] {
+        return this.atributos.filter(atr => atr.esClavePrimaria());
+    }
+
+    clavesForáneas(): AtributoMR[] {
+        return this.atributos.filter(atr => atr.esForánea());
     }
 
     atributosSimples(): AtributoSimple[] {
-        return this.atributos.filter(atr => !atr.esClavePrimaria() && !atr.esMultivaluado()) as AtributoSimple[];
+        return this.atributos.filter(atr => !atr.esClavePrimaria() && !atr.esForánea() && !atr.esMultivaluado()) as AtributoSimple[];
     }
 
     atributosMultivaluados(): AtributoMultivaluado[] {
@@ -62,6 +66,10 @@ export abstract class AtributoMR {
         return false;
     }
 
+    esForánea(): boolean {
+        return false;
+    }
+
     esMultivaluado(): boolean {
         return false;
     }
@@ -71,6 +79,22 @@ export class AtributoSimple extends AtributoMR { }
 
 export class AtributoPK extends AtributoMR {
     esClavePrimaria(): boolean {
+        return true;
+    }
+}
+
+export class AtributoFK extends AtributoMR {
+    esForánea(): boolean {
+        return true;
+    }
+}
+
+export class AtributoPKFK extends AtributoMR {
+    esClavePrimaria(): boolean {
+        return true;
+    }
+
+    esForánea(): boolean {
         return true;
     }
 }
