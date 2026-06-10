@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import {ComparadorMR} from "../../src/mr/comparadorMR.ts";
 import {ErroresValidación} from "../../src/servicios/errores.ts";
-import {definición, entidad, fila, inserción, mer, multivaluado, pk, programa, relación, simple} from "./helpers.ts";
+import {definición, entidad, fila, inserción, mer, multivaluado, pk, pkfk, programa, relación, relacionMER, simple} from "./helpers.ts";
 
 describe("[Modelo Relacional] Comparador MR", () => {
     const comparador = new ComparadorMR();
@@ -89,5 +89,136 @@ describe("[Modelo Relacional] Comparador MR", () => {
         const modeloMR = programa(definición(relación("BARCO", pk("id"), simple("nombre"), multivaluado("emails"))));
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow("La relación 'BARCO' no contiene los mismos atributos multivaluados que la entidad.");
+    });
+
+    it("el comparador sabe si una entidad débil absorbe correctamente la clave con un atributo de la fuerte", () => {
+        const pedido = entidad("PEDIDO", ["nro"]);
+        const lineaPedido = entidad("LINEA_PEDIDO", ["nro_linea"]);
+        const relDebil = relacionMER(lineaPedido, pedido, "PEDIDO_TIENE_LINEA", ['1', '1'], ['0', 'N'], 'débil');
+        const modeloER = mer(pedido, lineaPedido, [relDebil]);
+        const modeloMR = programa(
+            definición(relación("PEDIDO", pk("nro"))),
+            definición(relación("LINEA_PEDIDO", pk("nro_linea"), pkfk("nro"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
+    });
+
+    it("el comparador sabe si una entidad débil absorbe correctamente la clave compuesta de la fuerte", () => {
+        const expediente = entidad("EXPEDIENTE", ["año", "numero"]);
+        const foja = entidad("FOJA", ["nro_foja"]);
+        const relDebil = relacionMER(foja, expediente, "EXPEDIENTE_TIENE_FOJA", ['1', '1'], ['0', 'N'], 'débil');
+        const modeloER = mer(expediente, foja, [relDebil]);
+        const modeloMR = programa(
+            definición(relación("EXPEDIENTE", pk("año"), pk("numero"))),
+            definición(relación("FOJA", pk("nro_foja"), pkfk("año"), pkfk("numero"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
+    });
+
+    it("el comparador sabe si una entidad débil absorbe correctamente la clave de su entidad fuerte que a la vez era débil de otra", () => {
+        const pais = entidad("PAIS", ["codigo_pais"]);
+        const provincia = entidad("PROVINCIA", ["codigo_provincia"]);
+        const ciudad = entidad("CIUDAD", ["codigo_ciudad"]);
+        const provinciaDePais = relacionMER(provincia, pais, "PERTENECE_PAIS", ['1', '1'], ['0', 'N'], 'débil');
+        const ciudadDeProvincia = relacionMER(ciudad, provincia, "PERTENECE_PROVINCIA", ['1', '1'], ['0', 'N'], 'débil');
+        const modeloER = mer(pais, provincia, ciudad, [provinciaDePais, ciudadDeProvincia]);
+        const modeloMR = programa(
+            definición(relación("PAIS", pk("codigo_pais"))),
+            definición(relación("PROVINCIA", pk("codigo_provincia"), pkfk("codigo_pais"))),
+            definición(relación("CIUDAD", pk("codigo_ciudad"), pkfk("codigo_provincia"), pkfk("codigo_pais"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
+    });
+
+    it("si una entidad débil no absorbe la PK de la fuerte levanta una excepción", () => {
+        const pedido = entidad("PEDIDO", ["nro"]);
+        const lineaPedido = entidad("LINEA_PEDIDO", ["nro_linea"]);
+        const relDebil = relacionMER(lineaPedido, pedido, "PEDIDO_TIENE_LINEA", ['1', '1'], ['0', 'N'], 'débil');
+        const modeloER = mer(pedido, lineaPedido, [relDebil]);
+        const modeloMR = programa(
+            definición(relación("PEDIDO", pk("nro"))),
+            definición(relación("LINEA_PEDIDO", pk("nro_linea"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
+        expect(() => comparador.esConsistente(modeloER, modeloMR))
+            .toThrow("La entidad débil 'LINEA_PEDIDO' no absorbe el atributo 'nro' de 'PEDIDO' como PK y FK.");
+    });
+
+    it("si una entidad débil no tiene su clave parcial propia levanta una excepción", () => {
+        const pedido = entidad("PEDIDO", ["nro"]);
+        const lineaPedido = entidad("LINEA_PEDIDO", ["nro_linea"]);
+        const relDebil = relacionMER(lineaPedido, pedido, "PEDIDO_TIENE_LINEA", ['1', '1'], ['0', 'N'], 'débil');
+        const modeloER = mer(pedido, lineaPedido, [relDebil]);
+        const modeloMR = programa(
+            definición(relación("PEDIDO", pk("nro"))),
+            definición(relación("LINEA_PEDIDO", pkfk("nro"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
+        expect(() => comparador.esConsistente(modeloER, modeloMR))
+            .toThrow("La entidad débil 'LINEA_PEDIDO' no tiene su clave parcial 'nro_linea' como PK.");
+    });
+
+    it("el comparador reconoce que una relación N:M genera una tabla intermedia con las claves de ambas entidades como PK y FK", () => {
+        const estudiante = entidad("ESTUDIANTE", ["legajo"]);
+        const materia = entidad("MATERIA", ["codigo"]);
+        const cursa = relacionMER(estudiante, materia, "CURSA", ['0', 'N'], ['0', 'N']);
+        const modeloER = mer(estudiante, materia, [cursa]);
+        const modeloMR = programa(
+            definición(relación("ESTUDIANTE", pk("legajo"))),
+            definición(relación("MATERIA", pk("codigo"))),
+            definición(relación("CURSA", pkfk("legajo"), pkfk("codigo"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
+    });
+
+    it("el comparador levanta una excepción si una relación N:M no está mapeada a una tabla intermedia", () => {
+        const estudiante = entidad("ESTUDIANTE", ["legajo"]);
+        const materia = entidad("MATERIA", ["codigo"]);
+        const cursa = relacionMER(estudiante, materia, "CURSA", ['0', 'N'], ['0', 'N']);
+        const modeloER = mer(estudiante, materia, [cursa]);
+        const modeloMR = programa(
+            definición(relación("ESTUDIANTE", pk("legajo"))),
+            definición(relación("MATERIA", pk("codigo"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
+        expect(() => comparador.esConsistente(modeloER, modeloMR))
+            .toThrow("La relación N:M 'CURSA' no tiene tabla intermedia en el MR.");
+    });
+
+    it("una relación N:M con tabla intermedia a la que le falta parte de la clave levanta una excepción", () => {
+        const estudiante = entidad("ESTUDIANTE", ["legajo"]);
+        const materia = entidad("MATERIA", ["codigo"]);
+        const cursa = relacionMER(estudiante, materia, "CURSA", ['0', 'N'], ['0', 'N']);
+        const modeloER = mer(estudiante, materia, [cursa]);
+        const modeloMR = programa(
+            definición(relación("ESTUDIANTE", pk("legajo"))),
+            definición(relación("MATERIA", pk("codigo"))),
+            definición(relación("CURSA", pkfk("legajo"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
+        expect(() => comparador.esConsistente(modeloER, modeloMR))
+            .toThrow("La tabla 'CURSA' no tiene la clave 'codigo' de 'MATERIA' como PK y FK.");
+    });
+
+    it("el comparador reconoce la referencia a entidades en tablas intermedias con sufijo en los FKs", () => {
+        const estudiante = entidad("ESTUDIANTE", ["legajo"]);
+        const materia = entidad("MATERIA", ["codigo"]);
+        const cursa = relacionMER(estudiante, materia, "CURSA", ['0', 'N'], ['0', 'N']);
+        const modeloER = mer(estudiante, materia, [cursa]);
+        const modeloMR = programa(
+            definición(relación("ESTUDIANTE", pk("legajo"))),
+            definición(relación("MATERIA", pk("codigo"))),
+            definición(relación("CURSA", pkfk("legajo_estudiante"), pkfk("codigo_materia"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
     });
 });

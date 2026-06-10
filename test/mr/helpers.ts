@@ -12,6 +12,8 @@ import {
 import {DefiniciónRelación, InsertarEn, SentenciaMR} from "../../src/mr/sentenciaMR.ts";
 import {ModeloER} from "../../src/servicios/modeloER.ts";
 import {Entidad} from "../../src/modelo/entidad.ts";
+import {Relacion} from "../../src/modelo/relacion.ts";
+import {Cardinalidad, TipoRelacion} from "../../src/tipos/tipos.ts";
 import {coordenada} from "../../src/posicion.ts";
 
 export function pk(nombre: string): AtributoPK {
@@ -71,6 +73,26 @@ export function entidad(nombre: string, pks: string[] = [], simples: string[] = 
     return e;
 }
 
-export function mer(...entidades: Entidad[]): ModeloER {
-    return new ModeloER(entidades);
+export function relacionMER(
+    origen: Entidad,
+    destino: Entidad,
+    nombre: string = "RELACIÓN",
+    cardOrigen: Cardinalidad = ['0', 'N'],
+    cardDestino: Cardinalidad = ['0', 'N'],
+    tipo: TipoRelacion = 'fuerte'): Relacion {
+    return new Relacion(origen, destino, nombre, cardOrigen, cardDestino, coordenada(0, 0), tipo);
+}
+
+export function mer(...elementosMER: (Entidad | Relacion[])[]): ModeloER {
+    const entidades: Entidad[] = [];
+    const relaciones: Relacion[] = [];
+    elementosMER.forEach(elementoMER => {
+        if (Array.isArray(elementoMER)) {
+            relaciones.push(...elementoMER);
+        } else {
+            entidades.push(elementoMER);
+        }
+    });
+
+    return new ModeloER(entidades, relaciones);
 }
