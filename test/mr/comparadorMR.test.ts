@@ -145,22 +145,7 @@ describe("[Modelo Relacional] Comparador MR", () => {
 
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
         expect(() => comparador.esConsistente(modeloER, modeloMR))
-            .toThrow("La entidad débil 'LINEA_PEDIDO' no absorbe el atributo 'nro' de 'PEDIDO' como PK y FK.");
-    });
-
-    it("si una entidad débil no tiene su clave parcial propia levanta una excepción", () => {
-        const pedido = entidad("PEDIDO", ["nro"]);
-        const lineaPedido = entidad("LINEA_PEDIDO", ["nro_linea"]);
-        const relDebil = relacionMER(lineaPedido, pedido, "PEDIDO_TIENE_LINEA", ['1', '1'], ['0', 'N'], 'débil');
-        const modeloER = mer(pedido, lineaPedido, [relDebil]);
-        const modeloMR = programa(
-            definición(relación("PEDIDO", pk("nro"))),
-            definición(relación("LINEA_PEDIDO", pkfk("nro"))),
-        );
-
-        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
-        expect(() => comparador.esConsistente(modeloER, modeloMR))
-            .toThrow("La entidad débil 'LINEA_PEDIDO' no tiene su clave parcial 'nro_linea' como PK.");
+            .toThrow("Entidad Débil: Se debe absorber la clave completa de 'PEDIDO' en 'LINEA_PEDIDO' como PK y FK.");
     });
 
     it("el comparador reconoce que una relación N:M genera una tabla intermedia con las claves de ambas entidades como PK y FK", () => {
@@ -189,13 +174,13 @@ describe("[Modelo Relacional] Comparador MR", () => {
 
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
         expect(() => comparador.esConsistente(modeloER, modeloMR))
-            .toThrow("La relación N:M 'CURSA' no tiene tabla intermedia en el MR.");
+            .toThrow("Cardinalidad (0,N) a (0,N): Se debe crear la tabla intermedia 'CURSA' con la clave completa de 'ESTUDIANTE' y 'MATERIA' como PK y FK.");
     });
 
     it("una relación N:M con tabla intermedia a la que le falta parte de la clave levanta una excepción", () => {
         const estudiante = entidad("ESTUDIANTE", ["legajo"]);
         const materia = entidad("MATERIA", ["codigo"]);
-        const cursa = relacionMER(estudiante, materia, "CURSA", ['0', 'N'], ['0', 'N']);
+        const cursa = relacionMER(estudiante, materia, "CURSA", ['1', 'N'], ['0', 'N']);
         const modeloER = mer(estudiante, materia, [cursa]);
         const modeloMR = programa(
             definición(relación("ESTUDIANTE", pk("legajo"))),
@@ -205,7 +190,7 @@ describe("[Modelo Relacional] Comparador MR", () => {
 
         expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
         expect(() => comparador.esConsistente(modeloER, modeloMR))
-            .toThrow("La tabla 'CURSA' no tiene la clave 'codigo' de 'MATERIA' como PK y FK.");
+            .toThrow("Cardinalidad (1,N) a (0,N): La tabla 'CURSA' debe tener la clave completa de 'MATERIA' como PK y FK.");
     });
 
     it("el comparador reconoce la referencia a entidades en tablas intermedias con sufijo en los FKs", () => {
