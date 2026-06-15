@@ -1,13 +1,15 @@
 import {describe, it} from "vitest";
 import {esperarAnálisisSintácticoAR, esperarErrorSintácticoAR} from "./helpers.ts";
+import {ExpresiónProyección, ExpresiónSelección, NombreDeRelación} from "../../src/ar/modeloSintácticoAR.ts";
+import {Intersección, Resta, Unión} from "../../src/ar/modeloSintactico/operadorDeConjuntos.ts";
 
 describe("[Álgebra Relacional] Parser AR", () => {
     it("un nombre de relación solo se parsea como NombreDeRelación con ese nombre", () => {
-        esperarAnálisisSintácticoAR("PERSONA", {nombre: "PERSONA"});
+        esperarAnálisisSintácticoAR("PERSONA", NombreDeRelación, {nombre: "PERSONA"});
     });
 
     it("los espacios alrededor del nombre no afectan el resultado", () => {
-        esperarAnálisisSintácticoAR("  CLIENTE  ", {nombre: "CLIENTE"});
+        esperarAnálisisSintácticoAR("  CLIENTE  ", NombreDeRelación, {nombre: "CLIENTE"});
     });
 
     it("una consulta vacía lanza una excepción", () => {
@@ -26,7 +28,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("una selección con comparación de igualdad es una consulta válida", () => {
-        esperarAnálisisSintácticoAR("σ<marca='Quilmes'>Cerveza", {
+        esperarAnálisisSintácticoAR("σ<marca='Quilmes'>Cerveza", ExpresiónSelección, {
             condición: {
                 izq: {nombre: "marca"},
                 op: "=",
@@ -37,7 +39,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("una selección con comparación numérica mayor-que es una consulta válida", () => {
-        esperarAnálisisSintácticoAR("σ<grad>4.6>Cerveza", {
+        esperarAnálisisSintácticoAR("σ<grad>4.6>Cerveza", ExpresiónSelección, {
             condición: {
                 izq: {nombre: "grad"},
                 op: ">",
@@ -48,7 +50,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("una selección con comparación de atributo contra atributo es una consulta válida", () => {
-        esperarAnálisisSintácticoAR("σ<precioMin<precioMax>Producto", {
+        esperarAnálisisSintácticoAR("σ<precioMin<precioMax>Producto", ExpresiónSelección, {
             condición: {
                 izq: {nombre: "precioMin"},
                 op: "<",
@@ -59,7 +61,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("una selección con comparación booleana es una consulta válida", () => {
-        esperarAnálisisSintácticoAR("σ<activo=TRUE>Usuario", {
+        esperarAnálisisSintácticoAR("σ<activo=TRUE>Usuario", ExpresiónSelección, {
             condición: {
                 izq: {nombre: "activo"},
                 op: "=",
@@ -70,21 +72,21 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("una selección con atributo booleano directo es una consulta válida", () => {
-        esperarAnálisisSintácticoAR("σ<activo>Usuario", {
+        esperarAnálisisSintácticoAR("σ<activo>Usuario", ExpresiónSelección, {
             condición: {operando: {nombre: "activo"}},
             subexpr: {nombre: "Usuario"},
         });
     });
 
     it("una selección con literal booleano directo es una consulta válida", () => {
-        esperarAnálisisSintácticoAR("σ<TRUE>Usuario", {
+        esperarAnálisisSintácticoAR("σ<TRUE>Usuario", ExpresiónSelección, {
             condición: {operando: {valor: true}},
             subexpr: {nombre: "Usuario"},
         });
     });
 
     it("una selección con condición compuesta por intersección es una consulta válida", () => {
-        esperarAnálisisSintácticoAR("σ<variedad='Lager' ∧ grad>4.6>Cerveza", {
+        esperarAnálisisSintácticoAR("σ<variedad='Lager' ∧ grad>4.6>Cerveza", ExpresiónSelección, {
             condición: {
                 izq: {
                     izq: {nombre: "variedad"},
@@ -102,7 +104,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("una selección con condición compuesta por disyunción es una consulta válida", () => {
-        esperarAnálisisSintácticoAR("σ<variedad='Lager' ∨ variedad='Stout'>Cerveza", {
+        esperarAnálisisSintácticoAR("σ<variedad='Lager' ∨ variedad='Stout'>Cerveza", ExpresiónSelección, {
             condición: {
                 izq: {
                     izq: {nombre: "variedad"},
@@ -120,7 +122,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("se pueden anidar selecciones", () => {
-        esperarAnálisisSintácticoAR("σ<grad>4.6>σ<variedad='Lager'>Cerveza", {
+        esperarAnálisisSintácticoAR("σ<grad>4.6>σ<variedad='Lager'>Cerveza", ExpresiónSelección, {
             condición: {
                 izq: {nombre: "grad"},
                 op: ">",
@@ -149,7 +151,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("la condición de una selección puede escribirse entre paréntesis", () => {
-        esperarAnálisisSintácticoAR("σ<(edad>23)>CLIENTE", {
+        esperarAnálisisSintácticoAR("σ<(edad>23)>CLIENTE", ExpresiónSelección, {
             condición: {
                 izq: {nombre: "edad"},
                 op: ">",
@@ -160,7 +162,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("se pueden reconocer conjunciones en una condición de selección", () => {
-        esperarAnálisisSintácticoAR("σ<(a=1 ∧ b=2)>CLIENTE", {
+        esperarAnálisisSintácticoAR("σ<(a=1 ∧ b=2)>CLIENTE", ExpresiónSelección, {
             condición: {
                 izq: {izq: {nombre: "a"}, op: "=", der: {valor: 1}},
                 der: {izq: {nombre: "b"}, op: "=", der: {valor: 2}},
@@ -172,6 +174,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     it("una condición con paréntesis al inicio y disyunciones subsiguientes asocia a izquierda", () => {
         esperarAnálisisSintácticoAR(
             "σ<(edad>23 ∧ ciudad='Buenos Aires') ∨ edad>50 ∨ apellido='Sanchez'>CLIENTE",
+            ExpresiónSelección,
             {
                 condición: {
                     izq: {
@@ -190,7 +193,8 @@ describe("[Álgebra Relacional] Parser AR", () => {
 
     it("se puede combinar una disyunción entre conjunciones con paréntesis", () => {
         esperarAnálisisSintácticoAR(
-            "σ<edad>23 ∧ (ciudad='Buenos Aires' ∨ edad>50) ∧ apellido='Sanchez'>CLIENTE",
+            "σ<edad>23 ∧ (ciudad='Buenos Aires' ∨ edad>50) ∧ apellido='Sánchez'>CLIENTE",
+            ExpresiónSelección,
             {
                 condición: {
                     izq: {
@@ -200,7 +204,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
                             der: {izq: {nombre: "edad"}, op: ">", der: {valor: 50}},
                         },
                     },
-                    der: {izq: {nombre: "apellido"}, op: "=", der: {valor: "Sanchez"}},
+                    der: {izq: {nombre: "apellido"}, op: "=", der: {valor: "Sánchez"}},
                 },
                 subexpr: {nombre: "CLIENTE"},
             },
@@ -208,7 +212,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("se pueden generar condiciones complejas", () => {
-        esperarAnálisisSintácticoAR("σ<(a=1 ∨ b=2) ∧ (c=3 ∨ d=4)>CLIENTE", {
+        esperarAnálisisSintácticoAR("σ<(a=1 ∨ b=2) ∧ (c=3 ∨ d=4)>CLIENTE", ExpresiónSelección, {
             condición: {
                 izq: {
                     izq: {izq: {nombre: "a"}, op: "=", der: {valor: 1}},
@@ -224,21 +228,21 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("se puede reconocer una proyección", () => {
-        esperarAnálisisSintácticoAR("π<nombre>PERSONA", {
+        esperarAnálisisSintácticoAR("π<nombre>PERSONA", ExpresiónProyección, {
             atributos: ["nombre"],
             subexpr: {nombre: "PERSONA"},
         });
     });
 
     it("se puede reconocer una proyección con múltiples atributos", () => {
-        esperarAnálisisSintácticoAR("π<nombre,edad,ciudad>PERSONA", {
+        esperarAnálisisSintácticoAR("π<nombre,edad,ciudad>PERSONA", ExpresiónProyección, {
             atributos: ["nombre", "edad", "ciudad"],
             subexpr: {nombre: "PERSONA"},
         });
     });
 
     it("se reconocen selecciones y proyecciones combinadas en una consulta", () => {
-        esperarAnálisisSintácticoAR("π<nombre>σ<edad>30>PERSONA", {
+        esperarAnálisisSintácticoAR("π<nombre>σ<edad>30>PERSONA", ExpresiónProyección, {
             atributos: ["nombre"],
             subexpr: {
                 condición: {izq: {nombre: "edad"}, op: ">", der: {valor: 30}},
@@ -256,50 +260,50 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("una expresión entre paréntesis parsea correctamente", () => {
-        esperarAnálisisSintácticoAR("(CLIENTE)", {nombre: "CLIENTE"});
+        esperarAnálisisSintácticoAR("(CLIENTE)", NombreDeRelación, {nombre: "CLIENTE"});
     });
 
     it("se reconocen expresiones entre paréntesis", () => {
-        esperarAnálisisSintácticoAR("( CLIENTE )", {nombre: "CLIENTE"});
+        esperarAnálisisSintácticoAR("( CLIENTE )", NombreDeRelación, {nombre: "CLIENTE"});
     });
 
     it("se reconoce una selección aplicada a una expresión entre paréntesis", () => {
-        esperarAnálisisSintácticoAR("σ<edad>30>(CLIENTE)", {
+        esperarAnálisisSintácticoAR("σ<edad>30>(CLIENTE)", ExpresiónSelección, {
             condición: {izq: {nombre: "edad"}, op: ">", der: {valor: 30}},
             subexpr: {nombre: "CLIENTE"},
         });
     });
 
     it("una unión de dos relaciones es una consulta válida", () => {
-        esperarAnálisisSintácticoAR("NARUTO ∪ SASUKE", {
+        esperarAnálisisSintácticoAR("NARUTO ∪ SASUKE", Unión, {
             izq: {nombre: "NARUTO"},
             der: {nombre: "SASUKE"},
         });
     });
 
     it("una intersección de dos relaciones es una consulta válida", () => {
-        esperarAnálisisSintácticoAR("GOKU ∩ VEGETA", {
+        esperarAnálisisSintácticoAR("GOKU ∩ VEGETA", Intersección, {
             izq: {nombre: "GOKU"},
             der: {nombre: "VEGETA"},
         });
     });
 
     it("una resta de dos relaciones es una consulta válida", () => {
-        esperarAnálisisSintácticoAR("LUFFY - ZORO", {
+        esperarAnálisisSintácticoAR("LUFFY - ZORO", Resta, {
             izq: {nombre: "LUFFY"},
             der: {nombre: "ZORO"},
         });
     });
 
     it("las operaciones de conjunto encadenan hacia la izquierda", () => {
-        esperarAnálisisSintácticoAR("ICHIGO ∪ RUKIA ∩ RENJI", {
+        esperarAnálisisSintácticoAR("ICHIGO ∪ RUKIA ∩ RENJI", Intersección, {
             izq: {izq: {nombre: "ICHIGO"}, der: {nombre: "RUKIA"}},
             der: {nombre: "RENJI"},
         });
     });
 
     it("una selección compuesta con unión es una consulta válida", () => {
-        esperarAnálisisSintácticoAR("σ<chakra>100>NARUTO ∪ σ<chakra>100>SASUKE", {
+        esperarAnálisisSintácticoAR("σ<chakra>100>NARUTO ∪ σ<chakra>100>SASUKE", Unión, {
             izq: {
                 condición: {izq: {nombre: "chakra"}, op: ">", der: {valor: 100}},
                 subexpr: {nombre: "NARUTO"},
@@ -312,14 +316,14 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("los paréntesis agrupan operaciones de conjunto", () => {
-        esperarAnálisisSintácticoAR("GOKU ∪ (VEGETA ∩ GOHAN)", {
+        esperarAnálisisSintácticoAR("GOKU ∪ (VEGETA ∩ GOHAN)", Unión, {
             izq: {nombre: "GOKU"},
             der: {izq: {nombre: "VEGETA"}, der: {nombre: "GOHAN"}},
         });
     });
 
     it("la selección tiene precedencia sobre los operadores de conjunto", () => {
-        esperarAnálisisSintácticoAR("σ<ki>9000>GOKU ∪ VEGETA", {
+        esperarAnálisisSintácticoAR("σ<ki>9000>GOKU ∪ VEGETA", Unión, {
             izq: {
                 condición: {izq: {nombre: "ki"}, op: ">", der: {valor: 9000}},
                 subexpr: {nombre: "GOKU"},
@@ -329,7 +333,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("la proyección tiene precedencia sobre los operadores de conjunto", () => {
-        esperarAnálisisSintácticoAR("π<aldea>NARUTO ∩ SASUKE", {
+        esperarAnálisisSintácticoAR("π<aldea>NARUTO ∩ SASUKE", Intersección, {
             izq: {
                 atributos: ["aldea"],
                 subexpr: {nombre: "NARUTO"},
@@ -339,7 +343,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("los operadores unarios tienen precedencia sobre la resta", () => {
-        esperarAnálisisSintácticoAR("σ<recompensa>1000000>LUFFY - π<recompensa>ZORO", {
+        esperarAnálisisSintácticoAR("σ<recompensa>1000000>LUFFY - π<recompensa>ZORO", Resta, {
             izq: {
                 condición: {izq: {nombre: "recompensa"}, op: ">", der: {valor: 1000000}},
                 subexpr: {nombre: "LUFFY"},
@@ -352,7 +356,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("tres operaciones de conjunto se asocian hacia la izquierda", () => {
-        esperarAnálisisSintácticoAR("GOKU ∪ VEGETA ∩ GOHAN - PICCOLO", {
+        esperarAnálisisSintácticoAR("GOKU ∪ VEGETA ∩ GOHAN - PICCOLO", Resta, {
             izq: {
                 izq: {izq: {nombre: "GOKU"}, der: {nombre: "VEGETA"}},
                 der: {nombre: "GOHAN"},
@@ -362,7 +366,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("una selección con conjunción y una proyección anidada se combinan con unión", () => {
-        esperarAnálisisSintácticoAR("σ<ki>8000 ∧ chakra>500>NARUTO ∪ π<rango>σ<ninjutsu>100>SASUKE", {
+        esperarAnálisisSintácticoAR("σ<ki>8000 ∧ chakra>500>NARUTO ∪ π<rango>σ<ninjutsu>100>SASUKE", Unión, {
             izq: {
                 condición: {
                     izq: {izq: {nombre: "ki"}, op: ">", der: {valor: 8000}},
@@ -381,7 +385,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("una combinación compleja de proyecciones, uniones e intersecciones respeta paréntesis y precedencia", () => {
-        esperarAnálisisSintácticoAR("π<fruta>LUFFY ∪ π<espada>ZORO ∩ (π<clima>NAMI ∪ π<medicina>σ<recompensa='300'>CHOPPER)", {
+        esperarAnálisisSintácticoAR("π<fruta>LUFFY ∪ π<espada>ZORO ∩ (π<clima>NAMI ∪ π<medicina>σ<recompensa='300'>CHOPPER)", Intersección, {
             izq: {
                 izq: {
                     atributos: ["fruta"],
@@ -409,7 +413,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("una selección puede aplicarse a una unión agrupada entre paréntesis", () => {
-        esperarAnálisisSintácticoAR("σ<ki>9000>(GOKU ∪ VEGETA)", {
+        esperarAnálisisSintácticoAR("σ<ki>9000>(GOKU ∪ VEGETA)", ExpresiónSelección, {
             condición: {izq: {nombre: "ki"}, op: ">", der: {valor: 9000}},
             subexpr: {
                 izq: {nombre: "GOKU"},
@@ -419,7 +423,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("una proyección puede aplicarse a una intersección agrupada entre paréntesis", () => {
-        esperarAnálisisSintácticoAR("π<aldea>(NARUTO ∩ SASUKE)", {
+        esperarAnálisisSintácticoAR("π<aldea>(NARUTO ∩ SASUKE)", ExpresiónProyección, {
             atributos: ["aldea"],
             subexpr: {
                 izq: {nombre: "NARUTO"},

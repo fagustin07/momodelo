@@ -5,6 +5,7 @@ import {TipoTokenAR, TokenAR} from "../../src/tipos/tipos.ts";
 import {ErrorSintácticoAR} from "../../src/servicios/errores.ts";
 import {ResultadoConsulta} from "../../src/ar/resultadoConsulta.ts";
 import {Valor} from "../../src/mr/modeloSintacticoMR.ts";
+import {ExpresiónAR} from "../../src/ar/modeloSintácticoAR.ts";
 
 export function tokenizar(texto: string): TokenAR[] {
     return new TokenizadorAR().ejecutarseCon(texto);
@@ -19,8 +20,14 @@ export function esperarErrorSintácticoAR(entrada: string, mensaje: string | Reg
     expect(() => analizarSintácticamente(entrada)).toThrow(mensaje);
 }
 
-export function esperarAnálisisSintácticoAR(entrada: string, forma: object): void {
-    expect(analizarSintácticamente(entrada)).toMatchObject(forma);
+export function esperarAnálisisSintácticoAR(
+    entrada: string,
+    clase: new (...args: any[]) => ExpresiónAR,
+    forma: object,
+): void {
+    const resultado = analizarSintácticamente(entrada);
+    expect(resultado).toBeInstanceOf(clase);
+    expect(resultado).toMatchObject(forma);
 }
 
 export function esperarResultadoConsulta(
