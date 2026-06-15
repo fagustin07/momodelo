@@ -297,8 +297,94 @@ export class ReglaUnoAUnoAmbosObligatorios extends ReglaCardinalidad {
     }
 }
 
+export class ReglaUnoAUnoUnOpcional extends ReglaCardinalidad {
+    static puedeHacerseCargoDe(relacion: Relacion): boolean {
+        const [minO, maxO] = relacion.cardinalidadOrigen();
+        const [minD, maxD] = relacion.cardinalidadDestino();
+        return maxO === '1' && maxD === '1' && ((minO === '0' && minD === '1') || (minO === '1' && minD === '0'));
+    }
+
+    validar(relacion: Relacion, relacionesMR: RelacionMR[], modeloER: ModeloER): string[] {
+        const entidadOrigen = relacion.entidadOrigen();
+        const entidadDestino = relacion.entidadDestino();
+        const [minO] = relacion.cardinalidadOrigen();
+
+        const entidadObligatoria = minO === '1' ? entidadOrigen : entidadDestino;
+        const entidadOpcional = minO === '0' ? entidadOrigen : entidadDestino;
+
+        const relacionObligatoriaMR = relacionesMR.find(
+            r => r.nombre.toLowerCase() === entidadObligatoria.nombre().toLowerCase(),
+        );
+        if (!relacionObligatoriaMR)
+            return [];
+
+        const pksOpcional = this.pksCompletasDe(entidadOpcional, modeloER);
+        const faltaAbsorber = pksOpcional.some(
+            pk => !relacionObligatoriaMR.clavesForáneas().some(fk =>
+                this.fkMatcheaPK(fk.nombre, pk, entidadOpcional.nombre()),
+            ),
+        );
+
+        if (faltaAbsorber) {
+            return [`Cardinalidad (0,1) a (1,1): Se debe absorber en ` +
+            `'${entidadObligatoria.nombre()}' la clave completa de ` +
+            `'${entidadOpcional.nombre()}' como FK.`];
+        }
+
+        return [];
+    }
+}
+
+export class ReglaUnoAUnoAmbosOpcionales extends ReglaCardinalidad {
+    static puedeHacerseCargoDe(relacion: Relacion): boolean {
+        const [minO, maxO] = relacion.cardinalidadOrigen();
+        const [minD, maxD] = relacion.cardinalidadDestino();
+        return minO === '0' && maxO === '1' && minD === '0' && maxD === '1';
+    }
+
+    validar(relacion: Relacion, relacionesMR: RelacionMR[], modeloER: ModeloER): string[] {
+        const entidadOrigen = relacion.entidadOrigen();
+        const entidadDestino = relacion.entidadDestino();
+
+        const tablaIntermedia = relacionesMR.find(
+            r => r.nombre.toLowerCase() === relacion.nombre().toLowerCase(),
+        );
+
+        if (!tablaIntermedia) {
+            return [`Cardinalidad (0,1) a (0,1): Se debe crear la tabla intermedia ` +
+            `'${relacion.nombre()}' con la clave completa de una entidad como PK y FK ` +
+            `y la de la otra como FK.`];
+        }
+
+        const pksOrigen = this.pksCompletasDe(entidadOrigen, modeloER);
+        const pksDestino = this.pksCompletasDe(entidadDestino, modeloER);
+
+        const tienePKFKOrigen = pksOrigen.every(
+            pk => tablaIntermedia.atributos.some(atr =>
+                atr.esClavePrimaria() && atr.esForánea() &&
+                this.fkMatcheaPK(atr.nombre, pk, entidadOrigen.nombre()),
+            ),
+        );
+        const tienePKFKDestino = pksDestino.every(
+            pk => tablaIntermedia.atributos.some(atr =>
+                atr.esClavePrimaria() && atr.esForánea() &&
+                this.fkMatcheaPK(atr.nombre, pk, entidadDestino.nombre()),
+            ),
+        );
+
+        if ((tienePKFKOrigen && !tienePKFKDestino) || (!tienePKFKOrigen && tienePKFKDestino))
+            return [];
+
+        return [`Cardinalidad (0,1) a (0,1): La tabla ` +
+        `'${tablaIntermedia.nombre}' debe tener la clave completa de una entidad ` +
+        `como PK y FK y la de la otra como FK.`];
+    }
+}
+
 ReglaCardinalidad.registrar(ReglaEntidadDebil);
 ReglaCardinalidad.registrar(ReglaMuchosAMuchos);
 ReglaCardinalidad.registrar(ReglaUnoAMuchosObligatorio);
 ReglaCardinalidad.registrar(ReglaUnoAMuchosOpcional);
 ReglaCardinalidad.registrar(ReglaUnoAUnoAmbosObligatorios);
+ReglaCardinalidad.registrar(ReglaUnoAUnoUnOpcional);
+ReglaCardinalidad.registrar(ReglaUnoAUnoAmbosOpcionales);

@@ -363,4 +363,91 @@ describe("[Modelo Relacional] Comparador MR", () => {
         expect(() => comparador.esConsistente(modeloER, modeloMR))
             .toThrow("Cardinalidad (1,1) a (1,1): Se debe absorber en 'CEREBRO' o 'CORAZON' la clave completa de la otra como FK.");
     });
+
+    it("el comparador sabe si una relación 1:1 con solo un lado parcial absorbe la clave de la opcional en la obligatoria", () => {
+        const empleado = entidad("EMPLEADO", ["legajo"]);
+        const oficina = entidad("OFICINA", ["numero"]);
+        const ocupa = relacionMER(oficina, empleado, "OCUPA", ['0', '1'], ['1', '1']);
+        const modeloER = mer(empleado, oficina, [ocupa]);
+        const modeloMR = programa(
+            definición(relación("EMPLEADO", pk("legajo"), fk("numero"))),
+            definición(relación("OFICINA", pk("numero"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
+    });
+
+    it("el comparador levanta una excepción si en una relación 1:1 con solo un lado parcial la obligatoria no absorbe la clave de la opcional", () => {
+        const empleado = entidad("EMPLEADO", ["legajo"]);
+        const oficina = entidad("OFICINA", ["numero"]);
+        const ocupa = relacionMER(oficina, empleado, "OCUPA", ['0', '1'], ['1', '1']);
+        const modeloER = mer(empleado, oficina, [ocupa]);
+        const modeloMR = programa(
+            definición(relación("EMPLEADO", pk("legajo"))),
+            definición(relación("OFICINA", pk("numero"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
+        expect(() => comparador.esConsistente(modeloER, modeloMR))
+            .toThrow("Cardinalidad (0,1) a (1,1): Se debe absorber en 'EMPLEADO' la clave completa de 'OFICINA' como FK.");
+    });
+
+    it("el comparador sabe si una relación con cardinalidad 1:1 ambas parciales genera una tabla intermedia con las claves correctas", () => {
+        const profesor = entidad("PROFESOR", ["legajo"]);
+        const curso = entidad("CURSO", ["codigo"]);
+        const asigna = relacionMER(profesor, curso, "ASIGNACION", ['0', '1'], ['0', '1']);
+        const modeloER = mer(profesor, curso, [asigna]);
+        const modeloMR = programa(
+            definición(relación("PROFESOR", pk("legajo"))),
+            definición(relación("CURSO", pk("codigo"))),
+            definición(relación("ASIGNACION", pkfk("legajo"), fk("codigo"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
+    });
+
+    it("el comparador acepta cualquiera de las dos entidades como PK en la tabla intermedia de 1:1 ambas parciales", () => {
+        const profesor = entidad("PROFESOR", ["legajo"]);
+        const curso = entidad("CURSO", ["codigo"]);
+        const asigna = relacionMER(profesor, curso, "ASIGNACION", ['0', '1'], ['0', '1']);
+        const modeloER = mer(profesor, curso, [asigna]);
+        const modeloMR = programa(
+            definición(relación("PROFESOR", pk("legajo"))),
+            definición(relación("CURSO", pk("codigo"))),
+            definición(relación("ASIGNACION", pkfk("codigo"), fk("legajo"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
+    });
+
+    it("el comparador levanta una excepción si una relación 1:1 ambas parciales no tiene tabla intermedia", () => {
+        const profesor = entidad("PROFESOR", ["legajo"]);
+        const curso = entidad("CURSO", ["codigo"]);
+        const asigna = relacionMER(profesor, curso, "ASIGNACION", ['0', '1'], ['0', '1']);
+        const modeloER = mer(profesor, curso, [asigna]);
+        const modeloMR = programa(
+            definición(relación("PROFESOR", pk("legajo"))),
+            definición(relación("CURSO", pk("codigo"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
+        expect(() => comparador.esConsistente(modeloER, modeloMR))
+            .toThrow("Cardinalidad (0,1) a (0,1): Se debe crear la tabla intermedia 'ASIGNACION' con la clave completa de una entidad como PK y FK y la de la otra como FK.");
+    });
+
+    it("el comparador levanta una excepción si la tabla intermedia de 1:1 ambas parciales tiene estructura inválida", () => {
+        const profesor = entidad("PROFESOR", ["legajo"]);
+        const curso = entidad("CURSO", ["codigo"]);
+        const asigna = relacionMER(profesor, curso, "ASIGNACION", ['0', '1'], ['0', '1']);
+        const modeloER = mer(profesor, curso, [asigna]);
+        const modeloMR = programa(
+            definición(relación("PROFESOR", pk("legajo"))),
+            definición(relación("CURSO", pk("codigo"))),
+            definición(relación("ASIGNACION", pkfk("legajo"), pkfk("codigo"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
+        expect(() => comparador.esConsistente(modeloER, modeloMR))
+            .toThrow("Cardinalidad (0,1) a (0,1): La tabla 'ASIGNACION' debe tener la clave completa de una entidad como PK y FK y la de la otra como FK.");
+    });
 });
