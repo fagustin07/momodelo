@@ -2,11 +2,11 @@ import {Entidad} from "../modelo/entidad.ts";
 import {Relacion} from "../modelo/relacion.ts";
 import {RelacionMR} from "./modeloSintacticoMR.ts";
 import {ModeloER} from "../servicios/modeloER.ts";
+import {Cardinalidad} from "../tipos/tipos.ts";
 
 type LadoNormalizado = {
     entidad: Entidad;
-    cardinalidadMinima: string;
-    cardinalidadMáxima: string;
+    cardinalidad: Cardinalidad;
 };
 
 type ReglaRegistrable = {
@@ -54,11 +54,11 @@ export abstract class ReglaCardinalidad {
     }
 
     protected normalizar(relacion: Relacion): { ladoUno: LadoNormalizado; ladoMuchos: LadoNormalizado } {
-        const [minO, maxO] = relacion.cardinalidadOrigen();
-        const [minD, maxD] = relacion.cardinalidadDestino();
+        const [, maxO] = relacion.cardinalidadOrigen();
+        const [, maxD] = relacion.cardinalidadDestino();
 
-        const origen: LadoNormalizado = { entidad: relacion.entidadOrigen(), cardinalidadMinima: minO, cardinalidadMáxima: maxO };
-        const destino: LadoNormalizado = { entidad: relacion.entidadDestino(), cardinalidadMinima: minD, cardinalidadMáxima: maxD };
+        const origen: LadoNormalizado = { entidad: relacion.entidadOrigen(), cardinalidad: relacion.cardinalidadOrigen() };
+        const destino: LadoNormalizado = { entidad: relacion.entidadDestino(), cardinalidad: relacion.cardinalidadDestino() };
 
         if (maxO === 'N' && maxD !== 'N')
             return { ladoUno: destino, ladoMuchos: origen };
@@ -186,7 +186,7 @@ export class ReglaUnoAMuchosObligatorio extends ReglaCardinalidad {
 
         if (faltaAbsorberFK) {
             return [[
-                `Cardinalidad (1,1) a (${ladoMuchos.cardinalidadMinima},N): `,
+                `Cardinalidad (1,1) a (${ladoMuchos.cardinalidad[0]},N): `,
                 `Se debe absorber en '${ladoUno.entidad.nombre()}' la clave completa de `,
                 `'${ladoMuchos.entidad.nombre()}' como FK.`,
             ].join('')];
@@ -213,7 +213,7 @@ export class ReglaUnoAMuchosOpcional extends ReglaCardinalidad {
 
         if (!tablaIntermedia) {
             return [[
-                `Cardinalidad (0,1) a (${ladoMuchos.cardinalidadMinima},N): `,
+                `Cardinalidad (0,1) a (${ladoMuchos.cardinalidad[0]},N): `,
                 `Se debe crear la tabla intermedia '${relacion.nombre()}' `,
                 `con la clave completa de '${ladoUno.entidad.nombre()}' como PK y FK `,
                 `y la de '${ladoMuchos.entidad.nombre()}' como FK.`,
@@ -230,7 +230,7 @@ export class ReglaUnoAMuchosOpcional extends ReglaCardinalidad {
         );
         if (faltaPKFK) {
             errores.push(
-                `Cardinalidad (0,1) a (${ladoMuchos.cardinalidadMinima},N): ` +
+                `Cardinalidad (0,1) a (${ladoMuchos.cardinalidad[0]},N): ` +
                 `La tabla '${tablaIntermedia.nombre}' debe tener la clave completa de ` +
                 `'${ladoUno.entidad.nombre()}' como PK y FK.`,
             );
@@ -244,7 +244,7 @@ export class ReglaUnoAMuchosOpcional extends ReglaCardinalidad {
         );
         if (faltaFK) {
             errores.push(
-                `Cardinalidad (0,1) a (${ladoMuchos.cardinalidadMinima},N): ` +
+                `Cardinalidad (0,1) a (${ladoMuchos.cardinalidad[0]},N): ` +
                 `La tabla '${tablaIntermedia.nombre}' debe tener la clave completa de ` +
                 `'${ladoMuchos.entidad.nombre()}' como FK.`,
             );
