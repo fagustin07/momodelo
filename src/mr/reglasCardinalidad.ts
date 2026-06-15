@@ -254,7 +254,51 @@ export class ReglaUnoAMuchosOpcional extends ReglaCardinalidad {
     }
 }
 
+export class ReglaUnoAUnoAmbosObligatorios extends ReglaCardinalidad {
+    static puedeHacerseCargoDe(relacion: Relacion): boolean {
+        const [minO, maxO] = relacion.cardinalidadOrigen();
+        const [minD, maxD] = relacion.cardinalidadDestino();
+        return minO === '1' && maxO === '1' && minD === '1' && maxD === '1';
+    }
+
+    validar(relacion: Relacion, relacionesMR: RelacionMR[], modeloER: ModeloER): string[] {
+        const entidadOrigen = relacion.entidadOrigen();
+        const entidadDestino = relacion.entidadDestino();
+
+        const relacionOrigenMR = relacionesMR.find(
+            r => r.nombre.toLowerCase() === entidadOrigen.nombre().toLowerCase(),
+        );
+        const relacionDestinoMR = relacionesMR.find(
+            r => r.nombre.toLowerCase() === entidadDestino.nombre().toLowerCase(),
+        );
+        if (!relacionOrigenMR || !relacionDestinoMR)
+            return [];
+
+        const pksOrigen = this.pksCompletasDe(entidadOrigen, modeloER);
+        const pksDestino = this.pksCompletasDe(entidadDestino, modeloER);
+
+        const origenAbsorbeDestino = pksDestino.every(
+            pk => relacionOrigenMR.clavesForáneas().some(fk =>
+                this.fkMatcheaPK(fk.nombre, pk, entidadDestino.nombre()),
+            ),
+        );
+
+        const destinoAbsorbeOrigen = pksOrigen.every(
+            pk => relacionDestinoMR.clavesForáneas().some(fk =>
+                this.fkMatcheaPK(fk.nombre, pk, entidadOrigen.nombre()),
+            ),
+        );
+
+        if (origenAbsorbeDestino || destinoAbsorbeOrigen)
+            return [];
+
+        return [`Cardinalidad (1,1) a (1,1): Se debe absorber en ` +
+        `'${entidadOrigen.nombre()}' o '${entidadDestino.nombre()}' la clave completa de la otra como FK.`]
+    }
+}
+
 ReglaCardinalidad.registrar(ReglaEntidadDebil);
 ReglaCardinalidad.registrar(ReglaMuchosAMuchos);
 ReglaCardinalidad.registrar(ReglaUnoAMuchosObligatorio);
 ReglaCardinalidad.registrar(ReglaUnoAMuchosOpcional);
+ReglaCardinalidad.registrar(ReglaUnoAUnoAmbosObligatorios);

@@ -322,4 +322,45 @@ describe("[Modelo Relacional] Comparador MR", () => {
         expect(() => comparador.esConsistente(modeloER, modeloMR))
             .toThrow("Cardinalidad (0,1) a (0,N): La tabla 'ATIENDE' debe tener la clave completa de 'PACIENTE' como FK.");
     });
+
+    it("el comparador sabe si una relación 1:1 ambas totales absorbe la clave en la entidad origen", () => {
+        const cerebro = entidad("CEREBRO", ["id_cerebro"]);
+        const corazon = entidad("CORAZON", ["id_corazon"]);
+        const controla = relacionMER(cerebro, corazon, "CONTROLA", ['1', '1'], ['1', '1']);
+        const modeloER = mer(cerebro, corazon, [controla]);
+        const modeloMR = programa(
+            definición(relación("CEREBRO", pk("id_cerebro"), fk("id_corazon"))),
+            definición(relación("CORAZON", pk("id_corazon"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
+    });
+
+    it("el comparador sabe si una relación 1:1 ambas totales absorbe la clave en la entidad destino", () => {
+        const cerebro = entidad("CEREBRO", ["id_cerebro"]);
+        const corazon = entidad("CORAZON", ["id_corazon"]);
+        const controla = relacionMER(cerebro, corazon, "CONTROLA", ['1', '1'], ['1', '1']);
+        const modeloER = mer(cerebro, corazon, [controla]);
+        const modeloMR = programa(
+            definición(relación("CEREBRO", pk("id_cerebro"))),
+            definición(relación("CORAZON", pk("id_corazon"), fk("id_cerebro"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
+    });
+
+    it("el comparador levanta una excepción si en una relación 1:1 ambas totales ninguna entidad absorbe la clave de la otra", () => {
+        const cerebro = entidad("CEREBRO", ["id_cerebro"]);
+        const corazon = entidad("CORAZON", ["id_corazon"]);
+        const controla = relacionMER(cerebro, corazon, "CONTROLA", ['1', '1'], ['1', '1']);
+        const modeloER = mer(cerebro, corazon, [controla]);
+        const modeloMR = programa(
+            definición(relación("CEREBRO", pk("id_cerebro"))),
+            definición(relación("CORAZON", pk("id_corazon"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
+        expect(() => comparador.esConsistente(modeloER, modeloMR))
+            .toThrow("Cardinalidad (1,1) a (1,1): Se debe absorber en 'CEREBRO' o 'CORAZON' la clave completa de la otra como FK.");
+    });
 });
