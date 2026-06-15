@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import {ComparadorMR} from "../../src/mr/comparadorMR.ts";
 import {ErroresValidación} from "../../src/servicios/errores.ts";
-import {definición, entidad, fila, inserción, mer, multivaluado, pk, pkfk, programa, relación, relacionMER, simple} from "./helpers.ts";
+import {definición, entidad, fila, fk, inserción, mer, multivaluado, pk, pkfk, programa, relación, relacionMER, simple} from "./helpers.ts";
 
 describe("[Modelo Relacional] Comparador MR", () => {
     const comparador = new ComparadorMR();
@@ -205,5 +205,121 @@ describe("[Modelo Relacional] Comparador MR", () => {
         );
 
         expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
+    });
+
+    it("el comparador sabe si una relación 1:N total propaga la clave del lado muchos al lado uno como FK", () => {
+        const departamento = entidad("DEPARTAMENTO", ["codigo"]);
+        const empleado = entidad("EMPLEADO", ["legajo"]);
+        const tiene = relacionMER(departamento, empleado, "TIENE", ['1', '1'], ['0', 'N']);
+        const modeloER = mer(departamento, empleado, [tiene]);
+        const modeloMR = programa(
+            definición(relación("DEPARTAMENTO", pk("codigo"), fk("legajo"))),
+            definición(relación("EMPLEADO", pk("legajo"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
+    });
+
+    it("el comparador sabe si una relación 1:N total propaga la clave compuesta del lado muchos al lado uno", () => {
+        const departamento = entidad("DEPARTAMENTO", ["codigo"]);
+        const empleado = entidad("EMPLEADO", ["tipo_doc", "nro_doc"]);
+        const tiene = relacionMER(departamento, empleado, "TIENE", ['1', '1'], ['0', 'N']);
+        const modeloER = mer(departamento, empleado, [tiene]);
+        const modeloMR = programa(
+            definición(relación("DEPARTAMENTO", pk("codigo"), fk("tipo_doc"), fk("nro_doc"))),
+            definición(relación("EMPLEADO", pk("tipo_doc"), pk("nro_doc"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
+    });
+
+    it("el comparador reconoce relaciones 1:N total sin importar el origen y destino", () => {
+        const departamento = entidad("DEPARTAMENTO", ["codigo"]);
+        const empleado = entidad("EMPLEADO", ["legajo"]);
+        const trabajaEn = relacionMER(empleado, departamento, "TRABAJA_EN", ['0', 'N'], ['1', '1']);
+        const modeloER = mer(departamento, empleado, [trabajaEn]);
+        const modeloMR = programa(
+            definición(relación("DEPARTAMENTO", pk("codigo"), fk("legajo"))),
+            definición(relación("EMPLEADO", pk("legajo"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
+    });
+
+    it("si una relación 1:N total no propaga la clave del lado muchos al lado uno levanta una excepción", () => {
+        const departamento = entidad("DEPARTAMENTO", ["codigo"]);
+        const empleado = entidad("EMPLEADO", ["legajo"]);
+        const tiene = relacionMER(departamento, empleado, "TIENE", ['1', '1'], ['0', 'N']);
+        const modeloER = mer(departamento, empleado, [tiene]);
+        const modeloMR = programa(
+            definición(relación("DEPARTAMENTO", pk("codigo"))),
+            definición(relación("EMPLEADO", pk("legajo"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
+        expect(() => comparador.esConsistente(modeloER, modeloMR))
+            .toThrow("Cardinalidad (1,1) a (0,N): Se debe absorber en 'DEPARTAMENTO' la clave completa de 'EMPLEADO' como FK.");
+    });
+
+
+    it("el comparador sabe si una relación 1:N parcial genera una tabla intermedia con las claves correctas", () => {
+        const medico = entidad("MEDICO", ["matricula"]);
+        const paciente = entidad("PACIENTE", ["dni"]);
+        const atiende = relacionMER(medico, paciente, "ATIENDE", ['0', '1'], ['0', 'N']);
+        const modeloER = mer(medico, paciente, [atiende]);
+        const modeloMR = programa(
+            definición(relación("MEDICO", pk("matricula"))),
+            definición(relación("PACIENTE", pk("dni"))),
+            definición(relación("ATIENDE", pkfk("matricula"), fk("dni"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).not.toThrow();
+    });
+
+    it("el comparador levanta una excepción si una relación 1:N parcial no tiene tabla intermedia", () => {
+        const medico = entidad("MEDICO", ["matricula"]);
+        const paciente = entidad("PACIENTE", ["dni"]);
+        const atiende = relacionMER(medico, paciente, "ATIENDE", ['0', '1'], ['0', 'N']);
+        const modeloER = mer(medico, paciente, [atiende]);
+        const modeloMR = programa(
+            definición(relación("MEDICO", pk("matricula"))),
+            definición(relación("PACIENTE", pk("dni"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
+        expect(() => comparador.esConsistente(modeloER, modeloMR))
+            .toThrow("Cardinalidad (0,1) a (0,N): Se debe crear la tabla intermedia 'ATIENDE' con la clave completa de 'MEDICO' como PK y FK y la de 'PACIENTE' como FK.");
+    });
+
+    it("el comparador reconoce la falta de la clave del lado (0,1) como PK y FK en la tabla intermedia", () => {
+        const medico = entidad("MEDICO", ["matricula"]);
+        const paciente = entidad("PACIENTE", ["dni"]);
+        const atiende = relacionMER(medico, paciente, "ATIENDE", ['0', '1'], ['0', 'N']);
+        const modeloER = mer(medico, paciente, [atiende]);
+        const modeloMR = programa(
+            definición(relación("MEDICO", pk("matricula"))),
+            definición(relación("PACIENTE", pk("dni"))),
+            definición(relación("ATIENDE", fk("dni"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
+        expect(() => comparador.esConsistente(modeloER, modeloMR))
+            .toThrow("Cardinalidad (0,1) a (0,N): La tabla 'ATIENDE' debe tener la clave completa de 'MEDICO' como PK y FK.");
+    });
+
+    it("el comparador reconoce la falta de la clave del lado N como FK en la tabla intermedia", () => {
+        const medico = entidad("MEDICO", ["matricula"]);
+        const paciente = entidad("PACIENTE", ["dni"]);
+        const atiende = relacionMER(medico, paciente, "ATIENDE", ['0', '1'], ['0', 'N']);
+        const modeloER = mer(medico, paciente, [atiende]);
+        const modeloMR = programa(
+            definición(relación("MEDICO", pk("matricula"))),
+            definición(relación("PACIENTE", pk("dni"))),
+            definición(relación("ATIENDE", pkfk("matricula"))),
+        );
+
+        expect(() => comparador.esConsistente(modeloER, modeloMR)).toThrow(ErroresValidación);
+        expect(() => comparador.esConsistente(modeloER, modeloMR))
+            .toThrow("Cardinalidad (0,1) a (0,N): La tabla 'ATIENDE' debe tener la clave completa de 'PACIENTE' como FK.");
     });
 });

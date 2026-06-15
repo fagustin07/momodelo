@@ -3,6 +3,12 @@ import {Relacion} from "../modelo/relacion.ts";
 import {RelacionMR} from "./modeloSintacticoMR.ts";
 import {ModeloER} from "../servicios/modeloER.ts";
 
+type LadoNormalizado = {
+    entidad: Entidad;
+    cardinalidadMinima: string;
+    cardinalidadMáxima: string;
+};
+
 type ReglaRegistrable = {
     new(): ReglaCardinalidad;
     puedeHacerseCargoDe(relacion: Relacion): boolean;
@@ -46,6 +52,20 @@ export abstract class ReglaCardinalidad {
         const ent = nombreEntidad.toLowerCase();
         return fk === pk || fk === `${pk}_${ent}`;
     }
+
+    protected normalizar(relacion: Relacion): { ladoUno: LadoNormalizado; ladoMuchos: LadoNormalizado } {
+        const [minO, maxO] = relacion.cardinalidadOrigen();
+        const [minD, maxD] = relacion.cardinalidadDestino();
+
+        const origen: LadoNormalizado = { entidad: relacion.entidadOrigen(), cardinalidadMinima: minO, cardinalidadMáxima: maxO };
+        const destino: LadoNormalizado = { entidad: relacion.entidadDestino(), cardinalidadMinima: minD, cardinalidadMáxima: maxD };
+
+        if (maxO === 'N' && maxD !== 'N')
+            return { ladoUno: destino, ladoMuchos: origen };
+
+        return { ladoUno: origen, ladoMuchos: destino };
+    }
+}
 
 export class ReglaMuchosAMuchos extends ReglaCardinalidad {
     static puedeHacerseCargoDe(relacion: Relacion): boolean {
@@ -112,11 +132,6 @@ export class ReglaEntidadDebil extends ReglaCardinalidad {
         const entidadDebil = relacion.entidadOrigen();
         const entidadFuerte = relacion.entidadDestino();
 
-        const tablaIntermedia = relacionesMR.find(
-            r => r.nombre.toLowerCase() === relacion.nombre().toLowerCase(),
-        );
-
-        if (!tablaIntermedia) {
         const relaciónDébilMR = this._relacionMRParaEntidad(entidadDebil, relacionesMR);
         if (!relaciónDébilMR) {
             errores.push(
@@ -143,84 +158,103 @@ export class ReglaEntidadDebil extends ReglaCardinalidad {
         return errores;
     }
 
-    private _validarPKsComoFKEnRelacion(tablaMR: RelacionMR, entidad: Entidad, modeloER: ModeloER): string[] {
-        const errores: string[] = [];
-        const pksCompletas = this.pksCompletasDe(entidad, modeloER);
     private _relacionMRParaEntidad(entidad: Entidad, relacionesMR: RelacionMR[]): RelacionMR | undefined {
         return relacionesMR.find(r => r.nombre.toLowerCase() === entidad.nombre().toLowerCase());
     }
 }
 
-        pksCompletas.forEach((nombrePK) => {
-            const tienePKFK = tablaMR.atributos.some(atr =>
-                atr.esClavePrimaria() &&
-                atr.esForánea() &&
-                this.fkMatcheaPK(atr.nombre, nombrePK, entidad.nombre()),
-            );
-
-            if (!tienePKFK) {
-                errores.push(
-                    `La tabla '${tablaMR.nombre}' no tiene la clave '${nombrePK}' ` +
-                    `de '${entidad.nombre()}' como PK y FK.`,
-                );
-            }
-        });
-
-        return errores;
-    }
-}
-
-export class ReglaEntidadDebil extends ReglaCardinalidad {
+export class ReglaUnoAMuchosObligatorio extends ReglaCardinalidad {
     static puedeHacerseCargoDe(relacion: Relacion): boolean {
-        return relacion.esDebil();
+        const [minO, maxO] = relacion.cardinalidadOrigen();
+        const [minD, maxD] = relacion.cardinalidadDestino();
+        return (maxO === 'N' && minD === '1' && maxD === '1')
+            || (minO === '1' && maxO === '1' && maxD === 'N');
     }
 
     validar(relacion: Relacion, relacionesMR: RelacionMR[], modeloER: ModeloER): string[] {
-        const errores: string[] = [];
-        const entidadDebil = relacion.entidadOrigen();
-        const entidadFuerte = relacion.entidadDestino();
+        const {ladoUno, ladoMuchos} = this.normalizar(relacion);
 
-        const relaciónDébilMR = this._relacionMRParaEntidad(entidadDebil, relacionesMR);
-        if (!relaciónDébilMR) {
-            errores.push(
-                `Falta la relación '${entidadDebil.nombre()}' en el MR para la entidad débil.`,
-            );
-            return errores;
+        const relacionUnoMR = relacionesMR.find(
+            r => r.nombre.toLowerCase() === ladoUno.entidad.nombre().toLowerCase(),
+        );
+
+        const faltaAbsorberFK = this.pksCompletasDe(ladoMuchos.entidad, modeloER).some(
+            pk => !relacionUnoMR?.clavesForáneas().some(fk =>
+                this.fkMatcheaPK(fk.nombre, pk, ladoMuchos.entidad.nombre()),
+            ),
+        );
+
+        if (faltaAbsorberFK) {
+            return [[
+                `Cardinalidad (1,1) a (${ladoMuchos.cardinalidadMinima},N): `,
+                `Se debe absorber en '${ladoUno.entidad.nombre()}' la clave completa de `,
+                `'${ladoMuchos.entidad.nombre()}' como FK.`,
+            ].join('')];
         }
 
-        const pksCompletasFuerte = this.pksCompletasDe(entidadFuerte, modeloER);
-        const pksPropiasDébil = entidadDebil.atributos()
-            .filter(a => a.esPK())
-            .map(a => a.nombre());
+        return [];
+    }
+}
 
-        const atributosPKDébil = relaciónDébilMR.clavesPrimarias().map(a => a.nombre);
-
-        pksPropiasDébil
-            .filter(pk => !atributosPKDébil.some(a => a.toLowerCase() === pk.toLowerCase()))
-            .forEach(pk => errores.push(
-                `La entidad débil '${entidadDebil.nombre()}' no tiene su clave parcial ` +
-                `'${pk}' como PK.`,
-            ));
-
-        pksCompletasFuerte
-            .filter(pk =>
-                !relaciónDébilMR.clavesForáneas().some(fk =>
-                    fk.esClavePrimaria() &&
-                    this.fkMatcheaPK(fk.nombre, pk, entidadFuerte.nombre()),
-                ),
-            )
-            .forEach(pk => errores.push(
-                `La entidad débil '${entidadDebil.nombre()}' no absorbe el atributo ` +
-                `'${pk}' de '${entidadFuerte.nombre()}' como PK y FK.`,
-            ));
-
-        return errores;
+export class ReglaUnoAMuchosOpcional extends ReglaCardinalidad {
+    static puedeHacerseCargoDe(relacion: Relacion): boolean {
+        const [minO, maxO] = relacion.cardinalidadOrigen();
+        const [minD, maxD] = relacion.cardinalidadDestino();
+        return (maxO === 'N' && minD === '0' && maxD === '1')
+            || (minO === '0' && maxO === '1' && maxD === 'N');
     }
 
-    private _relacionMRParaEntidad(entidad: Entidad, relacionesMR: RelacionMR[]): RelacionMR | undefined {
-        return relacionesMR.find(r => r.nombre.toLowerCase() === entidad.nombre().toLowerCase());
+    validar(relacion: Relacion, relacionesMR: RelacionMR[], modeloER: ModeloER): string[] {
+        const {ladoUno, ladoMuchos} = this.normalizar(relacion);
+
+        const tablaIntermedia = relacionesMR.find(
+            r => r.nombre.toLowerCase() === relacion.nombre().toLowerCase(),
+        );
+
+        if (!tablaIntermedia) {
+            return [[
+                `Cardinalidad (0,1) a (${ladoMuchos.cardinalidadMinima},N): `,
+                `Se debe crear la tabla intermedia '${relacion.nombre()}' `,
+                `con la clave completa de '${ladoUno.entidad.nombre()}' como PK y FK `,
+                `y la de '${ladoMuchos.entidad.nombre()}' como FK.`,
+            ].join('')];
+        }
+
+        const errores: string[] = [];
+
+        const faltaPKFK = this.pksCompletasDe(ladoUno.entidad, modeloER).some(
+            pk => !tablaIntermedia.atributos.some(atr =>
+                atr.esClavePrimaria() && atr.esForánea() &&
+                this.fkMatcheaPK(atr.nombre, pk, ladoUno.entidad.nombre()),
+            ),
+        );
+        if (faltaPKFK) {
+            errores.push(
+                `Cardinalidad (0,1) a (${ladoMuchos.cardinalidadMinima},N): ` +
+                `La tabla '${tablaIntermedia.nombre}' debe tener la clave completa de ` +
+                `'${ladoUno.entidad.nombre()}' como PK y FK.`,
+            );
+        }
+
+        const faltaFK = this.pksCompletasDe(ladoMuchos.entidad, modeloER).some(
+            pk => !tablaIntermedia.atributos.some(atr =>
+                atr.esForánea() && !atr.esClavePrimaria() &&
+                this.fkMatcheaPK(atr.nombre, pk, ladoMuchos.entidad.nombre()),
+            ),
+        );
+        if (faltaFK) {
+            errores.push(
+                `Cardinalidad (0,1) a (${ladoMuchos.cardinalidadMinima},N): ` +
+                `La tabla '${tablaIntermedia.nombre}' debe tener la clave completa de ` +
+                `'${ladoMuchos.entidad.nombre()}' como FK.`,
+            );
+        }
+
+        return errores;
     }
 }
 
 ReglaCardinalidad.registrar(ReglaEntidadDebil);
 ReglaCardinalidad.registrar(ReglaMuchosAMuchos);
+ReglaCardinalidad.registrar(ReglaUnoAMuchosObligatorio);
+ReglaCardinalidad.registrar(ReglaUnoAMuchosOpcional);
