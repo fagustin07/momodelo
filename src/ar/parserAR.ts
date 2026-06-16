@@ -6,13 +6,13 @@ import {
     Conjunción,
     Disyunción,
     ExpresiónAR,
-    ExpresiónProductoCartesiano,
     ExpresiónProyección,
     ExpresiónSelección,
     Literal,
     NombreAtributo,
     NombreDeRelación,
 } from "./modeloSintácticoAR.ts";
+import {JoinCondicional, ProductoCartesiano} from "./modeloSintactico/operadorDeCombinación.ts";
 import {elección, encadenar, encadenarCon, muchos, ReglaSintáctica, soloDerecha, soloIzquierda, token, mapear, seguidoDe} from "./combinadores.ts";
 import {ErrorSintácticoAR} from "../servicios/errores.ts";
 import {Intersección, Resta, Unión} from "./modeloSintactico/operadorDeConjuntos.ts";
@@ -119,20 +119,39 @@ const términoExpresión: ReglaSintáctica<ExpresiónAR> = elección<ExpresiónA
     expresiónAtómica,
 ]);
 
+const operadorProducto = mapear(token("PRODUCT"), () =>
+    (izq: ExpresiónAR, der: ExpresiónAR) => new ProductoCartesiano(izq, der)
+);
+
+const operadorJoin = soloDerecha(token("BOWTIE"),
+    soloDerecha(token("LANGLE"),
+        encadenarCon(condición, condiciónValor =>
+            mapear(token("RANGLE"), () =>
+                (izq: ExpresiónAR, der: ExpresiónAR) => new JoinCondicional(izq, condiciónValor, der)
+            )
+        )
+    )
+);
+
+const operadorDeCombinación = elección<(izq: ExpresiónAR, der: ExpresiónAR) => ExpresiónAR>([
+    operadorProducto,
+    operadorJoin,
+]);
+
+const expresiónDeCombinación = encadenar<ExpresiónAR, (izq: ExpresiónAR, der: ExpresiónAR) => ExpresiónAR>(
+    términoExpresión,
+    operadorDeCombinación,
+    (izq, construir, der) => construir(izq, der),
+);
+
 const operadorConjunto: ReglaSintáctica<string> = elección<string>([
     token("UNION"),
     token("INTERSECTION"),
     token("DIFFERENCE"),
 ]);
 
-const expresiónDeProducto = encadenar<ExpresiónAR, string>(
-    términoExpresión,
-    token("PRODUCT"),
-    (izq, _, der) => new ExpresiónProductoCartesiano(izq, der),
-);
-
 expresión = encadenar<ExpresiónAR, string>(
-    expresiónDeProducto,
+    expresiónDeCombinación,
     operadorConjunto,
     (izq, op, der) => {
         if (op === "∪") return new Unión(izq, der);
@@ -158,6 +177,9 @@ export function analizarSintácticamente(texto: string): ExpresiónAR {
         }
         if (primero.tipo === "PRODUCT") {
             throw new ErrorSintácticoAR("×: se esperaba 'expresión × expresión'.");
+        }
+        if (primero.tipo === "BOWTIE") {
+            throw new ErrorSintácticoAR("⋈: se esperaba 'expresión ⋈<condición> expresión'.");
         }
         throw new ErrorSintácticoAR(`Se esperaba una expresión pero se encontró '${primero.valor}'.`);
     }

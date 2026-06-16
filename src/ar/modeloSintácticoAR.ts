@@ -119,32 +119,6 @@ export class ExpresiónSelección extends ExpresiónAR {
         return resultado.filtrar(t => this.condición.evaluarCon(t));
     }
 }
-
-export class ExpresiónProductoCartesiano extends ExpresiónAR {
-    constructor(readonly izq: ExpresiónAR, readonly der: ExpresiónAR) {
-        super();
-    }
-
-    interpretarseCon(modelo: ModeloRelacionalMaterializado): ResultadoConsulta {
-        const izqRes = this.izq.interpretarseCon(modelo);
-        const derRes = this.der.interpretarseCon(modelo);
-
-        izqRes.atributos.forEach(attr => {
-            if (derRes.atributos.includes(attr)) {
-                throw new ErrorSemánticoAR(
-                    `Ambigüedad en producto cartesiano: el atributo '${attr}' existe en ambas relaciones.`,
-                );
-            }
-        });
-
-        const tuplas = izqRes.tuplas.flatMap(tuplaIzquierda =>
-            derRes.tuplas.map(tuplaDerecha => ({ ...tuplaIzquierda, ...tuplaDerecha })),
-        );
-
-        return new ResultadoConsulta("", [...izqRes.atributos, ...derRes.atributos], tuplas);
-    }
-}
-
 export class ExpresiónProyección extends ExpresiónAR {
     constructor(readonly atributos: string[], readonly subexpr: ExpresiónAR) { super(); }
     interpretarseCon(modelo: ModeloRelacionalMaterializado): ResultadoConsulta {

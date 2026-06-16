@@ -141,4 +141,16 @@ describe("[Álgebra Relacional] Tokenizador AR", () => {
             ["NOMBRE", "PRODUCT", "NOMBRE", "EOF"]
         );
     });
+
+    it("el símbolo de join condicional se tokeniza correctamente", () => {
+        const tokens = tokenizar("⋈");
+        expect(tokens[0].tipo).toBe<TipoTokenAR>("BOWTIE");
+        expect(tokens[0].valor).toBe("⋈");
+    });
+
+    it("una expresión de join condicional se tokeniza correctamente", () => {
+        expect(tiposEn("EMPLEADO ⋈<sueldo>5000>DEPARTAMENTO")).toEqual<TipoTokenAR[]>(
+            ["NOMBRE", "BOWTIE", "LANGLE", "NOMBRE", "RANGLE", "NUMERO", "RANGLE", "NOMBRE", "EOF"]
+        );
+    });
 });

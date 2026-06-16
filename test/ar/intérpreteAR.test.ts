@@ -4,7 +4,7 @@ import {NombreDeRelación} from "../../src/ar/modeloSintácticoAR.ts";
 import {ModeloRelacionalMaterializado} from "../../src/mr/modeloRelacionalMaterializado.ts";
 import {ResultadoConsulta} from "../../src/ar/resultadoConsulta.ts";
 import {ErrorSemánticoAR} from "../../src/servicios/errores.ts";
-import {definición, fila, inserción, pk, programa, relación, simple} from "../mr/helpers.ts";
+import {definición, fila, fk, inserción, pk, programa, relación, simple} from "../mr/helpers.ts";
 import {IntérpreteMR} from "../../src/mr/interpretadorMR.ts";
 import {ValidadorSemánticoMR} from "../../src/mr/validadorSemanticoMR.ts";
 import {SentenciaMR} from "../../src/mr/sentenciaMR.ts";
@@ -63,7 +63,7 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
         );
         const resultado = intérprete.ejecutar(analizarSintácticamente("σ<marca='Quilmes'>CERVEZA"), modelo);
         expect(resultado.tuplas).toHaveLength(2);
-        expect(resultado.tuplas.every(t => t["marca"] === "Quilmes")).toBe(true);
+        expect(resultado.tuplas.every(t => t["marca"] === "Quilmes")).toBeTruthy();
     });
 
     it("una selección con condición que no satisface ninguna tupla retorna resultado vacío", () => {
@@ -503,5 +503,78 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
         expect(resultado.atributos).toEqual(["ki", "kiV"]);
         expect(resultado.tuplas).toHaveLength(1);
         esperarResultadoConsulta(resultado, [{ki: 9000, kiV: 8000}]);
+    });
+
+    it("el join condicional combina las tuplas que satisfacen la condición", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("EMPLEADO", pk("legajo"), simple("nombre"), simple("sueldo"))),
+            definición(relación("DEPARTAMENTO", pk("codigo"), simple("ciudad"))),
+            inserción("EMPLEADO", fila(1, "Ana", 4000)),
+            inserción("EMPLEADO", fila(2, "Luis", 6000)),
+            inserción("DEPARTAMENTO", fila(10, "CABA")),
+            inserción("DEPARTAMENTO", fila(20, "Córdoba")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("EMPLEADO ⋈<sueldo>5000>DEPARTAMENTO"), modelo);
+        expect(resultado.tuplas).toHaveLength(2);
+        expect(resultado.atributos).toEqual(["legajo", "nombre", "sueldo", "codigo", "ciudad"]);
+        expect(resultado.tuplas.every(t => (t["sueldo"] as number) > 5000)).toBeTruthy();
+    });
+
+    it("el join condicional retorna vacío si ninguna tupla satisface la condición", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("EMPLEADO", pk("legajo"), simple("sueldo"))),
+            definición(relación("DEPARTAMENTO", pk("codigo"), simple("ciudad"))),
+            inserción("EMPLEADO", fila(1, 3000)),
+            inserción("DEPARTAMENTO", fila(10, "CABA")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("EMPLEADO ⋈<sueldo>5000>DEPARTAMENTO"), modelo);
+        expect(resultado.tuplas).toHaveLength(0);
+    });
+
+    it("el join condicional levanta una excepción si hay atributos con el mismo nombre", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("EMPLEADO", pk("id"), simple("nombre"))),
+            definición(relación("DEPARTAMENTO", pk("id"), simple("ciudad"))),
+            inserción("EMPLEADO", fila(1, "Ana")),
+            inserción("DEPARTAMENTO", fila(10, "CABA")),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("EMPLEADO ⋈<nombre='Ana'>DEPARTAMENTO"), modelo)
+        ).toThrow("Ambigüedad en join condicional: el atributo 'id' existe en ambas relaciones.");
+    });
+
+    it("el join condicional con condición compuesta filtra correctamente", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("EMPLEADO", pk("legajo"), simple("sueldo"), simple("antigüedad"))),
+            definición(relación("DEPARTAMENTO", pk("codigo"), simple("nombre"))),
+            inserción("EMPLEADO", fila(1, 4000, 3)),
+            inserción("EMPLEADO", fila(2, 6000, 6)),
+            inserción("EMPLEADO", fila(3, 5000, 1)),
+            inserción("DEPARTAMENTO", fila(10, "Ventas")),
+            inserción("DEPARTAMENTO", fila(20, "IT")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("EMPLEADO ⋈<sueldo>3000 ∧ antigüedad>2>DEPARTAMENTO"), modelo);
+        expect(resultado.tuplas).toHaveLength(4);
+        expect(resultado.atributos).toEqual(["legajo", "sueldo", "antigüedad", "codigo", "nombre"]);
+    });
+
+    it("el join condicional por igualdad combina correctamente dos relaciones", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("DEPARTAMENTO", pk("codigo"), simple("nombreDepto"), simple("ciudad"))),
+            definición(relación("EMPLEADO", pk("legajo"), simple("nombre"), simple("sueldo"), fk("codigo_departamento"))),
+            inserción("DEPARTAMENTO", fila(10, "Ventas", "CABA")),
+            inserción("DEPARTAMENTO", fila(20, "IT", "Córdoba")),
+            inserción("EMPLEADO", fila(1, "Ana", 4000, 10)),
+            inserción("EMPLEADO", fila(2, "Luis", 6000, 20)),
+            inserción("EMPLEADO", fila(3, "María", 5500, 10)),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("EMPLEADO ⋈<codigo_departamento=codigo>DEPARTAMENTO"), modelo);
+        expect(resultado.tuplas).toHaveLength(3);
+        expect(resultado.atributos).toEqual(["legajo", "nombre", "sueldo", "codigo_departamento", "codigo", "nombreDepto", "ciudad"]);
+        esperarResultadoConsulta(resultado, [
+            {legajo: 1, nombre: "Ana", sueldo: 4000, codigo_departamento: 10, codigo: 10, nombreDepto: "Ventas", ciudad: "CABA"},
+            {legajo: 2, nombre: "Luis", sueldo: 6000, codigo_departamento: 20, codigo: 20, nombreDepto: "IT", ciudad: "Córdoba"},
+            {legajo: 3, nombre: "María", sueldo: 5500, codigo_departamento: 10, codigo: 10, nombreDepto: "Ventas", ciudad: "CABA"},
+        ]);
     });
 });

@@ -34,7 +34,7 @@ export type TokenMR = {
     readonly posicion: number;
 };
 
-export const PATRON_NOMBRE = /^[A-Za-záéíóúÁÉÍÓÚñÑ_][A-Za-záéíóúÁÉÍÓÚñÑ0-9_]*\??/;
+export const PATRON_NOMBRE = /^[A-Za-záéíóúÁÉÍÓÚñÑüÜ_][A-Za-záéíóúÁÉÍÓÚñÑüÜ0-9_]*\??/;
 
 export const PATRON_NUMERO = /^\d+(\.\d+)?/;
 
@@ -81,6 +81,7 @@ export type TipoTokenAR =
     | "INTERSECTION"
     | "DIFFERENCE"
     | "PRODUCT"
+    | "BOWTIE"
     | "NUMERO"
     | "CADENA"
     | "VERDADERO"

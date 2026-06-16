@@ -2,7 +2,7 @@ import {describe, it} from "vitest";
 import {esperarAnálisisSintácticoAR, esperarErrorSintácticoAR} from "./helpers.ts";
 import {ExpresiónProyección, ExpresiónSelección, NombreDeRelación} from "../../src/ar/modeloSintácticoAR.ts";
 import {Intersección, Resta, Unión} from "../../src/ar/modeloSintactico/operadorDeConjuntos.ts";
-import {ExpresiónProductoCartesiano} from "../../src/ar/modeloSintácticoAR.ts";
+import {JoinCondicional, ProductoCartesiano} from "../../src/ar/modeloSintactico/operadorDeCombinación.ts";
 
 describe("[Álgebra Relacional] Parser AR", () => {
     it("un nombre de relación solo se parsea como NombreDeRelación con ese nombre", () => {
@@ -434,14 +434,14 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("un producto cartesiano de dos relaciones es una consulta válida", () => {
-        esperarAnálisisSintácticoAR("PERSONA × PEDIDO", ExpresiónProductoCartesiano, {
+        esperarAnálisisSintácticoAR("PERSONA × PEDIDO", ProductoCartesiano, {
             izq: {nombre: "PERSONA"},
             der: {nombre: "PEDIDO"},
         });
     });
 
     it("el producto cartesiano asocia hacia la izquierda", () => {
-        esperarAnálisisSintácticoAR("CLIENTE × PEDIDO × FACTURA", ExpresiónProductoCartesiano, {
+        esperarAnálisisSintácticoAR("CLIENTE × PEDIDO × FACTURA", ProductoCartesiano, {
             izq: {izq: {nombre: "CLIENTE"}, der: {nombre: "PEDIDO"}},
             der: {nombre: "FACTURA"},
         });
@@ -452,7 +452,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("la selección tiene precedencia sobre el producto cartesiano", () => {
-        esperarAnálisisSintácticoAR("σ<ki>9000>GOKU × VEGETA", ExpresiónProductoCartesiano, {
+        esperarAnálisisSintácticoAR("σ<ki>9000>GOKU × VEGETA", ProductoCartesiano, {
             izq: {
                 condición: {izq: {nombre: "ki"}, op: ">", der: {valor: 9000}},
                 subexpr: {nombre: "GOKU"},
@@ -462,7 +462,7 @@ describe("[Álgebra Relacional] Parser AR", () => {
     });
 
     it("la proyección tiene precedencia sobre el producto cartesiano", () => {
-        esperarAnálisisSintácticoAR("π<aldea>NARUTO × SASUKE", ExpresiónProductoCartesiano, {
+        esperarAnálisisSintácticoAR("π<aldea>NARUTO × SASUKE", ProductoCartesiano, {
             izq: {
                 atributos: ["aldea"],
                 subexpr: {nombre: "NARUTO"},
@@ -505,6 +505,78 @@ describe("[Álgebra Relacional] Parser AR", () => {
                 },
             },
             der: {nombre: "FACTURA"},
+        });
+    });
+
+    it("un join condicional es una consulta válida", () => {
+        esperarAnálisisSintácticoAR("EMPLEADO ⋈<sueldo>5000>DEPARTAMENTO", JoinCondicional, {
+            izq: {nombre: "EMPLEADO"},
+            condición: {izq: {nombre: "sueldo"}, op: ">", der: {valor: 5000}},
+            der: {nombre: "DEPARTAMENTO"},
+        });
+    });
+
+    it("el join condicional con condición de igualdad es una consulta válida", () => {
+        esperarAnálisisSintácticoAR("CLIENTE ⋈<ciudad='CABA'>PEDIDO", JoinCondicional, {
+            izq: {nombre: "CLIENTE"},
+            condición: {izq: {nombre: "ciudad"}, op: "=", der: {valor: "CABA"}},
+            der: {nombre: "PEDIDO"},
+        });
+    });
+
+    it("el join condicional con condición compuesta es una consulta válida", () => {
+        esperarAnálisisSintácticoAR("EMPLEADO ⋈<sueldo>3000 ∧ antigüedad>5>DEPARTAMENTO", JoinCondicional, {
+            izq: {nombre: "EMPLEADO"},
+            condición: {
+                izq: {izq: {nombre: "sueldo"}, op: ">", der: {valor: 3000}},
+                der: {izq: {nombre: "antigüedad"}, op: ">", der: {valor: 5}},
+            },
+            der: {nombre: "DEPARTAMENTO"},
+        });
+    });
+
+    it("el join condicional malformado levanta una excepción", () => {
+        esperarErrorSintácticoAR("⋈<sueldo>5000>", "⋈: se esperaba 'expresión ⋈<condición> expresión'.");
+    });
+
+    it("el join condicional y el producto cartesiano asocian hacia la izquierda con mismo nivel de precedencia", () => {
+        esperarAnálisisSintácticoAR("EMPLEADO ⋈<sueldo>5000>DEPARTAMENTO × PROYECTO", ProductoCartesiano, {
+            izq: {
+                izq: {nombre: "EMPLEADO"},
+                condición: {izq: {nombre: "sueldo"}, op: ">", der: {valor: 5000}},
+                der: {nombre: "DEPARTAMENTO"},
+            },
+            der: {nombre: "PROYECTO"},
+        });
+    });
+
+    it("la selección tiene precedencia sobre el join condicional", () => {
+        esperarAnálisisSintácticoAR("σ<sueldo>3000>EMPLEADO ⋈<antigüedad>2>DEPARTAMENTO", JoinCondicional, {
+            izq: {
+                condición: {izq: {nombre: "sueldo"}, op: ">", der: {valor: 3000}},
+                subexpr: {nombre: "EMPLEADO"},
+            },
+            condición: {izq: {nombre: "antigüedad"}, op: ">", der: {valor: 2}},
+            der: {nombre: "DEPARTAMENTO"},
+        });
+    });
+
+    it("el join condicional por clave foránea es una consulta válida", () => {
+        esperarAnálisisSintácticoAR("EMPLEADO ⋈<codigo_departamento=codigo>DEPARTAMENTO", JoinCondicional, {
+            izq: {nombre: "EMPLEADO"},
+            condición: {izq: {nombre: "codigo_departamento"}, op: "=", der: {nombre: "codigo"}},
+            der: {nombre: "DEPARTAMENTO"},
+        });
+    });
+
+    it("el join condicional tiene precedencia sobre los operadores de conjunto", () => {
+        esperarAnálisisSintácticoAR("EMPLEADO ⋈<sueldo>5000>DEPARTAMENTO ∪ PROYECTO", Unión, {
+            izq: {
+                izq: {nombre: "EMPLEADO"},
+                condición: {izq: {nombre: "sueldo"}, op: ">", der: {valor: 5000}},
+                der: {nombre: "DEPARTAMENTO"},
+            },
+            der: {nombre: "PROYECTO"},
         });
     });
 });
