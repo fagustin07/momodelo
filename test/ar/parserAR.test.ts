@@ -2,6 +2,7 @@ import {describe, it} from "vitest";
 import {esperarAnálisisSintácticoAR, esperarErrorSintácticoAR} from "./helpers.ts";
 import {ExpresiónProyección, ExpresiónSelección, NombreDeRelación} from "../../src/ar/modeloSintácticoAR.ts";
 import {Intersección, Resta, Unión} from "../../src/ar/modeloSintactico/operadorDeConjuntos.ts";
+import {ExpresiónProductoCartesiano} from "../../src/ar/modeloSintácticoAR.ts";
 
 describe("[Álgebra Relacional] Parser AR", () => {
     it("un nombre de relación solo se parsea como NombreDeRelación con ese nombre", () => {
@@ -429,6 +430,81 @@ describe("[Álgebra Relacional] Parser AR", () => {
                 izq: {nombre: "NARUTO"},
                 der: {nombre: "SASUKE"},
             },
+        });
+    });
+
+    it("un producto cartesiano de dos relaciones es una consulta válida", () => {
+        esperarAnálisisSintácticoAR("PERSONA × PEDIDO", ExpresiónProductoCartesiano, {
+            izq: {nombre: "PERSONA"},
+            der: {nombre: "PEDIDO"},
+        });
+    });
+
+    it("el producto cartesiano asocia hacia la izquierda", () => {
+        esperarAnálisisSintácticoAR("CLIENTE × PEDIDO × FACTURA", ExpresiónProductoCartesiano, {
+            izq: {izq: {nombre: "CLIENTE"}, der: {nombre: "PEDIDO"}},
+            der: {nombre: "FACTURA"},
+        });
+    });
+
+    it("el producto cartesiano levanta una excepción si no recibo dos expresiones", () => {
+        esperarErrorSintácticoAR("×PERSONA", "×: se esperaba 'expresión × expresión'.");
+    });
+
+    it("la selección tiene precedencia sobre el producto cartesiano", () => {
+        esperarAnálisisSintácticoAR("σ<ki>9000>GOKU × VEGETA", ExpresiónProductoCartesiano, {
+            izq: {
+                condición: {izq: {nombre: "ki"}, op: ">", der: {valor: 9000}},
+                subexpr: {nombre: "GOKU"},
+            },
+            der: {nombre: "VEGETA"},
+        });
+    });
+
+    it("la proyección tiene precedencia sobre el producto cartesiano", () => {
+        esperarAnálisisSintácticoAR("π<aldea>NARUTO × SASUKE", ExpresiónProductoCartesiano, {
+            izq: {
+                atributos: ["aldea"],
+                subexpr: {nombre: "NARUTO"},
+            },
+            der: {nombre: "SASUKE"},
+        });
+    });
+
+    it("el producto cartesiano tiene precedencia sobre la unión", () => {
+        esperarAnálisisSintácticoAR("CLIENTE × PEDIDO ∪ FACTURA", Unión, {
+            izq: {izq: {nombre: "CLIENTE"}, der: {nombre: "PEDIDO"}},
+            der: {nombre: "FACTURA"},
+        });
+    });
+
+    it("el producto cartesiano tiene precedencia sobre la intersección", () => {
+        esperarAnálisisSintácticoAR("CLIENTE × PEDIDO ∩ FACTURA", Intersección, {
+            izq: {izq: {nombre: "CLIENTE"}, der: {nombre: "PEDIDO"}},
+            der: {nombre: "FACTURA"},
+        });
+    });
+
+    it("el producto cartesiano tiene precedencia sobre la resta", () => {
+        esperarAnálisisSintácticoAR("CLIENTE × PEDIDO - FACTURA", Resta, {
+            izq: {izq: {nombre: "CLIENTE"}, der: {nombre: "PEDIDO"}},
+            der: {nombre: "FACTURA"},
+        });
+    });
+
+    it("el producto cartesiano y los operadores de conjunto se combinan con precedencia correcta", () => {
+        esperarAnálisisSintácticoAR("σ<edad>30>CLIENTE × π<producto>PEDIDO ∪ FACTURA", Unión, {
+            izq: {
+                izq: {
+                    condición: {izq: {nombre: "edad"}, op: ">", der: {valor: 30}},
+                    subexpr: {nombre: "CLIENTE"},
+                },
+                der: {
+                    atributos: ["producto"],
+                    subexpr: {nombre: "PEDIDO"},
+                },
+            },
+            der: {nombre: "FACTURA"},
         });
     });
 });

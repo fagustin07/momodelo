@@ -428,4 +428,80 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
             {fruta: "Hana Hana"},
         ]);
     });
+
+    it("el producto cartesiano combina todas las tuplas de ambas relaciones", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("PERSONA", pk("idP"), simple("nombre"))),
+            definición(relación("PEDIDO", pk("idPed"), simple("producto"), simple("cantidad"))),
+            inserción("PERSONA", fila(1, "Ana")),
+            inserción("PERSONA", fila(2, "Luis")),
+            inserción("PEDIDO", fila(101, "A", 3)),
+            inserción("PEDIDO", fila(102, "B", 5)),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("PERSONA × PEDIDO"), modelo);
+        expect(resultado.tuplas).toHaveLength(4);
+        expect(resultado.atributos).toEqual(["idP", "nombre", "idPed", "producto", "cantidad"]);
+    });
+
+    it("el producto cartesiano genera el esquema N+M sin duplicar atributos", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("EMPLEADO", pk("legajo"), simple("nombre"))),
+            definición(relación("DEPARTAMENTO", pk("codigo"), simple("ciudad"))),
+            inserción("EMPLEADO", fila(1, "Ana")),
+            inserción("DEPARTAMENTO", fila(10, "CABA")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("EMPLEADO × DEPARTAMENTO"), modelo);
+        expect(resultado.atributos).toEqual(["legajo", "nombre", "codigo", "ciudad"]);
+        esperarResultadoConsulta(resultado, [{legajo: 1, nombre: "Ana", codigo: 10, ciudad: "CABA"}]);
+    });
+
+    it("el producto cartesiano lanza error si hay atributos con el mismo nombre", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("EMPLEADO", pk("id"), simple("nombre"))),
+            definición(relación("PROYECTO", pk("id"), simple("presupuesto"))),
+            inserción("EMPLEADO", fila(1, "Ana")),
+            inserción("PROYECTO", fila(10, 100000)),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("EMPLEADO × PROYECTO"), modelo)
+        ).toThrow("Ambigüedad en producto cartesiano: el atributo 'id' existe en ambas relaciones.");
+    });
+
+    it("las proyecciones pueden usarse para evitar colisión de nombres en el producto cartesiano", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("EMPLEADO", pk("id"), simple("nombre"))),
+            definición(relación("PROYECTO", pk("id"), simple("presupuesto"))),
+            inserción("EMPLEADO", fila(1, "Ana")),
+            inserción("PROYECTO", fila(10, 100000)),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("π<nombre>EMPLEADO × π<presupuesto>PROYECTO"), modelo);
+        expect(resultado.atributos).toEqual(["nombre", "presupuesto"]);
+        esperarResultadoConsulta(resultado, [{nombre: "Ana", presupuesto: 100000}]);
+    });
+
+    it("la selección sobre un producto cartesiano filtra las combinaciones", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("EMPLEADO", pk("legajo"), simple("sueldo"))),
+            definición(relación("DEPARTAMENTO", pk("codigo"), simple("nombre"))),
+            inserción("EMPLEADO", fila(1, 4000)),
+            inserción("EMPLEADO", fila(2, 6000)),
+            inserción("DEPARTAMENTO", fila(1, "Ventas")),
+            inserción("DEPARTAMENTO", fila(2, "IT")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("σ<sueldo>5000>EMPLEADO × DEPARTAMENTO"), modelo);
+        expect(resultado.tuplas).toHaveLength(2);
+    });
+
+    it("el producto cartesiano y la proyección combinados producen el esquema esperado", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("GOKU", pk("id"), simple("ki"))),
+            definición(relación("VEGETA", pk("idV"), simple("kiV"))),
+            inserción("GOKU", fila(1, 9000)),
+            inserción("VEGETA", fila(2, 8000)),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("π<ki>GOKU × π<kiV>VEGETA"), modelo);
+        expect(resultado.atributos).toEqual(["ki", "kiV"]);
+        expect(resultado.tuplas).toHaveLength(1);
+        esperarResultadoConsulta(resultado, [{ki: 9000, kiV: 8000}]);
+    });
 });

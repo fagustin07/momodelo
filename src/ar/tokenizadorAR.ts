@@ -29,6 +29,7 @@ export class TokenizadorAR {
             if (texto[pos] === "-") { tokens.push({tipo: "DIFFERENCE", valor: "-",  posicion: pos}); pos++; continue; }
             if (texto[pos] === "<") { tokens.push({tipo: "LANGLE",    valor: "<",  posicion: pos}); pos++; continue; }
             if (texto[pos] === ">") { tokens.push({tipo: "RANGLE",    valor: ">",  posicion: pos}); pos++; continue; }
+            if (texto[pos] === "×") { tokens.push({tipo: "PRODUCT",    valor: "×",  posicion: pos}); pos++; continue; }
             if (texto[pos] === "(") { tokens.push({tipo: "LPAREN",    valor: "(",  posicion: pos}); pos++; continue; }
             if (texto[pos] === ")") { tokens.push({tipo: "RPAREN",    valor: ")",  posicion: pos}); pos++; continue; }
             if (texto[pos] === ",") { tokens.push({tipo: "COMA",      valor: ",",  posicion: pos}); pos++; continue; }

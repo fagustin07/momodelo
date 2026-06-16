@@ -80,6 +80,7 @@ export type TipoTokenAR =
     | "UNION"
     | "INTERSECTION"
     | "DIFFERENCE"
+    | "PRODUCT"
     | "NUMERO"
     | "CADENA"
     | "VERDADERO"

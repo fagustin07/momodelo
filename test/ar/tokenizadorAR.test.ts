@@ -129,4 +129,16 @@ describe("[Álgebra Relacional] Tokenizador AR", () => {
             ["PI", "LANGLE", "NOMBRE", "COMA", "NOMBRE", "RANGLE", "NOMBRE", "EOF"]
         );
     });
+
+    it("el símbolo de producto cartesiano se tokeniza correctamente", () => {
+        const tokens = tokenizar("×");
+        expect(tokens[0].tipo).toBe<TipoTokenAR>("PRODUCT");
+        expect(tokens[0].valor).toBe("×");
+    });
+
+    it("una expresión de producto cartesiano se tokeniza correctamente", () => {
+        expect(tiposEn("PERSONA × PEDIDO")).toEqual<TipoTokenAR[]>(
+            ["NOMBRE", "PRODUCT", "NOMBRE", "EOF"]
+        );
+    });
 });

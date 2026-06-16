@@ -6,6 +6,7 @@ import {
     Conjunción,
     Disyunción,
     ExpresiónAR,
+    ExpresiónProductoCartesiano,
     ExpresiónProyección,
     ExpresiónSelección,
     Literal,
@@ -124,8 +125,14 @@ const operadorConjunto: ReglaSintáctica<string> = elección<string>([
     token("DIFFERENCE"),
 ]);
 
-expresión = encadenar<ExpresiónAR, string>(
+const expresiónDeProducto = encadenar<ExpresiónAR, string>(
     términoExpresión,
+    token("PRODUCT"),
+    (izq, _, der) => new ExpresiónProductoCartesiano(izq, der),
+);
+
+expresión = encadenar<ExpresiónAR, string>(
+    expresiónDeProducto,
     operadorConjunto,
     (izq, op, der) => {
         if (op === "∪") return new Unión(izq, der);
@@ -148,6 +155,9 @@ export function analizarSintácticamente(texto: string): ExpresiónAR {
         }
         if (primero.tipo === "PI") {
             throw new ErrorSintácticoAR("π: se esperaba '<listaDeAtributos>expresión'.");
+        }
+        if (primero.tipo === "PRODUCT") {
+            throw new ErrorSintácticoAR("×: se esperaba 'expresión × expresión'.");
         }
         throw new ErrorSintácticoAR(`Se esperaba una expresión pero se encontró '${primero.valor}'.`);
     }
