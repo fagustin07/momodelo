@@ -153,4 +153,16 @@ describe("[Álgebra Relacional] Tokenizador AR", () => {
             ["NOMBRE", "BOWTIE", "LANGLE", "NOMBRE", "RANGLE", "NUMERO", "RANGLE", "NOMBRE", "EOF"]
         );
     });
+
+    it("el símbolo de join natural se tokeniza correctamente", () => {
+        const tokens = tokenizar("*");
+        expect(tokens[0].tipo).toBe<TipoTokenAR>("STAR");
+        expect(tokens[0].valor).toBe("*");
+    });
+
+    it("una expresión de join natural se tokeniza correctamente", () => {
+        expect(tiposEn("EMPLEADO * DEPARTAMENTO")).toEqual<TipoTokenAR[]>(
+            ["NOMBRE", "STAR", "NOMBRE", "EOF"]
+        );
+    });
 });

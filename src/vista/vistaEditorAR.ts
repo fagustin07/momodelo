@@ -38,6 +38,7 @@ export class VistaEditorAR {
             createElement("button", {className: "mr-ar-toolbar-btn", title: "Resta (Ctrl+Shift+7)", onclick: () => this._insertarSímbolo("-")}, ["−", createElement("span", {className: "mr-ar-toolbar-num", textContent: "7"})]),
             createElement("button", {className: "mr-ar-toolbar-btn", title: "Producto Cartesiano (Ctrl+Shift+8)", onclick: () => this._insertarSímbolo("×")}, ["×", createElement("span", {className: "mr-ar-toolbar-num", textContent: "8"})]),
             createElement("button", {className: "mr-ar-toolbar-btn", title: "Join Condicional (Ctrl+Shift+9)", onclick: () => this._insertarSímbolo("⋈")}, ["⋈", createElement("span", {className: "mr-ar-toolbar-num", textContent: "9"})]),
+            createElement("button", {className: "mr-ar-toolbar-btn", title: "Join Natural", onclick: () => this._insertarSímbolo("*")}, ["*"]),
         ]);
 
         this._panel = createElement("div", {className: "mr-editor-panel", style: {display: "none"}}, [

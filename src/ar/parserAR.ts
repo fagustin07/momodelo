@@ -12,7 +12,7 @@ import {
     NombreAtributo,
     NombreDeRelación,
 } from "./modeloSintácticoAR.ts";
-import {JoinCondicional, ProductoCartesiano} from "./modeloSintactico/operadorDeCombinación.ts";
+import {JoinCondicional, JoinNatural, ProductoCartesiano} from "./modeloSintactico/operadorDeCombinación.ts";
 import {elección, encadenar, encadenarCon, muchos, ReglaSintáctica, soloDerecha, soloIzquierda, token, mapear, seguidoDe} from "./combinadores.ts";
 import {ErrorSintácticoAR} from "../servicios/errores.ts";
 import {Intersección, Resta, Unión} from "./modeloSintactico/operadorDeConjuntos.ts";
@@ -133,9 +133,14 @@ const operadorJoin = soloDerecha(token("BOWTIE"),
     )
 );
 
+const operadorJoinNatural = mapear(token("STAR"), () =>
+    (izq: ExpresiónAR, der: ExpresiónAR) => new JoinNatural(izq, der)
+);
+
 const operadorDeCombinación = elección<(izq: ExpresiónAR, der: ExpresiónAR) => ExpresiónAR>([
     operadorProducto,
     operadorJoin,
+    operadorJoinNatural,
 ]);
 
 const expresiónDeCombinación = encadenar<ExpresiónAR, (izq: ExpresiónAR, der: ExpresiónAR) => ExpresiónAR>(
@@ -180,6 +185,9 @@ export function analizarSintácticamente(texto: string): ExpresiónAR {
         }
         if (primero.tipo === "BOWTIE") {
             throw new ErrorSintácticoAR("⋈: se esperaba 'expresión ⋈<condición> expresión'.");
+        }
+        if (primero.tipo === "STAR") {
+            throw new ErrorSintácticoAR("*: se esperaba 'expresión * expresión'.");
         }
         throw new ErrorSintácticoAR(`Se esperaba una expresión pero se encontró '${primero.valor}'.`);
     }

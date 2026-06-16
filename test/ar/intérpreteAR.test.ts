@@ -577,4 +577,36 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
             {legajo: 3, nombre: "María", sueldo: 5500, codigo_departamento: 10, codigo: 10, nombreDepto: "Ventas", ciudad: "CABA"},
         ]);
     });
+
+    it("el join natural combina correctamente dos relaciones por coincidencia de atributos", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("DEPARTAMENTO", pk("codigo"), simple("nombreDepto"), simple("ciudad"))),
+            definición(relación("EMPLEADO", pk("legajo"), simple("nombre"), simple("sueldo"), fk("codigo"))),
+            inserción("DEPARTAMENTO", fila(10, "Ventas", "CABA")),
+            inserción("DEPARTAMENTO", fila(20, "IT", "Córdoba")),
+            inserción("EMPLEADO", fila(1, "Ana", 4000, 10)),
+            inserción("EMPLEADO", fila(2, "Luis", 6000, 20)),
+            inserción("EMPLEADO", fila(3, "María", 5500, 10)),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("EMPLEADO * DEPARTAMENTO"), modelo);
+        expect(resultado.tuplas).toHaveLength(3);
+        expect(resultado.atributos).toEqual(["legajo", "nombre", "sueldo", "codigo", "nombreDepto", "ciudad"]);
+        esperarResultadoConsulta(resultado, [
+            {codigo: 10, legajo: 1, nombre: "Ana", sueldo: 4000, nombreDepto: "Ventas", ciudad: "CABA"},
+            {codigo: 20, legajo: 2, nombre: "Luis", sueldo: 6000, nombreDepto: "IT", ciudad: "Córdoba"},
+            {codigo: 10, legajo: 3, nombre: "María", sueldo: 5500, nombreDepto: "Ventas", ciudad: "CABA"},
+        ]);
+    });
+
+    it("el join natural sin atributos en común levanta una excepción", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("EMPLEADO", pk("legajo"), simple("nombre"))),
+            definición(relación("DEPARTAMENTO", pk("codigo"), simple("ciudad"))),
+            inserción("EMPLEADO", fila(1, "Ana")),
+            inserción("DEPARTAMENTO", fila(10, "CABA")),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("EMPLEADO * DEPARTAMENTO"), modelo)
+        ).toThrow("Falta ambigüedad en join natural: las relaciones no tienen atributos en común.");
+    });
 });

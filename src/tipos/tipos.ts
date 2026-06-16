@@ -82,6 +82,7 @@ export type TipoTokenAR =
     | "DIFFERENCE"
     | "PRODUCT"
     | "BOWTIE"
+    | "STAR"
     | "NUMERO"
     | "CADENA"
     | "VERDADERO"

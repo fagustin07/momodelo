@@ -2,7 +2,7 @@ import {describe, it} from "vitest";
 import {esperarAnálisisSintácticoAR, esperarErrorSintácticoAR} from "./helpers.ts";
 import {ExpresiónProyección, ExpresiónSelección, NombreDeRelación} from "../../src/ar/modeloSintácticoAR.ts";
 import {Intersección, Resta, Unión} from "../../src/ar/modeloSintactico/operadorDeConjuntos.ts";
-import {JoinCondicional, ProductoCartesiano} from "../../src/ar/modeloSintactico/operadorDeCombinación.ts";
+import {JoinCondicional, JoinNatural, ProductoCartesiano} from "../../src/ar/modeloSintactico/operadorDeCombinación.ts";
 
 describe("[Álgebra Relacional] Parser AR", () => {
     it("un nombre de relación solo se parsea como NombreDeRelación con ese nombre", () => {
@@ -574,6 +574,37 @@ describe("[Álgebra Relacional] Parser AR", () => {
             izq: {
                 izq: {nombre: "EMPLEADO"},
                 condición: {izq: {nombre: "sueldo"}, op: ">", der: {valor: 5000}},
+                der: {nombre: "DEPARTAMENTO"},
+            },
+            der: {nombre: "PROYECTO"},
+        });
+    });
+
+    it("el join natural es un operador binario", () => {
+        esperarAnálisisSintácticoAR("EMPLEADO * DEPARTAMENTO", JoinNatural, {
+            izq: {nombre: "EMPLEADO"},
+            der: {nombre: "DEPARTAMENTO"},
+        });
+    });
+
+    it("el join natural sin una expresión levanta una excepción", () => {
+        esperarErrorSintácticoAR("*", "*: se esperaba 'expresión * expresión'.");
+    });
+
+    it("el join natural asocia hacia la izquierda", () => {
+        esperarAnálisisSintácticoAR("EMPLEADO * DEPARTAMENTO * PROYECTO", JoinNatural, {
+            izq: {
+                izq: {nombre: "EMPLEADO"},
+                der: {nombre: "DEPARTAMENTO"},
+            },
+            der: {nombre: "PROYECTO"},
+        });
+    });
+
+    it("el join natural tiene precedencia sobre los operadores de conjunto", () => {
+        esperarAnálisisSintácticoAR("EMPLEADO * DEPARTAMENTO ∪ PROYECTO", Unión, {
+            izq: {
+                izq: {nombre: "EMPLEADO"},
                 der: {nombre: "DEPARTAMENTO"},
             },
             der: {nombre: "PROYECTO"},
