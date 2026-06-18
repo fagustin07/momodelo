@@ -10,27 +10,46 @@ export abstract class OperadorDeConjuntos extends ExpresiónAR {
     }
 
     interpretarseCon(modelo: ModeloRelacionalMaterializado): ResultadoConsulta {
-        const izqRes = this.izq.interpretarseCon(modelo);
-        const derRes = this.der.interpretarseCon(modelo);
-        if (izqRes.atributos.length !== derRes.atributos.length) {
-            throw new ErrorSemánticoAR(`${this.nombre()}: las relaciones tienen grado incompatible.`);
-        }
-        const derReatribuidas = this._reatribuir(derRes.tuplas, derRes.atributos, izqRes.atributos);
-        return this.operar(izqRes, derReatribuidas);
+        const conjuntoOperandoIzquierda = this.izq.interpretarseCon(modelo);
+        const conjuntoOperandoDerecha = this.der.interpretarseCon(modelo);
+
+        this._validarGradoCompatibilidad(conjuntoOperandoIzquierda, conjuntoOperandoDerecha);
+
+        const esquemaDerecho = this._esquemaDerechoRenombrado(conjuntoOperandoIzquierda, conjuntoOperandoDerecha);
+
+        return this.operar(
+            conjuntoOperandoIzquierda,
+            new ResultadoConsulta("",
+                [...esquemaDerecho],
+                this._renombrarConjunto(
+                    conjuntoOperandoDerecha.tuplas,
+                    conjuntoOperandoDerecha.atributos,
+                    esquemaDerecho
+                )
+            )
+        );
     }
 
     protected abstract nombre(): string;
 
-    protected abstract operar(izqRes: ResultadoConsulta, derReatribuidas: Record<string, Valor>[]): ResultadoConsulta;
+    protected abstract operar(operandoIzquierdo: ResultadoConsulta, operandoDerecho: ResultadoConsulta): ResultadoConsulta;
 
-    private _reatribuir(tuplas: ReadonlyArray<Record<string, Valor>>, attrsViejos: readonly string[], attrsNuevos: readonly string[]): Record<string, Valor>[] {
-        return tuplas.map(t => {
-            const nueva: Record<string, Valor> = {};
-            attrsNuevos.forEach((nombre, i) => {
-                nueva[nombre] = t[attrsViejos[i]];
-            });
-            return nueva;
-        });
+    protected _validarGradoCompatibilidad(operandoIzquierdo: ResultadoConsulta, operandoDerecho: ResultadoConsulta): void {
+        if (operandoIzquierdo.atributos.length !== operandoDerecho.atributos.length) {
+            throw new ErrorSemánticoAR(`${this.nombre()}: las relaciones tienen grado incompatible.`);
+        }
+    }
+
+    protected _esquemaDerechoRenombrado(operandoIzquierdo: ResultadoConsulta, _operandoDerecho: ResultadoConsulta): readonly string[] {
+        return operandoIzquierdo.atributos;
+    }
+
+    protected _renombrarConjunto(tuplas: ReadonlyArray<Record<string, Valor>>, esquemaActual: readonly string[], esquemaRenombrado: readonly string[]): Record<string, Valor>[] {
+        return tuplas.map(tupla =>
+            Object.fromEntries(
+                esquemaRenombrado.map((nombre, i) => [nombre, tupla[esquemaActual[i]]]),
+            ),
+        );
     }
 }
 
@@ -39,8 +58,8 @@ export class Unión extends OperadorDeConjuntos {
         return "Unión";
     }
 
-    protected operar(izqRes: ResultadoConsulta, derReatribuidas: Record<string, Valor>[]): ResultadoConsulta {
-        return new ResultadoConsulta("", [...izqRes.atributos], [...izqRes.tuplas, ...derReatribuidas]);
+    protected operar(operandoIzquierdo: ResultadoConsulta, operandoDerecho: ResultadoConsulta): ResultadoConsulta {
+        return new ResultadoConsulta("", [...operandoIzquierdo.atributos], [...operandoIzquierdo.tuplas, ...operandoDerecho.tuplas]);
     }
 }
 
@@ -49,11 +68,11 @@ export class Intersección extends OperadorDeConjuntos {
         return "Intersección";
     }
 
-    protected operar(izqRes: ResultadoConsulta, derReatribuidas: Record<string, Valor>[]): ResultadoConsulta {
-        const enComún = izqRes.tuplas.filter(a =>
-            derReatribuidas.some(b => mismaTupla(a, b, izqRes.atributos))
+    protected operar(operandoIzquierdo: ResultadoConsulta, operandoDerecho: ResultadoConsulta): ResultadoConsulta {
+        const enComún = operandoIzquierdo.tuplas.filter(a =>
+            operandoDerecho.tuplas.some(b => mismaTupla(a, b, operandoIzquierdo.atributos))
         );
-        return new ResultadoConsulta("", [...izqRes.atributos], enComún);
+        return new ResultadoConsulta("", [...operandoIzquierdo.atributos], enComún);
     }
 }
 
@@ -62,11 +81,11 @@ export class Resta extends OperadorDeConjuntos {
         return "Resta";
     }
 
-    protected operar(izqRes: ResultadoConsulta, derReatribuidas: Record<string, Valor>[]): ResultadoConsulta {
-        const soloEnIzq = izqRes.tuplas.filter(a =>
-            !derReatribuidas.some(b => mismaTupla(a, b, izqRes.atributos))
+    protected operar(operandoIzquierdo: ResultadoConsulta, operandoDerecho: ResultadoConsulta): ResultadoConsulta {
+        const soloEnIzq = operandoIzquierdo.tuplas.filter(a =>
+            !operandoDerecho.tuplas.some(b => mismaTupla(a, b, operandoIzquierdo.atributos))
         );
-        return new ResultadoConsulta("", [...izqRes.atributos], soloEnIzq);
+        return new ResultadoConsulta("", [...operandoIzquierdo.atributos], soloEnIzq);
     }
 }
 

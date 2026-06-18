@@ -165,4 +165,16 @@ describe("[Álgebra Relacional] Tokenizador AR", () => {
             ["NOMBRE", "STAR", "NOMBRE", "EOF"]
         );
     });
+
+    it("el símbolo de división se tokeniza correctamente", () => {
+        const tokens = tokenizar("÷");
+        expect(tokens[0].tipo).toBe<TipoTokenAR>("DIVISION");
+        expect(tokens[0].valor).toBe("÷");
+    });
+
+    it("una expresión de división se tokeniza correctamente", () => {
+        expect(tiposEn("R ÷ S")).toEqual<TipoTokenAR[]>(
+            ["NOMBRE", "DIVISION", "NOMBRE", "EOF"]
+        );
+    });
 });

@@ -16,6 +16,7 @@ import {JoinCondicional, JoinNatural, ProductoCartesiano} from "./modeloSintacti
 import {elección, encadenar, encadenarCon, muchos, ReglaSintáctica, soloDerecha, soloIzquierda, token, mapear, seguidoDe} from "./combinadores.ts";
 import {ErrorSintácticoAR} from "../servicios/errores.ts";
 import {Intersección, Resta, Unión} from "./modeloSintactico/operadorDeConjuntos.ts";
+import {División} from "./modeloSintactico/operadorDeDivisión.ts";
 
 const operando: ReglaSintáctica<NombreAtributo | Literal> = elección<NombreAtributo | Literal>([
     mapear(token("NOMBRE"), v => new NombreAtributo(v)),
@@ -153,6 +154,7 @@ const operadorConjunto: ReglaSintáctica<string> = elección<string>([
     token("UNION"),
     token("INTERSECTION"),
     token("DIFFERENCE"),
+    token("DIVISION"),
 ]);
 
 expresión = encadenar<ExpresiónAR, string>(
@@ -161,6 +163,7 @@ expresión = encadenar<ExpresiónAR, string>(
     (izq, op, der) => {
         if (op === "∪") return new Unión(izq, der);
         if (op === "∩") return new Intersección(izq, der);
+        if (op === "÷") return new División(izq, der);
         return new Resta(izq, der);
     },
 );

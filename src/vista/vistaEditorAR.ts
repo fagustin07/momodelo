@@ -39,6 +39,7 @@ export class VistaEditorAR {
             createElement("button", {className: "mr-ar-toolbar-btn", title: "Producto Cartesiano (Ctrl+Shift+8)", onclick: () => this._insertarSímbolo("×")}, ["×", createElement("span", {className: "mr-ar-toolbar-num", textContent: "8"})]),
             createElement("button", {className: "mr-ar-toolbar-btn", title: "Join Condicional (Ctrl+Shift+9)", onclick: () => this._insertarSímbolo("⋈")}, ["⋈", createElement("span", {className: "mr-ar-toolbar-num", textContent: "9"})]),
             createElement("button", {className: "mr-ar-toolbar-btn", title: "Join Natural", onclick: () => this._insertarSímbolo("*")}, ["*"]),
+            createElement("button", {className: "mr-ar-toolbar-btn", title: "División (Ctrl+Shift+0)", onclick: () => this._insertarSímbolo("÷")}, ["÷", createElement("span", {className: "mr-ar-toolbar-num", textContent: "0"})]),
         ]);
 
         this._panel = createElement("div", {className: "mr-editor-panel", style: {display: "none"}}, [
@@ -58,6 +59,7 @@ export class VistaEditorAR {
                 const símbolo = ({
                     "Digit1": "σ", "Digit2": "π", "Digit3": "∧", "Digit4": "∨",
                     "Digit5": "∪", "Digit6": "∩", "Digit7": "-", "Digit8": "×", "Digit9": "⋈",
+                    "Digit0": "÷",
                 } as Record<string, string>)[event.code];
                 if (!símbolo) return false;
                 event.preventDefault();

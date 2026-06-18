@@ -4,7 +4,7 @@ import {NombreDeRelación} from "../../src/ar/modeloSintácticoAR.ts";
 import {ModeloRelacionalMaterializado} from "../../src/mr/modeloRelacionalMaterializado.ts";
 import {ResultadoConsulta} from "../../src/ar/resultadoConsulta.ts";
 import {ErrorSemánticoAR} from "../../src/servicios/errores.ts";
-import {definición, fila, fk, inserción, pk, programa, relación, simple} from "../mr/helpers.ts";
+import {definición, fila, fk, inserción, pk, pkfk, programa, relación, simple} from "../mr/helpers.ts";
 import {IntérpreteMR} from "../../src/mr/interpretadorMR.ts";
 import {ValidadorSemánticoMR} from "../../src/mr/validadorSemanticoMR.ts";
 import {SentenciaMR} from "../../src/mr/sentenciaMR.ts";
@@ -608,5 +608,98 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
         expect(() =>
             intérprete.ejecutar(analizarSintácticamente("EMPLEADO * DEPARTAMENTO"), modelo)
         ).toThrow("Falta ambigüedad en join natural: las relaciones no tienen atributos en común.");
+    });
+
+    it("la división retorna las tuplas del dividendo cuyos últimos atributos contienen todos los valores de las tuplas del divisor", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("SUMINISTRA", pk("proveedor"), pk("parte"), pk("proyecto"))),
+            definición(relación("PROYECTOS", pkfk("proyecto"))),
+            inserción("SUMINISTRA", fila("P1", "tornillo", "ProyA")),
+            inserción("SUMINISTRA", fila("P1", "tornillo", "ProyB")),
+            inserción("SUMINISTRA", fila("P2", "martillo", "ProyA")),
+            inserción("PROYECTOS", fila("ProyA")),
+            inserción("PROYECTOS", fila("ProyB")),
+        );
+
+        intérprete.ejecutar(analizarSintácticamente("SUMINISTRA ÷ PROYECTOS"), modelo);
+
+        const resultado = intérprete.ejecutar(analizarSintácticamente("SUMINISTRA ÷ PROYECTOS"), modelo);
+        expect(resultado.atributos).toEqual(["proveedor", "parte"]);
+        expect(resultado.tuplas).toHaveLength(1);
+        esperarResultadoConsulta(resultado, [
+            {proveedor: "P1", parte: "tornillo"},
+        ]);
+    });
+
+    it("la división retorna vacío cuando ninguna tupla del dividendo cubre todas las del divisor", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("SUMINISTRA", pk("proveedor"), pk("parte"), pk("proyecto"))),
+            definición(relación("PROYECTOS", pkfk("proyecto"))),
+            inserción("SUMINISTRA", fila("P1", "tornillo", "ProyA")),
+            inserción("PROYECTOS", fila("ProyA")),
+            inserción("PROYECTOS", fila("ProyC")),
+        );
+
+        const resultado = intérprete.ejecutar(analizarSintácticamente("SUMINISTRA ÷ PROYECTOS"), modelo);
+        expect(resultado.atributos).toEqual(["proveedor", "parte"]);
+        expect(resultado.tuplas).toHaveLength(0);
+    });
+
+    it("la división con divisor de igual o mayor grado que el dividendo levanta una excepción", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("R", pk("a"), pk("b"))),
+            definición(relación("S", pk("c"), pk("d"))),
+            inserción("R", fila(1, 2)),
+            inserción("S", fila(3, 4)),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("R ÷ S"), modelo)
+        ).toThrow(ErrorSemánticoAR);
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("R ÷ S"), modelo)
+        ).toThrow("División: el esquema del divisor no puede tener el mismo/mayor grado que el esquema del dividendo.");
+    });
+
+    it("la división con divisor de múltiples atributos empareja posicionalmente los últimos del dividendo", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("SUMINISTRA", pk("proveedor"), pk("parte"), pk("proyecto"), pk("ciudad"))),
+            definición(relación("PROYECTOS_CIUDADES", pkfk("proyecto"), pkfk("ciudad"))),
+            inserción("SUMINISTRA", fila("P1", "tornillo", "ProyA", "CABA")),
+            inserción("SUMINISTRA", fila("P1", "tornillo", "ProyB", "Rosario")),
+            inserción("SUMINISTRA", fila("P2", "martillo", "ProyA", "CABA")),
+            inserción("PROYECTOS_CIUDADES", fila("ProyA", "CABA")),
+            inserción("PROYECTOS_CIUDADES", fila("ProyB", "Rosario")),
+        );
+
+        const resultado = intérprete.ejecutar(
+            analizarSintácticamente("SUMINISTRA ÷ PROYECTOS_CIUDADES"), modelo,
+        );
+        expect(resultado.atributos).toEqual(["proveedor", "parte"]);
+        expect(resultado.tuplas).toHaveLength(1);
+        esperarResultadoConsulta(resultado, [
+            {proveedor: "P1", parte: "tornillo"},
+        ]);
+    });
+
+    it("la división puede combinarse con otros operadores", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("SUMINISTRA", pk("proveedor"), pk("parte"), pk("proyecto"))),
+            definición(relación("PROYECTOS", pkfk("proyecto"))),
+            inserción("SUMINISTRA", fila("P1", "tornillo", "ProyA")),
+            inserción("SUMINISTRA", fila("P1", "tornillo", "ProyB")),
+            inserción("SUMINISTRA", fila("P2", "tornillo", "ProyA")),
+            inserción("SUMINISTRA", fila("P2", "tornillo", "ProyB")),
+            inserción("PROYECTOS", fila("ProyA")),
+            inserción("PROYECTOS", fila("ProyB")),
+        );
+
+        const resultado = intérprete.ejecutar(
+            analizarSintácticamente("σ<proveedor='P1'>SUMINISTRA ÷ PROYECTOS"), modelo,
+        );
+        expect(resultado.atributos).toEqual(["proveedor", "parte"]);
+        expect(resultado.tuplas).toHaveLength(1);
+        esperarResultadoConsulta(resultado, [
+            {proveedor: "P1", parte: "tornillo"},
+        ]);
     });
 });

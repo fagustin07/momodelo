@@ -17,6 +17,7 @@ export class TokenizadorAR {
             if (texto[pos] === "∨") { tokens.push({tipo: "OR",           valor: "∨", posicion: pos}); pos++; continue; }
             if (texto[pos] === "∪") { tokens.push({tipo: "UNION",        valor: "∪", posicion: pos}); pos++; continue; }
             if (texto[pos] === "∩") { tokens.push({tipo: "INTERSECTION", valor: "∩", posicion: pos}); pos++; continue; }
+            if (texto[pos] === "÷") { tokens.push({tipo: "DIVISION",    valor: "÷", posicion: pos}); pos++; continue; }
 
             const dosCaracteres = texto.slice(pos, pos + 2);
             if (dosCaracteres === "<=" || dosCaracteres === ">=" || dosCaracteres === "!=") {

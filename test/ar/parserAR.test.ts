@@ -2,6 +2,7 @@ import {describe, it} from "vitest";
 import {esperarAnálisisSintácticoAR, esperarErrorSintácticoAR} from "./helpers.ts";
 import {ExpresiónProyección, ExpresiónSelección, NombreDeRelación} from "../../src/ar/modeloSintácticoAR.ts";
 import {Intersección, Resta, Unión} from "../../src/ar/modeloSintactico/operadorDeConjuntos.ts";
+import {División} from "../../src/ar/modeloSintactico/operadorDeDivisión.ts";
 import {JoinCondicional, JoinNatural, ProductoCartesiano} from "../../src/ar/modeloSintactico/operadorDeCombinación.ts";
 
 describe("[Álgebra Relacional] Parser AR", () => {
@@ -608,6 +609,33 @@ describe("[Álgebra Relacional] Parser AR", () => {
                 der: {nombre: "DEPARTAMENTO"},
             },
             der: {nombre: "PROYECTO"},
+        });
+    });
+
+    it("una división es una operación binaria", () => {
+        esperarAnálisisSintácticoAR("SUMINISTRA ÷ PROYECTOS", División, {
+            izq: {nombre: "SUMINISTRA"},
+            der: {nombre: "PROYECTOS"},
+        });
+    });
+
+    it("la división se asocia hacia la izquierda con otros operadores de conjunto", () => {
+        esperarAnálisisSintácticoAR("SUMINISTRA ÷ PROYECTOS ∪ EMPLEADO", Unión, {
+            izq: {
+                izq: {nombre: "SUMINISTRA"},
+                der: {nombre: "PROYECTOS"},
+            },
+            der: {nombre: "EMPLEADO"},
+        });
+    });
+
+    it("la división tiene precedencia sobre los operadores de conjunto", () => {
+        esperarAnálisisSintácticoAR("σ<proveedor='P1'>SUMINISTRA ÷ PROYECTOS", División, {
+            izq: {
+                condición: {izq: {nombre: "proveedor"}, op: "=", der: {valor: "P1"}},
+                subexpr: {nombre: "SUMINISTRA"},
+            },
+            der: {nombre: "PROYECTOS"},
         });
     });
 });
