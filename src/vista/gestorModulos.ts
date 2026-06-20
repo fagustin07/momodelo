@@ -29,6 +29,11 @@ export class GestorModulos {
             }
         });
 
+        this._vistaMER.alCambiarModelo(() => {
+            if (this._vistaMR.getModeloER() !== null)
+                this._vistaMR.setModeloER(this._vistaMER.modeloER);
+        });
+
         this._elementoNavegación = this._crearNavegación();
         this._elementoRaíz.append(this._elementoNavegación);
 

@@ -28,6 +28,8 @@ export class VistaEditorMER {
     private _elementoSeleccionado: ElementoMER | null = null;
     private _posicionActualVista = coordenadaInicial();
     private _inspector: InspectorElementos;
+    private _alCambiarModelo: Array<() => void> = [];
+
     private readonly _elementoRaíz: HTMLElement;
     private readonly _elementoSvg: SVGElement;
     private readonly _topbar: HTMLElement;
@@ -310,6 +312,7 @@ export class VistaEditorMER {
         this.modeloER = new ModeloER(nuevasEntidades, nuevasRelaciones);
         this._dibujarModelo();
         this.desenfocarElementoInput();
+        this._alCambiarModelo.forEach(callback => callback());
     }
 
     relacionEliminada(relacion: Relacion) {
@@ -405,6 +408,10 @@ export class VistaEditorMER {
 
         this.seleccionarA(nuevaRelacion);
         return nuevaRelacion;
+    }
+
+    alCambiarModelo(callback: () => void): void {
+        this._alCambiarModelo.push(callback);
     }
 
     private _iniciarLineaFeedback(entidadOrigen: Entidad) {

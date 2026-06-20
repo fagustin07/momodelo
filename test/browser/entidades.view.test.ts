@@ -6,6 +6,7 @@ import {Entidad} from "../../src/modelo/entidad";
 import {coordenada, Posicion} from "../../src/posicion";
 import "../../src/style.css";
 import {VistaEditorMER} from "../../src/vista/vistaEditorMER.ts";
+import {ModeloER} from "../../src/servicios/modeloER.ts";
 
 export function getElementoEntidades() {
     return [...document.getElementById("vista-mer")!.querySelectorAll<HTMLElement>(".entidad")];
@@ -268,5 +269,17 @@ describe("[MER] Vista Modelo tests", () => {
         const elementosEntidad = getElementoEntidades();
         expect(elementosEntidad[0]).toHaveClass("entidad-debil");
         expect(elementosEntidad[1]).not.toHaveClass("entidad-debil");
+    });
+
+    it("Se notifica correctamente el cambio de Modelo Entidad Relación", () => {
+        let modeloDeseado: ModeloER;
+        vistaEditorMER.alCambiarModelo(() => {
+            modeloDeseado = vistaEditorMER.modeloER;
+        });
+        const nuevaEntidad = new Entidad("Cliente", [], coordenada(0, 0));
+
+        vistaEditorMER.reemplazarModelo([nuevaEntidad], []);
+
+        expect(modeloDeseado!.entidades[0]).toBe(nuevaEntidad);
     });
 });
