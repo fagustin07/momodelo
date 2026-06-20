@@ -7,6 +7,8 @@ import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado
 import {ResultadoConsulta} from "../ar/resultadoConsulta.ts";
 import {createElement} from "./dom/createElement.ts";
 
+type Operador = { nombre: string, símbolo: string, atajo?: number }
+
 export class VistaEditorAR {
     private readonly _editor: EditorView;
     private readonly _panel: HTMLElement;
@@ -18,6 +20,20 @@ export class VistaEditorAR {
     constructor(alEjecutar: () => void) {
         const wrapper = createElement("div", {className: "mr-codemirror-wrapper"});
 
+        const operadores: Operador[] = [
+            {nombre: "Selección", símbolo: "σ", atajo: 1},
+            {nombre: "Proyección", símbolo: "π", atajo: 2},
+            {nombre: "Conjunción", símbolo: "∧", atajo: 3},
+            {nombre: "Disyunción", símbolo: "∨", atajo: 4},
+            {nombre: "Intersección", símbolo: "∩", atajo: 5},
+            {nombre: "Unión", símbolo: "∪", atajo: 6},
+            {nombre: "Resta", símbolo: "-"},
+            {nombre: "Producto Cartesiano", símbolo: "×", atajo: 7},
+            {nombre: "Join Condicional", símbolo: "⋈", atajo: 8},
+            {nombre: "Join Natural", símbolo: "*"},
+            {nombre: "División", símbolo: "÷", atajo: 9},
+        ]
+
         this._elementoSwitcher = createElement("label", {className: "mr-toggle-ar"}, [
             createElement("span", {className: "mr-toggle-ar-label", textContent: "Consultas Relacionales"}),
             createElement("span", {className: "mr-toggle-ar-track"}, [
@@ -28,19 +44,9 @@ export class VistaEditorAR {
 
         this._divisor = createElement("div", {className: "mr-editores-divisor", style: {display: "none"}});
 
-        const barraHerramientas = createElement("div", {className: "mr-ar-toolbar"}, [
-            createElement("button", {className: "mr-ar-toolbar-btn", title: "Selección (Ctrl+Shift+1)", onclick: () => this._insertarSímbolo("σ")}, ["σ", createElement("span", {className: "mr-ar-toolbar-num", textContent: "1"})]),
-            createElement("button", {className: "mr-ar-toolbar-btn", title: "Proyección (Ctrl+Shift+2)", onclick: () => this._insertarSímbolo("π")}, ["π", createElement("span", {className: "mr-ar-toolbar-num", textContent: "2"})]),
-            createElement("button", {className: "mr-ar-toolbar-btn", title: "Conjunción (Ctrl+Shift+3)", onclick: () => this._insertarSímbolo("∧")}, ["∧", createElement("span", {className: "mr-ar-toolbar-num", textContent: "3"})]),
-            createElement("button", {className: "mr-ar-toolbar-btn", title: "Disyunción (Ctrl+Shift+4)", onclick: () => this._insertarSímbolo("∨")}, ["∨", createElement("span", {className: "mr-ar-toolbar-num", textContent: "4"})]),
-            createElement("button", {className: "mr-ar-toolbar-btn", title: "Unión (Ctrl+Shift+5)", onclick: () => this._insertarSímbolo("∪")}, ["∪", createElement("span", {className: "mr-ar-toolbar-num", textContent: "5"})]),
-            createElement("button", {className: "mr-ar-toolbar-btn", title: "Intersección (Ctrl+Shift+6)", onclick: () => this._insertarSímbolo("∩")}, ["∩", createElement("span", {className: "mr-ar-toolbar-num", textContent: "6"})]),
-            createElement("button", {className: "mr-ar-toolbar-btn", title: "Resta (Ctrl+Shift+7)", onclick: () => this._insertarSímbolo("-")}, ["−", createElement("span", {className: "mr-ar-toolbar-num", textContent: "7"})]),
-            createElement("button", {className: "mr-ar-toolbar-btn", title: "Producto Cartesiano (Ctrl+Shift+8)", onclick: () => this._insertarSímbolo("×")}, ["×", createElement("span", {className: "mr-ar-toolbar-num", textContent: "8"})]),
-            createElement("button", {className: "mr-ar-toolbar-btn", title: "Join Condicional (Ctrl+Shift+9)", onclick: () => this._insertarSímbolo("⋈")}, ["⋈", createElement("span", {className: "mr-ar-toolbar-num", textContent: "9"})]),
-            createElement("button", {className: "mr-ar-toolbar-btn", title: "Join Natural", onclick: () => this._insertarSímbolo("*")}, ["*"]),
-            createElement("button", {className: "mr-ar-toolbar-btn", title: "División (Ctrl+Shift+0)", onclick: () => this._insertarSímbolo("÷")}, ["÷", createElement("span", {className: "mr-ar-toolbar-num", textContent: "0"})]),
-        ]);
+        const barraHerramientas = createElement("div", {className: "mr-ar-toolbar"},
+            operadores.map(operador => this._botonParaOperador(operador)),
+        );
 
         this._panel = createElement("div", {className: "mr-editor-panel", style: {display: "none"}}, [
             createElement("div", {className: "mr-editor-panel-label", textContent: "Álgebra Relacional"}),
@@ -56,14 +62,12 @@ export class VistaEditorAR {
         const atajosParaSímbolos = EditorView.domEventHandlers({
             keydown: (event, _view) => {
                 if (!event.ctrlKey || !event.shiftKey) return false;
-                const símbolo = ({
-                    "Digit1": "σ", "Digit2": "π", "Digit3": "∧", "Digit4": "∨",
-                    "Digit5": "∪", "Digit6": "∩", "Digit7": "-", "Digit8": "×", "Digit9": "⋈",
-                    "Digit0": "÷",
-                } as Record<string, string>)[event.code];
-                if (!símbolo) return false;
+                const operador = operadores
+                    .filter(operador => operador.atajo !== undefined)
+                    .find(operador => `Digit${operador.atajo}` === event.code)
+                if (!operador) return false;
                 event.preventDefault();
-                this._insertarSímbolo(símbolo);
+                this._insertarSímbolo(operador.símbolo);
                 return true;
             }
         });
@@ -80,6 +84,20 @@ export class VistaEditorAR {
             extensions: [atajosParaSímbolos, tabConEspacios, basicSetup, ejecutarKeymap],
             parent: wrapper
         });
+    }
+
+    private _botonParaOperador(operador: Operador) {
+        const tooltipAtajo = operador.atajo !== undefined ? ` (Ctrl+Shift+${operador.atajo})` : '';
+        const elementosAyudaAtajo = operador.atajo !== undefined ? [createElement("span", {
+            className: "mr-ar-toolbar-num",
+            textContent: String(operador.atajo)
+        })] : [];
+
+        return createElement("button", {
+            className: "mr-ar-toolbar-btn",
+            title: `${operador.nombre}${tooltipAtajo})`,
+            onclick: () => this._insertarSímbolo(operador.símbolo)
+        }, [operador.símbolo, ...elementosAyudaAtajo]);
     }
 
     activo(): boolean {
