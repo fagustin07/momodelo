@@ -257,4 +257,16 @@ describe("[MER] Vista Modelo tests", () => {
 
         expect(resultado.y).toBeCloseTo(bordeInferiorEsperado, 0);
     });
+
+    it("Al reemplazar el modelo con una entidad débil, la vista debe mostrar el doble rectángulo", () => {
+        const entidadDebil = new Entidad("Débil", [], coordenada(50, 50));
+        entidadDebil.marcarComoDebil();
+        const entidadFuerte = new Entidad("Fuerte", [], coordenada(200, 200));
+
+        vistaEditorMER.reemplazarModelo([entidadDebil, entidadFuerte], []);
+
+        const elementosEntidad = getElementoEntidades();
+        expect(elementosEntidad[0]).toHaveClass("entidad-debil");
+        expect(elementosEntidad[1]).not.toHaveClass("entidad-debil");
+    });
 });

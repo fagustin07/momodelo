@@ -14,6 +14,7 @@ export class VistaEntidad extends VistaElementoMER<Entidad> {
     constructor(entidad: Entidad, vistaEditorMER: VistaEditorMER) {
         super(entidad, vistaEditorMER);
         this._elementoDom = this._crearElementoDom();
+        this.actualizarEstilo();
     }
 
     private get _entidad() {
