@@ -2,7 +2,7 @@ import {describe, expect, it} from "vitest";
 import {AnalizadorSemánticoMR} from "../../src/mr/analizadorSemanticoMR";
 import {ProgramaMRValidado} from "../../src/mr/modeloSintacticoMR";
 import {ErroresValidación} from "../../src/servicios/errores";
-import {definición, fila, fk, inserción, pk, pkfk, programa, relación, simple} from "./helpers";
+import {definición, fila, fk, inserción, multivaluado, pk, pkfk, programa, relación, simple} from "./helpers";
 
 describe("[Modelo Relacional] Analizador Semántico", () => {
     const analizador = new AnalizadorSemánticoMR();
@@ -201,5 +201,27 @@ describe("[Modelo Relacional] Analizador Semántico", () => {
         );
 
         expect(() => analizador.validar(modelo)).not.toThrow();
+    });
+
+    it("insertar en una relación con atributo multivaluado levanta una excepción", () => {
+        const modelo = programa(
+            definición(relación("EMPLEADO", pk("id"), multivaluado("telefono"))),
+            inserción("EMPLEADO", fila(1, "123456789")),
+        );
+
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
+        expect(() => analizador.validar(modelo)).toThrow("No se puede insertar en 'EMPLEADO' porque tiene atributos multivaluados.");
+    });
+
+    it("el error de inserción en relación multivaluada se acumula con otros errores", () => {
+        const modelo = programa(
+            definición(relación("EMPLEADO", pk("id"), multivaluado("telefono"))),
+            inserción("EMPLEADO", fila(1, "123456789")),
+            inserción("INEXISTENTE", fila(1)),
+        );
+
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
+        expect(() => analizador.validar(modelo)).toThrow("No se puede insertar en 'EMPLEADO' porque tiene atributos multivaluados.");
+        expect(() => analizador.validar(modelo)).toThrow("Relación 'INEXISTENTE' no definida.");
     });
 });
