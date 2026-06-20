@@ -224,17 +224,26 @@ export class VistaEditorMR {
         const palabraBuscada = context.matchBefore(/[A-Za-záéíóúÁÉÍÓÚñÑ_]\w*/);
         if (!palabraBuscada || (palabraBuscada.from === palabraBuscada.to && !context.explicit)) return null;
 
-        if (!this._modeloER) return null;
-        const palabras = new Set<string>();
-        this._modeloER.entidades.forEach(entidad => {
-            palabras.add(entidad.nombre());
-            entidad.atributos().forEach(atr => palabras.add(atr.nombre()));
-        });
-        if (palabras.size === 0) return null;
+        const opciones = [
+            {label: "INSERTAR EN", type: "text"},
+            {label: "PK",       type: "keyword"},
+            {label: "FK",       type: "keyword"},
+            {label: "VERDADERO", type: "text"},
+            {label: "FALSO",    type: "text"},
+        ];
+
+        if (this._modeloER) {
+            this._modeloER.relaciones.forEach(relación => opciones.push(({label: relación.nombre(), type: "namespace"})));
+
+            this._modeloER.entidades.forEach(entidad => {
+                opciones.push({label: entidad.nombre(), type: "namespace"});
+                entidad.atributos().forEach(atr => opciones.push({label: atr.nombre(), type: "class"}));
+            });
+        }
 
         return {
             from: palabraBuscada.from,
-            options: [...palabras].map(label => ({label, type: "keyword"}))
+            options: opciones
         };
     }
 
