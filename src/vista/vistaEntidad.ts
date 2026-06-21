@@ -118,7 +118,7 @@ export class VistaEntidad extends VistaElementoMER<Entidad> {
     }
 
     private _crearElementoDom() {
-        this._contenedorDeAtributos = createElement("div", {className: this._entidad.esDebil() ? "entidad-debil" : ""});
+        this._contenedorDeAtributos = createElement("div", {});
         this._campoNombre = this._crearInputCampoNombre();
 
         const elementoDom = this._crearElementoDOMEntidad();
