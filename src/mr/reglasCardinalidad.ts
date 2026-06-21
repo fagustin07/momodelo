@@ -9,13 +9,14 @@ type LadoNormalizado = {
     cardinalidad: Cardinalidad;
 };
 
-type ReglaRegistrable = {
-    new(): ReglaCardinalidad;
-    puedeHacerseCargoDe(relacion: Relacion): boolean;
-};
+type ReglaRegistrable = { new (): ReglaCardinalidad } & typeof ReglaCardinalidad;
 
 export abstract class ReglaCardinalidad {
     private static readonly _registradas: ReglaRegistrable[] = [];
+
+    static puedeHacerseCargoDe(_relacion: Relacion): boolean {
+        throw new Error("subclass responsibility");
+    }
 
     static registrar(clase: ReglaRegistrable): void {
         ReglaCardinalidad._registradas.push(clase);
