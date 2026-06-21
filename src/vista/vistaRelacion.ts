@@ -331,13 +331,6 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
         return this._calcularInterseccionConLado(centroRelacion, ubicacionObjetivo, verticeIzquierdo, verticeSuperior);
     }
 
-    private _interpolarPunto(p0: Posicion, p1: Posicion, factor: number): Posicion {
-        return coordenada(
-            p0.x + factor * (p1.x - p0.x),
-            p0.y + factor * (p1.y - p0.y),
-        );
-    }
-
     private _calcularInterseccionConLado(centroRelacion: Posicion, ubicacionObjetivo: Posicion, verticeA: Posicion, verticeB: Posicion): Posicion {
         const magnitudXDeseada = ubicacionObjetivo.x - centroRelacion.x;
         const magnitudYDeseada = ubicacionObjetivo.y - centroRelacion.y;
@@ -350,7 +343,7 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
             ((verticeA.x - centroRelacion.x) * magnitudYLateralDelRombo -
                 (verticeA.y - centroRelacion.y) * magnitudXLateralDelRombo) / productoVectorialCruzado;
 
-        return this._interpolarPunto(centroRelacion, ubicacionObjetivo, factorDistanciaHaciaElObjetivo);
+        return centroRelacion.interpolarHacia(ubicacionObjetivo, factorDistanciaHaciaElObjetivo);
     }
 
     private _redibujarTexto(elementoTexto: SVGTextElement, posicionCardinalidadDestino: Posicion, texto: string) {

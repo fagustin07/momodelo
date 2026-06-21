@@ -4,7 +4,7 @@ import {VistaEditorMER} from "./vistaEditorMER.ts";
 import {VistaElementoMER} from "./vistaElementoMER.ts";
 import {VistaAtributo} from "./vistaAtributo.ts";
 import {Atributo} from "../modelo/atributo.ts";
-import {coordenada, Posicion} from "../posicion.ts";
+import {Posicion} from "../posicion.ts";
 
 export class VistaEntidad extends VistaElementoMER<Entidad> {
     private readonly _elementoDom: HTMLElement;
@@ -63,18 +63,14 @@ export class VistaEntidad extends VistaElementoMER<Entidad> {
         return this._interpolarPuntoEnX(centroEntidad, destino, bordeDerecho);
     }
 
-    private _interpolarPunto(p0: Posicion, p1: Posicion, factor: number): Posicion {
-        return coordenada(p0.x + factor * (p1.x - p0.x), p0.y + factor * (p1.y - p0.y));
-    }
-
     private _interpolarPuntoEnY(p0: Posicion, p1: Posicion, yObjetivo: number): Posicion {
         const factorInterpolacion = (yObjetivo - p0.y) / (p1.y - p0.y);
-        return this._interpolarPunto(p0, p1, factorInterpolacion);
+        return p0.interpolarHacia(p1, factorInterpolacion);
     }
 
     private _interpolarPuntoEnX(p0: Posicion, p1: Posicion, xObjetivo: number): Posicion {
         const factorInterpolacion = (xObjetivo - p0.x) / (p1.x - p0.x);
-        return this._interpolarPunto(p0, p1, factorInterpolacion);
+        return p0.interpolarHacia(p1, factorInterpolacion);
     }
 
     ancho() {
