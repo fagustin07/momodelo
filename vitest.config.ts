@@ -17,7 +17,10 @@ export default defineConfig({
           provider: webdriverio({
             logLevel: 'warn',
             capabilities: {
+              browserVersion: "stable",
               "goog:chromeOptions": {
+                // En CI usamos el chrome que instala browser-actions/setup-chrome.
+                ...(process.env.CHROME_PATH ? {binary: process.env.CHROME_PATH} : {}),
                 args: [
                   "--no-sandbox",
                   "--disable-dev-shm-usage",

@@ -26,8 +26,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Set up Chrome + Chromedriver
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: stable
+          install-chromedriver: true
+
       - name: Run tests
         run: npm run test -- --run
+        env:
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+          CHROMEDRIVER_PATH: ${{ steps.setup-chrome.outputs.chromedriver-path }}
 
       - name: Build project
         run: npm run build
