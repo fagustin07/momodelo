@@ -133,12 +133,7 @@ export class JoinNatural extends OperadorDeCombinación {
         tuplas: ReadonlyArray<Record<string, Valor>>,
         comunes: string[],
     ): Map<string, Record<string, Valor>[]> {
-        return tuplas.reduce((indice, tupla) => {
-            const clave = this._claveComun(tupla, comunes);
-            const grupo = indice.get(clave) ?? [];
-            indice.set(clave, [...grupo, tupla]);
-            return indice;
-        }, new Map<string, Record<string, Valor>[]>());
+        return Map.groupBy(tuplas, tupla => this._claveComun(tupla, comunes));
     }
 
     private _combinarTupla(
