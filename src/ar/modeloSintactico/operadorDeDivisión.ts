@@ -1,10 +1,10 @@
 import {ResultadoConsulta} from "../resultadoConsulta.ts";
-import {Valor} from "../../mr/modeloSintacticoMR.ts";
 import {ErrorSemánticoAR} from "../../servicios/errores.ts";
 import {OperadorDeConjuntos} from "./operadorDeConjuntos.ts";
+import {claveDeTupla, proyectarTupla, TuplaAR} from "../tuplaAR.ts";
 
 type GrupoDelDividendo = {
-    candidata: Record<string, Valor>;
+    candidata: TuplaAR;
     valoresDelDivisorQueCubre: Set<string>;
 };
 
@@ -42,11 +42,11 @@ export class División extends OperadorDeConjuntos {
     }
 
     private _tuplasQueCubrenTodoElDivisor(
-        tuplasDelDividendo: ReadonlyArray<Record<string, Valor>>,
-        tuplasDelDivisor: ReadonlyArray<Record<string, Valor>>,
+        tuplasDelDividendo: ReadonlyArray<TuplaAR>,
+        tuplasDelDivisor: ReadonlyArray<TuplaAR>,
         esquemaDelResultado: readonly string[],
         esquemaImplicadoEnLaDivisiónDelDividendo: readonly string[]
-    ): Record<string, Valor>[] {
+    ): TuplaAR[] {
         return this._filtrarCandidatasQueCubrenElDivisor(
             this._agruparDividendo(
                 tuplasDelDividendo, esquemaDelResultado, esquemaImplicadoEnLaDivisiónDelDividendo,
@@ -57,7 +57,7 @@ export class División extends OperadorDeConjuntos {
     }
 
     private _agruparDividendo(
-        tuplas: ReadonlyArray<Record<string, Valor>>,
+        tuplas: ReadonlyArray<TuplaAR>,
         esquemaResultado: readonly string[],
         esquemaImplicadoEnLaDivisiónDelDividendo: readonly string[]
     ): GrupoDelDividendo[] {
@@ -70,22 +70,22 @@ export class División extends OperadorDeConjuntos {
     }
 
     private _agruparPorClaveDelResultado(
-        tuplas: ReadonlyArray<Record<string, Valor>>,
+        tuplas: ReadonlyArray<TuplaAR>,
         esquemaResultado: readonly string[],
-    ): Map<string, Record<string, Valor>[]> {
-        return Map.groupBy(tuplas, tupla => this._clave(tupla, esquemaResultado));
+    ): Map<string, TuplaAR[]> {
+        return Map.groupBy(tuplas, tupla => claveDeTupla(tupla, esquemaResultado));
     }
 
     private _crearGrupoDelDividendo(
-        tuplasDelGrupo: Record<string, Valor>[],
+        tuplasDelGrupo: TuplaAR[],
         esquemaResultado: readonly string[],
         esquemaImplicadoEnLaDivisiónDelDividendo: readonly string[],
     ): GrupoDelDividendo {
         return {
-            candidata: this._proyectarTupla(tuplasDelGrupo[0], esquemaResultado),
+            candidata: proyectarTupla(tuplasDelGrupo[0], esquemaResultado),
             valoresDelDivisorQueCubre: new Set(
                 tuplasDelGrupo.map(tupla =>
-                    this._clave(tupla, esquemaImplicadoEnLaDivisiónDelDividendo)
+                    claveDeTupla(tupla, esquemaImplicadoEnLaDivisiónDelDividendo)
                 ),
             )
         };
@@ -93,9 +93,9 @@ export class División extends OperadorDeConjuntos {
 
     private _filtrarCandidatasQueCubrenElDivisor(
         gruposDelDividendo: GrupoDelDividendo[],
-        tuplasDelDivisor: ReadonlyArray<Record<string, Valor>>,
+        tuplasDelDivisor: ReadonlyArray<TuplaAR>,
         esquemaImplicadoEnLaDivisiónDelDividendo: readonly string[],
-    ): Record<string, Valor>[] {
+    ): TuplaAR[] {
         return gruposDelDividendo
             .filter(grupo =>
                 this._grupoCubreTodoElDivisor(
@@ -109,25 +109,17 @@ export class División extends OperadorDeConjuntos {
 
     private _grupoCubreTodoElDivisor(
         grupo: GrupoDelDividendo,
-        tuplasDelDivisor: ReadonlyArray<Record<string, Valor>>,
+        tuplasDelDivisor: ReadonlyArray<TuplaAR>,
         esquemaImplicadoEnLaDivisiónDelDividendo: readonly string[],
     ): boolean {
         return tuplasDelDivisor.every(
             tuplaDivisor =>
                 grupo.valoresDelDivisorQueCubre.has(
-                    this._clave(
+                    claveDeTupla(
                         tuplaDivisor,
                         esquemaImplicadoEnLaDivisiónDelDividendo
                     )
                 )
         );
-    }
-
-    private _proyectarTupla(tupla: Record<string, Valor>, esquema: readonly string[]): Record<string, Valor> {
-        return Object.fromEntries(esquema.map(atributo => [atributo, tupla[atributo]]));
-    }
-
-    private _clave(tupla: Record<string, Valor>, esquema: readonly string[]): string {
-        return esquema.map(columna => tupla[columna].toString()).join("|");
     }
 }
