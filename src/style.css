@@ -404,19 +404,11 @@ body {
 .entidad.seleccionado {
   --color-resaltado: var(--color-acento);
   outline: 3px solid var(--color-resaltado);
-
-  input {
-    cursor: text !important;
-  }
 }
 
 .atributo.seleccionado {
   --color-resaltado: var(--color-acento);
   outline: 3px solid var(--color-resaltado);
-
-  input {
-    cursor: text !important;
-  }
 }
 
 .entidad.entidad-debil.seleccionado {
@@ -433,10 +425,6 @@ body {
   --color-resaltado: var(--color-acento);
   stroke: var(--color-resaltado);
   stroke-width: 3;
-}
-
-.relacion.seleccionado input {
-  cursor: text !important;
 }
 
 .diagrama-mer[data-interaccion-en-curso='Borrado'] {
@@ -553,22 +541,12 @@ line:not(.linea-feedback) {
     box-shadow: 0 0 0 4px white, 0 0 0 5px var(--color-texto-apagado);
   }
 
-  .entidad:hover {
-    input {
-      cursor: pointer;
-    }
-
-    button {
-      display: inline;
-    }
+  .entidad:hover button {
+    display: inline;
   }
 
   .entidad button {
     display: none;
-  }
-
-  .relacion:hover input {
-    cursor: pointer;
   }
 }
 
