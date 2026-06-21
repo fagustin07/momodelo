@@ -1,5 +1,5 @@
 import {Relacion} from "../modelo/relacion";
-import {coordenada, Posicion, puntoMedio} from "../posicion";
+import {coordenada, Posicion} from "../posicion";
 import {createElement, createSvgElement, posicionarLinea} from "./dom/createElement.ts";
 import {VistaEditorMER} from "./vistaEditorMER.ts";
 import {VistaElementoMER} from "./vistaElementoMER.ts";
@@ -56,10 +56,7 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
     }
 
     centro() {
-        return puntoMedio(
-            this._vistaEntidadOrigen.centro(),
-            this._vistaEntidadDestino.centro(),
-        );
+        return this._vistaEntidadOrigen.centro().puntoMedioHacia(this._vistaEntidadDestino.centro());
     }
 
     puntoDeConexion(puntoExterno: Posicion): Posicion {
@@ -299,12 +296,12 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
 
         this._redibujarTexto(
             this._textoCardinalidadOrigen,
-            puntoMedio(bordeOrigen, bordeRomboOrigen),
+            bordeOrigen.puntoMedioHacia(bordeRomboOrigen),
             this._formatearCardinalidad(this._relacion.cardinalidadDestino()),
         );
         this._redibujarTexto(
             this._textoCardinalidadDestino,
-            puntoMedio(bordeDestino, bordeRomboDestino),
+            bordeDestino.puntoMedioHacia(bordeRomboDestino),
             this._formatearCardinalidad(this._relacion.cardinalidadOrigen()),
         );
     }

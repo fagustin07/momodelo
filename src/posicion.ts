@@ -38,6 +38,10 @@ export class Posicion {
             this.y + factor * (otraPosicion.y - this.y),
         );
     }
+
+    puntoMedioHacia(otraPosicion: Posicion): Posicion {
+        return this.interpolarHacia(otraPosicion, 0.5);
+    }
 }
 
 export function coordenada(x: number, y: number) {
@@ -46,8 +50,4 @@ export function coordenada(x: number, y: number) {
 
 export function coordenadaInicial() {
     return new Posicion(0,0);
-}
-
-export function puntoMedio(p0: Posicion, p1: Posicion): Posicion {
-    return p0.interpolarHacia(p1, 0.5);
 }
