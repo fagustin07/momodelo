@@ -14,7 +14,6 @@ export default defineConfig({
         include: ["test/browser/*.test.ts"],
         browser: {
           enabled: true,
-          api: {host: "0.0.0.0"},
           provider: webdriverio({
             logLevel: 'warn',
             capabilities: {
