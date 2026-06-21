@@ -2,7 +2,7 @@ import {ResultadoConsulta} from "../resultadoConsulta.ts";
 import {ModeloRelacionalMaterializado} from "../../mr/modeloRelacionalMaterializado.ts";
 import {ErrorSemánticoAR} from "../../servicios/errores.ts";
 import {CondiciónAR, ExpresiónAR} from "../modeloSintácticoAR.ts";
-import {claveDeTupla, proyectarTupla, TuplaAR} from "../tuplaAR.ts";
+import {valoresDeTuplaDesdeEsquema, proyectarTupla, TuplaAR} from "../tuplaAR.ts";
 
 export abstract class OperadorDeCombinación extends ExpresiónAR {
     constructor(readonly izq: ExpresiónAR, readonly der: ExpresiónAR) {
@@ -120,7 +120,7 @@ export class JoinNatural extends OperadorDeCombinación {
         noComunesDer: string[],
     ): TuplaAR[] {
         return tuplasDer.flatMap(tuplaDer => {
-            const coincidencias = indiceIzq.get(claveDeTupla(tuplaDer, comunes)) ?? [];
+            const coincidencias = indiceIzq.get(valoresDeTuplaDesdeEsquema(tuplaDer, comunes)) ?? [];
             return coincidencias.map(tuplaIzq => this._combinarTupla(tuplaIzq, tuplaDer, noComunesDer));
         });
     }
@@ -129,7 +129,7 @@ export class JoinNatural extends OperadorDeCombinación {
         tuplas: ReadonlyArray<TuplaAR>,
         comunes: string[],
     ): Map<string, TuplaAR[]> {
-        return Map.groupBy(tuplas, tupla => claveDeTupla(tupla, comunes));
+        return Map.groupBy(tuplas, tupla => valoresDeTuplaDesdeEsquema(tupla, comunes));
     }
 
     private _combinarTupla(

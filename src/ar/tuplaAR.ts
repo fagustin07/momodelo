@@ -2,7 +2,7 @@ import {Valor} from "../mr/modeloSintacticoMR.ts";
 
 export type TuplaAR = Record<string, Valor>;
 
-export function claveDeTupla(tupla: TuplaAR, esquema: readonly string[]): string {
+export function valoresDeTuplaDesdeEsquema(tupla: TuplaAR, esquema: readonly string[]): string {
     return JSON.stringify(esquema.map(a => tupla[a]));
 }
 

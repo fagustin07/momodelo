@@ -1,4 +1,4 @@
-import {claveDeTupla, TuplaAR} from "./tuplaAR.ts";
+import {valoresDeTuplaDesdeEsquema, TuplaAR} from "./tuplaAR.ts";
 
 export class ResultadoConsulta {
     readonly nombre: string;
@@ -8,7 +8,7 @@ export class ResultadoConsulta {
     constructor(nombre: string, atributos: string[], tuplas: Array<TuplaAR>) {
         const visto = new Set<string>();
         const tuplasSinRepetidos = tuplas.filter(t => {
-            const clave = claveDeTupla(t, atributos);
+            const clave = valoresDeTuplaDesdeEsquema(t, atributos);
             if (visto.has(clave)) return false;
             visto.add(clave);
             return true;

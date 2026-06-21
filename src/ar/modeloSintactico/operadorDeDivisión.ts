@@ -1,7 +1,7 @@
 import {ResultadoConsulta} from "../resultadoConsulta.ts";
 import {ErrorSemánticoAR} from "../../servicios/errores.ts";
 import {OperadorDeConjuntos} from "./operadorDeConjuntos.ts";
-import {claveDeTupla, proyectarTupla, TuplaAR} from "../tuplaAR.ts";
+import {valoresDeTuplaDesdeEsquema, proyectarTupla, TuplaAR} from "../tuplaAR.ts";
 
 type GrupoDelDividendo = {
     candidata: TuplaAR;
@@ -73,7 +73,7 @@ export class División extends OperadorDeConjuntos {
         tuplas: ReadonlyArray<TuplaAR>,
         esquemaResultado: readonly string[],
     ): Map<string, TuplaAR[]> {
-        return Map.groupBy(tuplas, tupla => claveDeTupla(tupla, esquemaResultado));
+        return Map.groupBy(tuplas, tupla => valoresDeTuplaDesdeEsquema(tupla, esquemaResultado));
     }
 
     private _crearGrupoDelDividendo(
@@ -85,7 +85,7 @@ export class División extends OperadorDeConjuntos {
             candidata: proyectarTupla(tuplasDelGrupo[0], esquemaResultado),
             valoresDelDivisorQueCubre: new Set(
                 tuplasDelGrupo.map(tupla =>
-                    claveDeTupla(tupla, esquemaImplicadoEnLaDivisiónDelDividendo)
+                    valoresDeTuplaDesdeEsquema(tupla, esquemaImplicadoEnLaDivisiónDelDividendo)
                 ),
             )
         };
@@ -115,7 +115,7 @@ export class División extends OperadorDeConjuntos {
         return tuplasDelDivisor.every(
             tuplaDivisor =>
                 grupo.valoresDelDivisorQueCubre.has(
-                    claveDeTupla(
+                    valoresDeTuplaDesdeEsquema(
                         tuplaDivisor,
                         esquemaImplicadoEnLaDivisiónDelDividendo
                     )
