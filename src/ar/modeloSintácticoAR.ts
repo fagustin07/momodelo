@@ -1,6 +1,7 @@
 import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado.ts";
 import {ResultadoConsulta} from "./resultadoConsulta.ts";
 import {Valor} from "../mr/modeloSintacticoMR.ts";
+import {proyectarTupla, TuplaAR} from "./tuplaAR.ts";
 import {ErrorSemánticoAR} from "../servicios/errores.ts";
 
 export abstract class ExpresiónAR {
@@ -22,23 +23,23 @@ export class NombreDeRelación extends ExpresiónAR {
 }
 
 export abstract class Operando {
-    abstract resolverCon(tupla: Record<string, Valor>): Valor;
+    abstract resolverCon(tupla: TuplaAR): Valor;
     nombresDeAtributos(): string[] { return []; }
 }
 
 export class NombreAtributo extends Operando {
     constructor(readonly nombre: string) { super(); }
-    resolverCon(tupla: Record<string, Valor>): Valor { return tupla[this.nombre]; }
+    resolverCon(tupla: TuplaAR): Valor { return tupla[this.nombre]; }
     nombresDeAtributos(): string[] { return [this.nombre]; }
 }
 
 export class Literal extends Operando {
     constructor(readonly valor: Valor) { super(); }
-    resolverCon(_tupla: Record<string, Valor>): Valor { return this.valor; }
+    resolverCon(_tupla: TuplaAR): Valor { return this.valor; }
 }
 
 export abstract class CondiciónAR {
-    abstract evaluarCon(tupla: Record<string, Valor>): boolean;
+    abstract evaluarCon(tupla: TuplaAR): boolean;
     abstract atributos(): string[];
 }
 
@@ -49,7 +50,7 @@ export class ComparaciónPrimitiva extends CondiciónAR {
         readonly der: Operando,
     ) { super(); }
 
-    evaluarCon(tupla: Record<string, Valor>): boolean {
+    evaluarCon(tupla: TuplaAR): boolean {
         const a = this.izq.resolverCon(tupla);
         const b = this.der.resolverCon(tupla);
         switch (this.op) {
@@ -70,7 +71,7 @@ export class ComparaciónPrimitiva extends CondiciónAR {
 
 export class CondiciónAtómica extends CondiciónAR {
     constructor(readonly operando: Operando) { super(); }
-    evaluarCon(tupla: Record<string, Valor>): boolean {
+    evaluarCon(tupla: TuplaAR): boolean {
         const val = this.operando.resolverCon(tupla);
         if (typeof val === "boolean") {
             return val;
@@ -85,7 +86,7 @@ export class CondiciónAtómica extends CondiciónAR {
 
 export class Conjunción extends CondiciónAR {
     constructor(readonly izq: CondiciónAR, readonly der: CondiciónAR) { super(); }
-    evaluarCon(tupla: Record<string, Valor>): boolean {
+    evaluarCon(tupla: TuplaAR): boolean {
         return this.izq.evaluarCon(tupla) && this.der.evaluarCon(tupla);
     }
     atributos(): string[] {
@@ -95,7 +96,7 @@ export class Conjunción extends CondiciónAR {
 
 export class Disyunción extends CondiciónAR {
     constructor(readonly izq: CondiciónAR, readonly der: CondiciónAR) { super(); }
-    evaluarCon(tupla: Record<string, Valor>): boolean {
+    evaluarCon(tupla: TuplaAR): boolean {
         return this.izq.evaluarCon(tupla) || this.der.evaluarCon(tupla);
     }
     atributos(): string[] {
@@ -132,13 +133,7 @@ export class ExpresiónProyección extends ExpresiónAR {
             }
         });
 
-        const tuplasProyectadas = resultado.tuplas.map(tupla => {
-            const proyectada: Record<string, Valor> = {};
-            this.atributos.forEach(attr => {
-                proyectada[attr] = tupla[attr];
-            });
-            return proyectada;
-        });
+        const tuplasProyectadas = resultado.tuplas.map(tupla => proyectarTupla(tupla, this.atributos));
 
         return new ResultadoConsulta("", [...this.atributos], tuplasProyectadas);
     }

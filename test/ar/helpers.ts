@@ -4,8 +4,8 @@ import {TokenizadorAR} from "../../src/ar/tokenizadorAR.ts";
 import {TipoTokenAR, TokenAR} from "../../src/tipos/tipos.ts";
 import {ErrorSintácticoAR} from "../../src/servicios/errores.ts";
 import {ResultadoConsulta} from "../../src/ar/resultadoConsulta.ts";
-import {Valor} from "../../src/mr/modeloSintacticoMR.ts";
 import {ExpresiónAR} from "../../src/ar/modeloSintácticoAR.ts";
+import {TuplaAR} from "../../src/ar/tuplaAR.ts";
 
 export function tokenizar(texto: string): TokenAR[] {
     return new TokenizadorAR().ejecutarseCon(texto);
@@ -32,7 +32,7 @@ export function esperarAnálisisSintácticoAR(
 
 export function esperarResultadoConsulta(
     resultado: ResultadoConsulta,
-    esperado: ReadonlyArray<Record<string, Valor>>,
+    esperado: ReadonlyArray<TuplaAR>,
 ): void {
     expect(resultado.tuplas).toHaveLength(esperado.length);
     esperado.forEach(tuplaEsperada => {

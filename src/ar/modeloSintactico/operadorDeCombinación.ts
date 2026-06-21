@@ -2,7 +2,7 @@ import {ResultadoConsulta} from "../resultadoConsulta.ts";
 import {ModeloRelacionalMaterializado} from "../../mr/modeloRelacionalMaterializado.ts";
 import {ErrorSemánticoAR} from "../../servicios/errores.ts";
 import {CondiciónAR, ExpresiónAR} from "../modeloSintácticoAR.ts";
-import {Valor} from "../../mr/modeloSintacticoMR.ts";
+import {valoresDeTuplaDesdeEsquema, proyectarTupla, TuplaAR} from "../tuplaAR.ts";
 
 export abstract class OperadorDeCombinación extends ExpresiónAR {
     constructor(readonly izq: ExpresiónAR, readonly der: ExpresiónAR) {
@@ -113,35 +113,30 @@ export class JoinNatural extends OperadorDeCombinación {
         }
     }
 
-    private _claveComun(tupla: Record<string, Valor>, comunes: string[]): string {
-        return comunes.map(a => JSON.stringify(tupla[a])).join("|");
-    }
-
     private _combinarConCoincidencias(
-        tuplasDer: ReadonlyArray<Record<string, Valor>>,
-        indiceIzq: Map<string, Record<string, Valor>[]>,
+        tuplasDer: ReadonlyArray<TuplaAR>,
+        indiceIzq: Map<string, TuplaAR[]>,
         comunes: string[],
         noComunesDer: string[],
-    ): Record<string, Valor>[] {
+    ): TuplaAR[] {
         return tuplasDer.flatMap(tuplaDer => {
-            const coincidencias = indiceIzq.get(this._claveComun(tuplaDer, comunes)) ?? [];
+            const coincidencias = indiceIzq.get(valoresDeTuplaDesdeEsquema(tuplaDer, comunes)) ?? [];
             return coincidencias.map(tuplaIzq => this._combinarTupla(tuplaIzq, tuplaDer, noComunesDer));
         });
     }
 
     private _indexarPorClaveComun(
-        tuplas: ReadonlyArray<Record<string, Valor>>,
+        tuplas: ReadonlyArray<TuplaAR>,
         comunes: string[],
-    ): Map<string, Record<string, Valor>[]> {
-        return Map.groupBy(tuplas, tupla => this._claveComun(tupla, comunes));
+    ): Map<string, TuplaAR[]> {
+        return Map.groupBy(tuplas, tupla => valoresDeTuplaDesdeEsquema(tupla, comunes));
     }
 
     private _combinarTupla(
-        tuplaIzq: Record<string, Valor>,
-        tuplaDer: Record<string, Valor>,
+        tuplaIzq: TuplaAR,
+        tuplaDer: TuplaAR,
         noComunesDer: string[],
-    ): Record<string, Valor> {
-        const atributosNoComunesDer = Object.fromEntries(noComunesDer.map(a => [a, tuplaDer[a]]));
-        return {...tuplaIzq, ...atributosNoComunesDer};
+    ): TuplaAR {
+        return {...tuplaIzq, ...proyectarTupla(tuplaDer, noComunesDer)};
     }
 }

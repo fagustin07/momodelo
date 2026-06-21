@@ -1,14 +1,14 @@
-import {Valor} from "../mr/modeloSintacticoMR.ts";
+import {valoresDeTuplaDesdeEsquema, TuplaAR} from "./tuplaAR.ts";
 
 export class ResultadoConsulta {
     readonly nombre: string;
     readonly atributos: ReadonlyArray<string>;
-    private readonly _tuplas: ReadonlyArray<Record<string, Valor>>;
+    private readonly _tuplas: ReadonlyArray<TuplaAR>;
 
-    constructor(nombre: string, atributos: string[], tuplas: Array<Record<string, Valor>>) {
+    constructor(nombre: string, atributos: string[], tuplas: Array<TuplaAR>) {
         const visto = new Set<string>();
         const tuplasSinRepetidos = tuplas.filter(t => {
-            const clave = JSON.stringify(atributos.map(a => t[a]));
+            const clave = valoresDeTuplaDesdeEsquema(t, atributos);
             if (visto.has(clave)) return false;
             visto.add(clave);
             return true;
@@ -18,11 +18,11 @@ export class ResultadoConsulta {
         this._tuplas = tuplasSinRepetidos;
     }
 
-    get tuplas(): ReadonlyArray<Record<string, Valor>> {
+    get tuplas(): ReadonlyArray<TuplaAR> {
         return this._tuplas;
     }
 
-    filtrar(predicado: (t: Record<string, Valor>) => boolean): ResultadoConsulta {
+    filtrar(predicado: (t: TuplaAR) => boolean): ResultadoConsulta {
         return new ResultadoConsulta("", [...this.atributos], this._tuplas.filter(predicado));
     }
 }

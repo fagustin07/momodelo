@@ -1,8 +1,8 @@
 import {ResultadoConsulta} from "../resultadoConsulta.ts";
-import {Valor} from "../../mr/modeloSintacticoMR.ts";
 import {ModeloRelacionalMaterializado} from "../../mr/modeloRelacionalMaterializado.ts";
 import {ErrorSemánticoAR} from "../../servicios/errores.ts";
 import {ExpresiónAR} from "../modeloSintácticoAR.ts";
+import {mismaTupla, TuplaAR} from "../tuplaAR.ts";
 
 export abstract class OperadorDeConjuntos extends ExpresiónAR {
     constructor(readonly izq: ExpresiónAR, readonly der: ExpresiónAR) {
@@ -44,7 +44,7 @@ export abstract class OperadorDeConjuntos extends ExpresiónAR {
         return operandoIzquierdo.atributos;
     }
 
-    protected _renombrarConjunto(tuplas: ReadonlyArray<Record<string, Valor>>, esquemaActual: readonly string[], esquemaRenombrado: readonly string[]): Record<string, Valor>[] {
+    protected _renombrarConjunto(tuplas: ReadonlyArray<TuplaAR>, esquemaActual: readonly string[], esquemaRenombrado: readonly string[]): TuplaAR[] {
         return tuplas.map(tupla =>
             Object.fromEntries(
                 esquemaRenombrado.map((nombre, i) => [nombre, tupla[esquemaActual[i]]]),
@@ -87,8 +87,4 @@ export class Resta extends OperadorDeConjuntos {
         );
         return new ResultadoConsulta("", [...operandoIzquierdo.atributos], soloEnIzq);
     }
-}
-
-function mismaTupla(a: Record<string, Valor>, b: Record<string, Valor>, atributos: readonly string[]): boolean {
-    return atributos.every(attr => a[attr] === b[attr]);
 }
