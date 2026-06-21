@@ -433,7 +433,6 @@ body {
   --color-resaltado: var(--color-acento);
   stroke: var(--color-resaltado);
   stroke-width: 3;
-  filter: drop-shadow(0 0 6px var(--color-resaltado));
 }
 
 .relacion.seleccionado input {
