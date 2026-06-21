@@ -154,9 +154,8 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
                 this._romboInterior.setAttribute("points", this._getPuntosDelRomboInterior());
             }
 
-            const fo = this._grupoElementos.getElementsByClassName("rombo-foreign-object")[0]!;
-            fo.setAttribute("width", this._ancho.toString());
-            fo.setAttribute("height", this._alto.toString());
+            this._foreignObject.setAttribute("width", this._ancho.toString());
+            this._foreignObject.setAttribute("height", this._alto.toString());
 
             this.reposicionarRelacion();
         }
