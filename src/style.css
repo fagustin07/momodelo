@@ -573,15 +573,15 @@ line:not(.linea-feedback) {
   }
 
   input {
-    &:hover {
-      border-bottom-color: var(--color-texto-apagado);
-    }
-
     field-sizing: content;
     min-width: 50px;
     outline: none;
     text-align: center;
     border: none;
+
+    &:hover {
+      border-bottom-color: var(--color-texto-apagado);
+    }
   }
 
   &>div:last-child {
