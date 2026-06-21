@@ -401,18 +401,12 @@ body {
   }
 }
 
-.entidad.seleccionado {
-  --color-resaltado: var(--color-acento);
-  outline: 3px solid var(--color-resaltado);
-}
-
-.atributo.seleccionado {
+.entidad.seleccionado, .atributo.seleccionado {
   --color-resaltado: var(--color-acento);
   outline: 3px solid var(--color-resaltado);
 }
 
 .entidad.entidad-debil.seleccionado {
-  outline: 3px solid var(--color-resaltado);
   box-shadow: 0 0 0 4px white, 0 0 0 7px var(--color-resaltado), 0 0 8px 2px var(--color-resaltado);
 }
 
@@ -505,7 +499,6 @@ line:not(.linea-feedback) {
 }
 
 .entidad.entidad-debil.entidad-origen-relacion {
-  outline: 3px solid var(--color-acento);
   box-shadow: 0 0 0 4px white, 0 0 0 7px var(--color-acento), 0 0 8px 2px var(--color-acento);
 }
 
