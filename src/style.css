@@ -598,11 +598,6 @@ line:not(.linea-feedback) {
     padding: 1em;
     border-radius: 100%;
     border: 1px solid var(--color-texto-apagado);
-
-    input {
-      min-width: 50px;
-      field-sizing: content;
-    }
   }
 
   .atributo.atributo-multivaluado {
