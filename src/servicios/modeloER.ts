@@ -11,7 +11,7 @@ import {
     RelaciónExistenteError,
     RelaciónRecursivaError
 } from "./errores";
-import {Cardinalidad, TipoAtributo, TipoRelacion} from "../tipos/tipos.ts";
+import {Cardinalidad, TipoAtributo, TipoRelacion, NombreCompletable} from "../tipos/tipos.ts";
 
 export class ModeloER {
     entidades: Entidad[] = [];
@@ -60,6 +60,16 @@ export class ModeloER {
             throw new MomodeloLogicaError("El atributo no pertenece a la entidad seleccionada.");
         }
         entidad.cambiarTipoDeAtributo(atributo, tipo);
+    }
+
+    nombresConocidosDelModelo(): NombreCompletable[] {
+        return [
+            ...this.entidades.map(e => ({label: e.nombre(), type: "namespace"})),
+            ...this.relaciones.map(r => ({label: r.nombre(), type: "namespace"})),
+            ...this.entidades.flatMap(e =>
+                e.atributos().map(a => ({label: a.nombre(), type: "class"}))
+            ),
+        ];
     }
 
     // ========= RELACIONES =========

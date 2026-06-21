@@ -130,6 +130,7 @@ export class VistaEditorMR {
     setModeloER(modeloER: ModeloER | null): void {
         this._modeloER = modeloER;
         this._modeloMaterializado = null;
+        this._editorAR.setModeloER(modeloER);
         this._limpiarConsola();
         this._consolaWrapper.style.display = "none";
     }
@@ -232,14 +233,7 @@ export class VistaEditorMR {
             {label: "FALSO",    type: "text"},
         ];
 
-        if (this._modeloER) {
-            this._modeloER.relaciones.forEach(relación => opciones.push(({label: relación.nombre(), type: "namespace"})));
-
-            this._modeloER.entidades.forEach(entidad => {
-                opciones.push({label: entidad.nombre(), type: "namespace"});
-                entidad.atributos().forEach(atr => opciones.push({label: atr.nombre(), type: "class"}));
-            });
-        }
+        this._modeloER?.nombresConocidosDelModelo().forEach(palabra => opciones.push(palabra));
 
         return {
             from: palabraBuscada.from,

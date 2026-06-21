@@ -1,11 +1,14 @@
 import {basicSetup} from "codemirror";
 import {EditorView, keymap} from "@codemirror/view";
 import {Prec} from "@codemirror/state";
+import {autocompletion, CompletionContext, CompletionResult} from "@codemirror/autocomplete";
 import {analizarSintácticamente} from "../ar/parserAR.ts";
 import {IntérpreteAR} from "../ar/intérpreteAR.ts";
+import {ModeloER} from "../servicios/modeloER.ts";
 import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado.ts";
 import {ResultadoConsulta} from "../ar/resultadoConsulta.ts";
 import {createElement} from "./dom/createElement.ts";
+import {NombreCompletable} from "../tipos/tipos.ts";
 
 type Operador = { nombre: string, símbolo: string, atajo?: number }
 
@@ -15,10 +18,12 @@ export class VistaEditorAR {
     private readonly _divisor: HTMLElement;
     private readonly _elementoSwitcher: HTMLElement;
     private _activo = false;
+    private _palabrasModelo: NombreCompletable[] = [];
     cuandoCambie: ((activo: boolean) => void) | null = null;
 
     constructor(alEjecutar: () => void) {
         const wrapper = createElement("div", {className: "mr-codemirror-wrapper"});
+        this._palabrasModelo = [];
 
         const operadores: Operador[] = [
             {nombre: "Selección", símbolo: "σ", atajo: 1},
@@ -81,7 +86,13 @@ export class VistaEditorAR {
         }]));
 
         this._editor = new EditorView({
-            extensions: [atajosParaSímbolos, tabConEspacios, basicSetup, ejecutarKeymap],
+            extensions: [
+                atajosParaSímbolos,
+                tabConEspacios,
+                basicSetup,
+                ejecutarKeymap,
+                autocompletion({override: [ctx => this._completar(ctx)]}),
+            ],
             parent: wrapper
         });
     }
@@ -120,6 +131,10 @@ export class VistaEditorAR {
         return this._editor.state.doc.toString().trim().length > 0;
     }
 
+    setModeloER(modeloER: ModeloER | null): void {
+        this._actualizarNombresConocidos(modeloER);
+    }
+
     ejecutar(modelo: ModeloRelacionalMaterializado): ResultadoConsulta {
         const expresión = analizarSintácticamente(this._editor.state.doc.toString().trim());
         return new IntérpreteAR().ejecutar(expresión, modelo);
@@ -150,5 +165,23 @@ export class VistaEditorAR {
             selection: { anchor: selección.from + símbolo.length }
         });
         this._editor.focus();
+    }
+
+    private _completar(ctx: CompletionContext): CompletionResult | null {
+        const palabraBuscada = ctx.matchBefore(/[A-Za-záéíóúÁÉÍÓÚñÑ_]\w*/);
+        if (!palabraBuscada || (palabraBuscada.from === palabraBuscada.to && !ctx.explicit)) return null;
+
+        return {
+            from: palabraBuscada.from,
+            options: this._palabrasModelo
+        };
+    }
+
+    private _actualizarNombresConocidos(modeloER: ModeloER | null): void {
+        if (modeloER !== null) {
+            this._palabrasModelo = modeloER.nombresConocidosDelModelo();
+        } else {
+            this._palabrasModelo = [];
+        }
     }
 }

@@ -101,3 +101,5 @@ export type TokenAR = {
     readonly valor: string;
     readonly posicion: number;
 };
+
+export type NombreCompletable = { label: string; type: string };
