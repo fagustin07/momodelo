@@ -271,8 +271,7 @@ export class VistaEditorMER {
         this._elementoRaíz.dataset.interaccionEnCurso = this._interacción.nombre();
         this.notificarInteracción("fin-interaccion-mer")
 
-        this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
-            .forEach(e => e.style.pointerEvents = "auto");
+        this.capturarEventosDesdeEntidadesVisuales();
     }
 
     iniciarInteracciónPara(interacciónInicializando: InteracciónMER) {
@@ -281,8 +280,17 @@ export class VistaEditorMER {
     }
 
     capturarEventosDesdeEntidadesVisuales() {
-        this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
-            .forEach(e => e.style.pointerEvents = "auto");
+        this._setPointerEventsEnElementosEntidades(true);
+    }
+
+    ignorarEventosDesdeEntidadesVisuales() {
+        this._setPointerEventsEnElementosEntidades(false);
+    }
+
+    private _setPointerEventsEnElementosEntidades(habilitado: boolean) {
+        this._entidadesVisuales.forEach(
+            vista => vista.elementoDom().style.pointerEvents = habilitado ? "auto" : "none"
+        );
     }
 
     marcarEntidadOrigen(entidad: Entidad) {
@@ -295,11 +303,6 @@ export class VistaEditorMER {
         this.finalizarInteracción();
         this.deseleccionar();
         renderizarToast(this._elementoRaíz, mensaje);
-    }
-
-    ignorarEventosDesdeEntidadesVisuales() {
-        this._elementoRaíz.querySelectorAll<HTMLElement>(".entidad")
-            .forEach(e => e.style.pointerEvents = "none");
     }
 
     posicionarRelacionEn(relacion: Relacion, centro: { x: number; y: number }): void {
