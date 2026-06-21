@@ -662,6 +662,7 @@ line:not(.linea-feedback) {
   color: white;
   border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.1s, transform 0.1s, box-shadow 0.1s;
 
   &:hover {
     background-color: var(--color-acento-hover);
@@ -672,10 +673,6 @@ line:not(.linea-feedback) {
     color: white;
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
   }
-}
-
-#topbar button {
-  transition: background-color 0.1s, transform 0.1s, box-shadow 0.1s;
 }
 
 .texto-sugerencia {
