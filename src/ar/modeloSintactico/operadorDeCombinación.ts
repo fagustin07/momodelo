@@ -106,7 +106,7 @@ export class JoinNatural extends OperadorDeCombinación {
     }
 
     private _validarQueHayaAtributosEnComún(comunes: string[]): void {
-        if (comunes.length === 0) {
+        if (comunes.isEmpty()) {
             throw new ErrorSemánticoAR(
                 `Falta ambigüedad en ${this._nombre()}: las relaciones no tienen atributos en común.`,
             );

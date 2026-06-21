@@ -116,7 +116,7 @@ export class ModalMisTrabajos {
     private _construirLista(): HTMLElement {
         const trabajos = this._almacenamiento.listarTrabajos();
 
-        if (trabajos.length === 0) {
+        if (trabajos.isEmpty()) {
             const vacio = createElement("p", {
                 className: "modal-mis-trabajos-vacio",
                 textContent: "No hay trabajos guardados todavía."
