@@ -124,12 +124,12 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
     it("una selección con atributo booleano directo retorna las tuplas donde es verdadero", () => {
         const modelo = modeloDesdeMR(`
             USUARIO < id(pk), nombre, activo >
-            insertar en USUARIO <
-                (1, 'Ana', veRDadero),
-                (2, 'Luis', falso),
-                (3, 'Pedro', TRUE),
-                (4, 'Marta', true)
-            >
+            insertar en USUARIO {
+                <1, 'Ana', veRDadero>,
+                <2, 'Luis', falso>,
+                <3, 'Pedro', TRUE>,
+                <4, 'Marta', true>
+            }
         `);
         const resultado = intérprete.ejecutar(analizarSintácticamente("σ<activo>USUARIO"), modelo);
         expect(resultado.tuplas).toHaveLength(3);

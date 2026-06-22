@@ -48,10 +48,10 @@ Un ejemplo de cómo describir e insertar datos es:
 ```
 CLIENTE < id(PK), nombre, edad >
 
-insertar en CLIENTE <
-    (1, 'Ana', 9),
-    (2, 'Luis', 32)
->
+insertar en CLIENTE {
+    <1, 'Ana', 9>,
+    <2, 'Luis', 32>
+}
 ```
 
 ### AR: Álgebra Relacional

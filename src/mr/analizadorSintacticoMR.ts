@@ -29,9 +29,9 @@ export class AnalizadorSintácticoMR {
         this._consumir("INSERTAR", "'INSERTAR'");
         this._consumir("EN", "'EN'");
         const nombreRelacion = this._consumir("NOMBRE", "nombre de una relación").valor;
-        this._consumir("LANGLE", "'<'");
+        this._consumir("LBRACE", "'{'");
         const filas = this._listaFilas();
-        this._consumir("RANGLE", "'>'");
+        this._consumir("RBRACE", "'}'");
         return new InsertarEn(nombreRelacion, filas);
     }
 
@@ -46,14 +46,14 @@ export class AnalizadorSintácticoMR {
     }
 
     private _fila(): Fila {
-        this._consumir("LPAREN", "'('");
+        this._consumir("LANGLE", "'<'");
         const valores: Valor[] = [];
         valores.push(this._valor());
         while (this._es("COMA")) {
             this._avanzar();
             valores.push(this._valor());
         }
-        this._consumir("RPAREN", "')'");
+        this._consumir("RANGLE", "'>'");
         return new Fila(valores);
     }
 

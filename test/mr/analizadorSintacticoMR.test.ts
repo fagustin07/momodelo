@@ -99,7 +99,7 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
 
     it("una sentencia INSERTAR EN con literales de cadena genera una fila con esos valores", () => {
         const programa = analizador.analizarSintaxisDe(
-            "INSERTAR EN Persona<('Juan', 'Pérez')>"
+            "INSERTAR EN Persona{<'Juan', 'Pérez'>}"
         );
 
         expect(programa.inserciones()).toHaveLength(1);
@@ -112,7 +112,7 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
 
     it("los literales numéricos y booleanos dentro de una fila conservan su tipo", () => {
         const programa = analizador.analizarSintaxisDe(
-            "INSERTAR EN Empleado<('Ana', 30, verdadero)>"
+            "INSERTAR EN Empleado{<'Ana', 30, verdadero>}"
         );
 
         const insercion = programa.inserciones()[0];
@@ -121,7 +121,7 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
 
     it("true y false son alias en inglés equivalentes a verdadero y falso en inserciones", () => {
         const programa = analizador.analizarSintaxisDe(
-            "INSERTAR EN T<(true, false)>"
+            "INSERTAR EN T{<true, false>}"
         );
 
         expect(programa.inserciones()[0].filas[0]).toEqual(new Fila([true, false]));
@@ -129,7 +129,7 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
 
     it("una sentencia INSERTAR EN puede contener múltiples filas separadas por coma", () => {
         const programa = analizador.analizarSintaxisDe(
-            "INSERTAR EN Persona<('Juan', 25), ('María', 30)>"
+            "INSERTAR EN Persona{<'Juan', 25>, <'María', 30>}"
         );
 
         const insercion = programa.inserciones()[0];
@@ -141,7 +141,7 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
     it("definiciones de relaciones e inserciones de datos pueden coexistir en el mismo programa conservando su orden", () => {
         const programa = analizador.analizarSintaxisDe(`
                 Persona < dni(PK), nombre >
-                INSERTAR EN Persona<('12345678', 'Juan')>
+                INSERTAR EN Persona{<'12345678', 'Juan'>}
             `);
 
         expect(programa.relaciones()).toHaveLength(1);
@@ -152,8 +152,8 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
 
     it("múltiples sentencias de inserción para distintas relaciones se acumulan en el programa", () => {
         const programa = analizador.analizarSintaxisDe(`
-                INSERTAR EN A<('x')>
-                INSERTAR EN B<('y', 1)>
+                INSERTAR EN A{<'x'>}
+                INSERTAR EN B{<'y', 1>}
             `);
 
         expect(programa.inserciones()).toHaveLength(2);
@@ -163,7 +163,7 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
 
     it("INSERTAR EN se reconoce independientemente de la capitalización", () => {
         const programa = analizador.analizarSintaxisDe(
-            "insertar en Persona<('Juan')>"
+            "insertar en Persona{<'Juan'>}"
         );
 
         expect(programa.inserciones()).toHaveLength(1);
@@ -171,32 +171,32 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
     });
 
     it("una sentencia INSERTAR EN sin nombre de relación es un error sintáctico", () => {
-        expect(() => analizador.analizarSintaxisDe("INSERTAR EN <('x')>"))
+        expect(() => analizador.analizarSintaxisDe("INSERTAR EN {<'x'>}"))
             .toThrow(ErrorSintácticoMR);
     });
 
     it("una sentencia INSERTAR EN sin '<' de apertura es un error sintáctico", () => {
-        expect(() => analizador.analizarSintaxisDe("INSERTAR EN Persona('x')>"))
+        expect(() => analizador.analizarSintaxisDe("INSERTAR EN Persona<'x'>}"))
             .toThrow(ErrorSintácticoMR);
     });
 
     it("una sentencia INSERTAR EN sin '>' de cierre es un error sintáctico", () => {
-        expect(() => analizador.analizarSintaxisDe("INSERTAR EN Persona<('x')"))
+        expect(() => analizador.analizarSintaxisDe("INSERTAR EN Persona{<'x'>"))
             .toThrow(ErrorSintácticoMR);
     });
 
     it("una fila sin ')' de cierre es un error sintáctico", () => {
-        expect(() => analizador.analizarSintaxisDe("INSERTAR EN Persona<('x'"))
+        expect(() => analizador.analizarSintaxisDe("INSERTAR EN Persona{<'x'"))
             .toThrow(ErrorSintácticoMR);
     });
 
     it("un identificador como valor dentro de una inserción es un error sintáctico", () => {
-        expect(() => analizador.analizarSintaxisDe("INSERTAR EN Persona<(nombreAtributo)>"))
+        expect(() => analizador.analizarSintaxisDe("INSERTAR EN Persona{<nombreAtributo>}"))
             .toThrow(ErrorSintácticoMR);
     });
 
     it("los literales numéricos se representan como number en el árbol sintáctico", () => {
-        const programa = analizador.analizarSintaxisDe("INSERTAR EN T<(42, 3.14)>");
+        const programa = analizador.analizarSintaxisDe("INSERTAR EN T{<42, 3.14>}");
         const fila = programa.inserciones()[0].filas[0];
         expect(fila.valores[0]).toBe(42);
         expect(fila.valores[1]).toBe(3.14);

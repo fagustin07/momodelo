@@ -159,20 +159,20 @@ describe("Tokenizador MR", () => {
     });
 
     it("una sentencia INSERTAR EN completa produce la secuencia de tokens esperada", () => {
-        expect(tiposEn("INSERTAR EN Persona<('Juan', 25)>")).toEqual<TipoTokenMR[]>([
-            "INSERTAR", "EN", "NOMBRE", "LANGLE",
-            "LPAREN", "CADENA", "COMA", "NUMERO", "RPAREN",
-            "RANGLE"
+        expect(tiposEn("INSERTAR EN Persona{<'Juan', 25>}")).toEqual<TipoTokenMR[]>([
+            "INSERTAR", "EN", "NOMBRE", "LBRACE",
+            "LANGLE", "CADENA", "COMA", "NUMERO", "RANGLE",
+            "RBRACE"
         ]);
     });
 
     it("una inserción con múltiples filas produce los tokens de cada fila correctamente separados", () => {
-        expect(tiposEn("INSERTAR EN Empleado <('Ana', verdadero), ('Luis', false)>")).toEqual<TipoTokenMR[]>([
-            "INSERTAR", "EN", "NOMBRE", "LANGLE",
-            "LPAREN", "CADENA", "COMA", "VERDADERO", "RPAREN",
+        expect(tiposEn("INSERTAR EN Empleado {<'Ana', verdadero>, <'Luis', false>}")).toEqual<TipoTokenMR[]>([
+            "INSERTAR", "EN", "NOMBRE", "LBRACE",
+            "LANGLE", "CADENA", "COMA", "VERDADERO", "RANGLE",
             "COMA",
-            "LPAREN", "CADENA", "COMA", "FALSO", "RPAREN",
-            "RANGLE"
+            "LANGLE", "CADENA", "COMA", "FALSO", "RANGLE",
+            "RBRACE"
         ]);
     });
 });
