@@ -176,7 +176,11 @@ export class VistaEditorAR {
 
         return {
             from: palabraBuscada.from,
-            options: this._palabrasModelo
+            options: [
+                ...this._palabrasModelo,
+                {label: "verdadero", type: "text"},
+                {label: "falso", type: "text"},
+            ]
         };
     }
 

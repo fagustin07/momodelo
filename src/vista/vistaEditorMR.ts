@@ -230,10 +230,10 @@ export class VistaEditorMR {
 
         const opciones = [
             {label: "INSERTAR EN", type: "text"},
-            {label: "PK",       type: "keyword"},
-            {label: "FK",       type: "keyword"},
-            {label: "VERDADERO", type: "text"},
-            {label: "FALSO",    type: "text"},
+            {label: "PK", type: "keyword"},
+            {label: "FK", type: "keyword"},
+            {label: "verdadero", type: "text"},
+            {label: "falso", type: "text"},
         ];
 
         this._modeloER?.nombresConocidosDelModelo().forEach(palabra => opciones.push(palabra));
