@@ -2,10 +2,7 @@ import {ElementoMER} from "../../modelo/elementoMER";
 import {VistaEditorMER} from "../vistaEditorMER.ts";
 import {createElement} from "../dom/createElement.ts";
 
-type TemplateRegistrable = {
-    new(vistaEditor: VistaEditorMER, elemento: ElementoMER): TemplateInspector;
-    puedeManejar(elemento: ElementoMER): boolean;
-};
+type TemplateRegistrable = { new(vistaEditor: VistaEditorMER, elemento: ElementoMER): TemplateInspector } & typeof TemplateInspector;
 
 export abstract class TemplateInspector {
 
@@ -13,8 +10,9 @@ export abstract class TemplateInspector {
 
     protected _inputNombre: HTMLInputElement | null = null;
 
-    constructor(
+    protected constructor(
         protected readonly vistaEditor: VistaEditorMER,
+        protected readonly elemento: ElementoMER,
     ) {}
 
     static registrar(clase: TemplateRegistrable): void {
@@ -29,6 +27,10 @@ export abstract class TemplateInspector {
             TemplateInspector
                 ._registradas
                 .find(template => template.puedeManejar(elemento))!)(vistaEditor, elemento)
+    }
+
+    static puedeManejar(_elemento: ElementoMER): boolean {
+        throw new Error("subclass responsibility");
     }
 
     abstract representarseEn(contenedor: HTMLElement): TemplateInspector;

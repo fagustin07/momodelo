@@ -12,14 +12,11 @@ export class TemplateRelacion extends TemplateInspector {
         return elemento.representaUnaRelación();
     }
 
-    private readonly relacion: Relacion;
-
     constructor(
         vistaEditor: VistaEditorMER,
         elemento: ElementoMER,
     ) {
-        super(vistaEditor);
-        this.relacion = elemento as Relacion;
+        super(vistaEditor, elemento);
     }
 
     representarseEn(contenedor: HTMLElement): TemplateRelacion {
@@ -38,6 +35,10 @@ export class TemplateRelacion extends TemplateInspector {
         );
 
         return this;
+    }
+
+    private get relacion(): Relacion {
+        return this.elemento as Relacion;
     }
 
     private _seccionTipo(): HTMLElement[] {

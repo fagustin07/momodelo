@@ -11,14 +11,11 @@ export class TemplateAtributo extends TemplateInspector {
         return elemento.representaUnAtributo();
     }
 
-    private readonly atributo: Atributo;
-
     constructor(
         vistaEditor: VistaEditorMER,
         elemento: ElementoMER,
     ) {
-        super(vistaEditor);
-        this.atributo = elemento as Atributo;
+        super(vistaEditor, elemento);
     }
 
     representarseEn(contenedor: HTMLElement): TemplateAtributo {
@@ -36,6 +33,10 @@ export class TemplateAtributo extends TemplateInspector {
         );
 
         return this;
+    }
+
+    private get atributo(): Atributo {
+        return this.elemento as Atributo;
     }
 
     private _secciónTipoDeAtributo(): HTMLElement {

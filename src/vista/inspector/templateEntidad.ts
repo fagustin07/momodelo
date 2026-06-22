@@ -9,14 +9,11 @@ export class TemplateEntidad extends TemplateInspector {
         return elemento.representaUnaEntidad();
     }
 
-    private readonly entidad: Entidad;
-
     constructor(
         vistaEditor: VistaEditorMER,
         elemento: ElementoMER,
     ) {
-        super(vistaEditor);
-        this.entidad = elemento as Entidad;
+        super(vistaEditor, elemento);
     }
 
     representarseEn(contenedor: HTMLElement): TemplateEntidad {
@@ -32,6 +29,10 @@ export class TemplateEntidad extends TemplateInspector {
         );
 
         return this;
+    }
+
+    private get entidad(): Entidad {
+        return this.elemento as Entidad;
     }
 }
 
