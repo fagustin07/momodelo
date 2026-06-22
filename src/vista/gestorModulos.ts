@@ -26,6 +26,7 @@ export class GestorModulos {
         this._vistaMR.registrarCambioAR((activo) => {
             if (this._modoActivo === "MER/MR") {
                 this._modulos.get("MER")!.classList.toggle("vista-oculta", activo);
+                if (!activo) this._vistaMER.redibujar();
             }
         });
 
@@ -58,6 +59,10 @@ export class GestorModulos {
 
         this._actualizarEstadoPestañas(módulo);
         this._modoActivo = módulo;
+
+        if (módulo === 'MER' || módulo === 'MER/MR') {
+            this._vistaMER.redibujar();
+        }
     }
 
     private _registrarMódulo(id: MóduloMomodelo, elemento: HTMLElement) {

@@ -355,6 +355,14 @@ export class VistaEditorMER {
         this._atributosVisuales.forEach(atrVisual => atrVisual.reposicionarConexión());
     }
 
+    redibujar(): void {
+        this._entidadesVisuales.forEach((vista, entidad) => {
+            const posicion = entidad.posicion();
+            vista.elementoDom().style.translate = `${posicion.x}px ${posicion.y}px`;
+        });
+        this.reposicionarElementosSVG();
+    }
+
     seleccionarA(elementoMER: ElementoMER) {
         this._elementoSeleccionado = elementoMER;
         this._actualizarSelección(elementoMER);
