@@ -380,14 +380,13 @@ body {
 
 .mr-tabla-resultado {
   border-collapse: collapse;
-  font-size: 12px;
-  width: 100%;
-  margin-top: 4px;
+  font-size: 1rem;
+  margin: 4px auto 0;
 
   th, td {
     border: 1px solid var(--color-neutro-borde);
-    padding: 4px 10px;
-    text-align: left;
+    padding: 6px 14px;
+    text-align: center;
   }
 
   th {
@@ -1182,4 +1181,33 @@ line:not(.linea-feedback) {
       }
     }
   }
+}
+
+.cm-editor .palabra-clave {
+  color: #7c3aed;
+  font-weight: 600;
+}
+
+.cm-editor .lógico {
+  color: #a59812;
+}
+
+.cm-editor .cadena {
+  color: #059669;
+}
+
+.cm-editor .número {
+  color: #2563eb;
+}
+
+.cm-editor .booleano {
+  color: #d97706;
+}
+
+.cm-editor .comparador {
+  color: #dc2626;
+}
+
+.cm-editor .llave {
+  color: #e429f1;
 }

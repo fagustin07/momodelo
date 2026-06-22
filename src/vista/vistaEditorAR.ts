@@ -9,6 +9,7 @@ import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado
 import {ResultadoConsulta} from "../ar/resultadoConsulta.ts";
 import {createElement} from "./dom/createElement.ts";
 import {NombreCompletable} from "../tipos/tipos.ts";
+import {extensionLenguajeAR} from "./codeMirror/lenguajeAR.ts";
 
 type Operador = { nombre: string, símbolo: string, atajo?: number }
 
@@ -92,6 +93,8 @@ export class VistaEditorAR {
                 basicSetup,
                 ejecutarKeymap,
                 autocompletion({override: [ctx => this._completar(ctx)]}),
+                EditorView.lineWrapping,
+                ...extensionLenguajeAR,
             ],
             parent: wrapper
         });
@@ -173,7 +176,11 @@ export class VistaEditorAR {
 
         return {
             from: palabraBuscada.from,
-            options: this._palabrasModelo
+            options: [
+                ...this._palabrasModelo,
+                {label: "verdadero", type: "text"},
+                {label: "falso", type: "text"},
+            ]
         };
     }
 

@@ -12,6 +12,7 @@ import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado
 import {ResultadoConsulta} from "../ar/resultadoConsulta.ts";
 import {VistaEditorAR} from "./vistaEditorAR.ts";
 import {MenuHamburguesa, ProveedorDeTrabajo} from "../componentes/menuHamburguesa.ts";
+import {extensionLenguajeMR} from "./codeMirror/lenguajeMR.ts";
 
 export class VistaEditorMR {
     private readonly _elementoRaíz: HTMLElement;
@@ -109,7 +110,9 @@ export class VistaEditorMR {
                 tabConEspacios,
                 basicSetup,
                 autocompletion({override: [ctx => this._completar(ctx)]}),
-                ejecutarKeymap
+                ejecutarKeymap,
+                EditorView.lineWrapping,
+                ...extensionLenguajeMR,
             ],
             parent: mrWrapper
         });
@@ -227,10 +230,10 @@ export class VistaEditorMR {
 
         const opciones = [
             {label: "INSERTAR EN", type: "text"},
-            {label: "PK",       type: "keyword"},
-            {label: "FK",       type: "keyword"},
-            {label: "VERDADERO", type: "text"},
-            {label: "FALSO",    type: "text"},
+            {label: "PK", type: "keyword"},
+            {label: "FK", type: "keyword"},
+            {label: "verdadero", type: "text"},
+            {label: "falso", type: "text"},
         ];
 
         this._modeloER?.nombresConocidosDelModelo().forEach(palabra => opciones.push(palabra));
