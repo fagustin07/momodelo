@@ -1190,3 +1190,32 @@ line:not(.linea-feedback) {
     }
   }
 }
+
+.cm-editor .palabra-clave {
+  color: #7c3aed;
+  font-weight: 600;
+}
+
+.cm-editor .lógico {
+  color: #a59812;
+}
+
+.cm-editor .cadena {
+  color: #059669;
+}
+
+.cm-editor .número {
+  color: #2563eb;
+}
+
+.cm-editor .booleano {
+  color: #d97706;
+}
+
+.cm-editor .comparador {
+  color: #dc2626;
+}
+
+.cm-editor .llave {
+  color: #e429f1;
+}

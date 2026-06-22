@@ -2,6 +2,9 @@ import {defineConfig} from "vitest/config";
 import {webdriverio} from "@vitest/browser-webdriverio";
 
 export default defineConfig({
+  optimizeDeps: {
+    include: ["@codemirror/language", "@lezer/highlight"],
+  },
   test: {
     coverage: {
       provider: 'v8'

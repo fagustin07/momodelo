@@ -12,6 +12,7 @@ import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado
 import {ResultadoConsulta} from "../ar/resultadoConsulta.ts";
 import {VistaEditorAR} from "./vistaEditorAR.ts";
 import {MenuHamburguesa, ProveedorDeTrabajo} from "../componentes/menuHamburguesa.ts";
+import {extensionLenguajeMR} from "./codeMirror/lenguajeMR.ts";
 
 export class VistaEditorMR {
     private readonly _elementoRaíz: HTMLElement;
@@ -111,6 +112,7 @@ export class VistaEditorMR {
                 autocompletion({override: [ctx => this._completar(ctx)]}),
                 ejecutarKeymap,
                 EditorView.lineWrapping,
+                ...extensionLenguajeMR,
             ],
             parent: mrWrapper
         });
