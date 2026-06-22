@@ -92,6 +92,7 @@ export class VistaEditorAR {
                 basicSetup,
                 ejecutarKeymap,
                 autocompletion({override: [ctx => this._completar(ctx)]}),
+                EditorView.lineWrapping,
             ],
             parent: wrapper
         });

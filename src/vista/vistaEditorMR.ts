@@ -109,7 +109,8 @@ export class VistaEditorMR {
                 tabConEspacios,
                 basicSetup,
                 autocompletion({override: [ctx => this._completar(ctx)]}),
-                ejecutarKeymap
+                ejecutarKeymap,
+                EditorView.lineWrapping,
             ],
             parent: mrWrapper
         });
