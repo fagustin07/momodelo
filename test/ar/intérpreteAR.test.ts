@@ -150,6 +150,42 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
         expect(resultado.tuplas).toHaveLength(2);
     });
 
+    it("una selección con un literal numérico como condición levanta una excepción", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("USUARIO", pk("id"), simple("nombre"))),
+            inserción("USUARIO", fila(1, "Ana")),
+        );
+
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("σ<1>USUARIO"), modelo)
+        ).toThrow(ErrorSemánticoAR);
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("σ<1>USUARIO"), modelo)
+        ).toThrow("La condición de selección debe evaluar a un valor de verdad.");
+    });
+
+    it("una selección con un literal de cadena como condición levanta una excepción", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("USUARIO", pk("id"), simple("nombre"))),
+            inserción("USUARIO", fila(1, "Ana")),
+        );
+
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("σ<'texto'>USUARIO"), modelo)
+        ).toThrow("La condición de selección debe evaluar a un valor de verdad.");
+    });
+
+    it("una selección con un atributo no booleano como condición levanta una excepción", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("USUARIO", pk("id"), simple("nombre"))),
+            inserción("USUARIO", fila(1, "Ana")),
+        );
+
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("σ<nombre>USUARIO"), modelo)
+        ).toThrow("La condición de selección debe evaluar a un valor de verdad.");
+    });
+
     it("una selección con condiciones compuestas filtra correctamente las tuplas", () => {
         const modelo = modeloConRelaciones(
             definición(relación("CLIENTE", pk("id"), simple("edad"), simple("ciudad"), simple("apellido"))),

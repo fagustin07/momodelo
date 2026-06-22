@@ -77,7 +77,7 @@ export class CondiciónAtómica extends CondiciónAR {
             return val;
         }
 
-        return false;
+        throw new ErrorSemánticoAR("La condición de selección debe evaluar a un valor de verdad.");
     }
     atributos(): string[] {
         return this.operando.nombresDeAtributos();
