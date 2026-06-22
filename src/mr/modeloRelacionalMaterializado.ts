@@ -32,6 +32,10 @@ export class Tupla {
     valoresPK(): Valor[] {
         return this._nombresPK.map(pk => this._valores[pk]);
     }
+
+    coincideEn(atributos: string[], valores: Valor[]): boolean {
+        return atributos.every((attr, i) => this._valores[attr] === valores[i]);
+    }
 }
 
 export class RelacionMaterializada {

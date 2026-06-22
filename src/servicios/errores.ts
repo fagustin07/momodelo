@@ -86,6 +86,22 @@ export class ErrorPKDuplicada extends MomodeloLogicaError {
     }
 }
 
+export class ErrorFKInvalida extends MomodeloLogicaError {
+    constructor(
+        nombreRelacion: string,
+        nombresFK: string[],
+        valoresFK: string[],
+        nombreRelacionReferenciada: string
+    ) {
+        const fks = nombresFK.join(', ');
+        const valores = valoresFK.join(', ');
+        const mensaje = nombresFK.length > 1
+            ? `Violación de integridad referencial en '${nombreRelacion}': la combinación de las claves foráneas '${fks}' con valores '${valores}' no existe como PK compuesta en '${nombreRelacionReferenciada}'.`
+            : `Violación de integridad referencial en '${nombreRelacion}': el valor '${valores}' de la clave foránea '${fks}' no existe en '${nombreRelacionReferenciada}'.`;
+        super(mensaje);
+    }
+}
+
 export class ErrorSemánticoAR extends MomodeloLogicaError {
     constructor(mensaje: string) {
         super(mensaje);

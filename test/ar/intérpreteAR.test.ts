@@ -672,6 +672,7 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
             definición(relación("SUMINISTRA", pk("proveedor"), pk("parte"), pk("proyecto"))),
             definición(relación("PROYECTOS", pkfk("proyecto"))),
             inserción("SUMINISTRA", fila("P1", "tornillo", "ProyA")),
+            inserción("SUMINISTRA", fila("P2", "martillo", "ProyC")),
             inserción("PROYECTOS", fila("ProyA")),
             inserción("PROYECTOS", fila("ProyC")),
         );

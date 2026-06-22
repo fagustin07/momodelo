@@ -6,13 +6,14 @@ import {ModeloER} from "../servicios/modeloER.ts";
 import {AnalizadorSintácticoMR} from "../mr/analizadorSintacticoMR.ts";
 import {ValidadorSemánticoMR} from "../mr/validadorSemanticoMR.ts";
 import {IntérpreteMR} from "../mr/interpretadorMR.ts";
-import {ErrorPKDuplicada, ErrorSintácticoAR, ErrorSintácticoMR, ErroresValidación, MomodeloLogicaError} from "../servicios/errores.ts";
+import {ErrorFKInvalida, ErrorPKDuplicada, ErrorSintácticoAR, ErrorSintácticoMR, ErroresValidación, MomodeloLogicaError} from "../servicios/errores.ts";
 import {createElement} from "./dom/createElement.ts";
 import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado.ts";
 import {ResultadoConsulta} from "../ar/resultadoConsulta.ts";
 import {VistaEditorAR} from "./vistaEditorAR.ts";
 import {MenuHamburguesa, ProveedorDeTrabajo} from "../componentes/menuHamburguesa.ts";
 import {extensionLenguajeMR} from "./codeMirror/lenguajeMR.ts";
+import {renderizarToast} from "../componentes/toast.ts";
 
 export class VistaEditorMR {
     private readonly _elementoRaíz: HTMLElement;
@@ -174,7 +175,7 @@ export class VistaEditorMR {
                 const programaMR = new AnalizadorSintácticoMR().analizarSintaxisDe(inputMR);
                 const programaValidado = new ValidadorSemánticoMR().ejecutarsePara(programaMR, this._modeloER);
                 this._modeloMaterializado = new IntérpreteMR().ejecutar(programaValidado);
-            } catch (e) {
+            } catch (e: any) {
                 this._modeloMaterializado = null;
                 if (e instanceof ErrorSintácticoMR) {
                     this._mostrarError(e.message, 'MR');
@@ -182,7 +183,10 @@ export class VistaEditorMR {
                     e.errores.forEach(msg => this._mostrarError(msg, 'MR'));
                 } else if (e instanceof ErrorPKDuplicada) {
                     this._mostrarError(e.message, 'MR');
+                } else if (e instanceof ErrorFKInvalida) {
+                    this._mostrarError(e.message, 'MR');
                 } else {
+                    renderizarToast(this._elementoRaíz, e.message);
                     throw e;
                 }
                 return;

@@ -1,8 +1,8 @@
 import {describe, expect, it} from "vitest";
 import {IntérpreteMR} from "../../src/mr/interpretadorMR.ts";
 import {ValidadorSemánticoMR} from "../../src/mr/validadorSemanticoMR.ts";
-import {ErrorPKDuplicada, MomodeloLogicaError} from "../../src/servicios/errores.ts";
-import {definición, fila, inserción, pk, programa, relación, simple} from "./helpers.ts";
+import {ErrorFKInvalida, ErrorPKDuplicada, MomodeloLogicaError} from "../../src/servicios/errores.ts";
+import {definición, fila, fk, inserción, pk, programa, relación, simple} from "./helpers.ts";
 import {SentenciaMR} from "../../src/mr/sentenciaMR.ts";
 
 describe("[Modelo Relacional] Intérprete MR", () => {
@@ -131,5 +131,64 @@ describe("[Modelo Relacional] Intérprete MR", () => {
             definición(relación("CLIENTE", pk("id"))),
         );
         expect(() => modelo.obtenerRelacion("INEXISTENTE")).toThrow("La relación 'INEXISTENTE' no existe en el modelo.");
+    });
+
+    it("se pueden realizar inserciones en un atributo FK cuando cumple integridad referencial", () => {
+        const modelo = ejecutar(
+            definición(relación("CLIENTE", pk("id"), simple("nombre"))),
+            definición(relación("COMPRA", pk("nro"), fk("id_cliente"))),
+            inserción("CLIENTE", fila(1, "Ana")),
+            inserción("COMPRA", fila(100, 1)),
+        );
+        expect(modelo.obtenerRelacion("COMPRA").tuplas).toHaveLength(1);
+    });
+
+    it("una inserción con FK inválido que no existe como PK levanta una excepción", () => {
+        expect(() => ejecutar(
+            definición(relación("CLIENTE", pk("id"), simple("nombre"))),
+            definición(relación("COMPRA", pk("nro"), fk("id_cliente"))),
+            inserción("CLIENTE", fila(1, "Ana")),
+            inserción("COMPRA", fila(100, 5)),
+        )).toThrow(ErrorFKInvalida);
+    });
+
+    it("la excepción por FK inválido incluye los nombres de la relación, el FK y su valor", () => {
+        expect(() => ejecutar(
+            definición(relación("CLIENTE", pk("id"), simple("nombre"))),
+            definición(relación("COMPRA", pk("nro"), fk("id_cliente"))),
+            inserción("CLIENTE", fila(1, "Ana")),
+            inserción("COMPRA", fila(100, 999)),
+        )).toThrow("Violación de integridad referencial en 'COMPRA': el valor '999' de la clave foránea 'id_cliente' no existe en 'CLIENTE'.");
+    });
+
+    it("una inserción con FKs que referencian una PK compuesta es válida si la combinación existe", () => {
+        const modelo = ejecutar(
+            definición(relación("EXPEDIENTE", pk("año"), pk("numero"))),
+            definición(relación("FOJA", pk("nro_foja"), fk("año"), fk("numero"))),
+            inserción("EXPEDIENTE", fila(2024, 1)),
+            inserción("EXPEDIENTE", fila(2024, 2)),
+            inserción("FOJA", fila(1, 2024, 2)),
+        );
+        expect(modelo.obtenerRelacion("FOJA").tuplas).toHaveLength(1);
+    });
+
+    it("una inserción con FKs que existen individualmente pero no como combinación en la PK compuesta levanta una excepción", () => {
+        expect(() => ejecutar(
+            definición(relación("EXPEDIENTE", pk("año"), pk("numero"))),
+            definición(relación("FOJA", pk("nro_foja"), fk("año"), fk("numero"))),
+            inserción("EXPEDIENTE", fila(2024, 1)),
+            inserción("EXPEDIENTE", fila(2023, 2)),
+            inserción("FOJA", fila(1, 2024, 2)),
+        )).toThrow(ErrorFKInvalida);
+    });
+
+    it("el error por PK compuesta incluye la combinación de FKs y sus valores", () => {
+        expect(() => ejecutar(
+            definición(relación("EXPEDIENTE", pk("año"), pk("numero"))),
+            definición(relación("FOJA", pk("nro_foja"), fk("año"), fk("numero"))),
+            inserción("EXPEDIENTE", fila(2024, 1)),
+            inserción("EXPEDIENTE", fila(2023, 2)),
+            inserción("FOJA", fila(1, 2024, 2)),
+        )).toThrow("Violación de integridad referencial en 'FOJA': la combinación de las claves foráneas 'año, numero' con valores '2024, 2' no existe como PK compuesta en 'EXPEDIENTE'.");
     });
 });

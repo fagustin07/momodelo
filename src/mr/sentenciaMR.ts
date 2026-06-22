@@ -1,5 +1,12 @@
-import {Fila, RelacionMR} from "./modeloSintacticoMR.ts";
+import {AtributoMR, Fila, RelacionMR} from "./modeloSintacticoMR.ts";
 import {ModeloRelacionalMaterializado, RelacionMaterializada} from "./modeloRelacionalMaterializado.ts";
+import {ErrorFKInvalida} from "../servicios/errores.ts";
+
+type ReferenciaFK = {
+    fk: AtributoMR;
+    relacion: RelacionMaterializada;
+    nombrePK: string;
+};
 
 export abstract class SentenciaMR {
     esDefinición(): boolean {
@@ -12,6 +19,13 @@ export abstract class SentenciaMR {
 
     abstract validarseCon(relacionesDefinidas: Map<string, RelacionMR>, errores: string[]): void;
     abstract interpretarseCon(modelo: ModeloRelacionalMaterializado): void;
+
+    protected _fkMatcheaPK(nombreFK: string, nombrePK: string, nombreRelacion: string): boolean {
+        const fk = nombreFK.toLowerCase();
+        const pk = nombrePK.toLowerCase();
+        const rel = nombreRelacion.toLowerCase();
+        return fk === pk || fk === `${pk}_${rel}`;
+    }
 }
 
 export class DefiniciónRelación extends SentenciaMR {
@@ -54,13 +68,9 @@ export class DefiniciónRelación extends SentenciaMR {
     }
 
     private _existePKReferenciada(nombreFK: string, relacionesDefinidas: Map<string, RelacionMR>): boolean {
-        nombreFK = nombreFK.toLowerCase();
         return [...relacionesDefinidas].some(([nombreRelacion, relacion]) =>
             nombreRelacion !== this.relacion.nombre.toLowerCase() &&
-            relacion.clavesPrimarias().some(pk =>
-                pk.nombre.toLowerCase() === nombreFK ||
-                `${pk.nombre.toLowerCase()}_${nombreRelacion}` === nombreFK
-            )
+            relacion.clavesPrimarias().some(pk => this._fkMatcheaPK(nombreFK, pk.nombre, nombreRelacion))
         );
     }
 }
@@ -78,7 +88,66 @@ export class InsertarEn extends SentenciaMR {
     }
 
     interpretarseCon(modelo: ModeloRelacionalMaterializado): void {
-        this.filas.forEach(fila => modelo.obtenerRelacion(this.nombreRelacion).insertarFila(fila));
+        const relación = modelo.obtenerRelacion(this.nombreRelacion);
+        this._validarIntegridadReferencial(relación, modelo);
+        this.filas.forEach(fila => relación.insertarFila(fila));
+    }
+
+    private _validarIntegridadReferencial(relación: RelacionMaterializada, modelo: ModeloRelacionalMaterializado): void {
+        const fks = relación.esquema.clavesForáneas();
+        if (fks.length === 0) return;
+
+        const referencias = this._encontrarRelacionesReferenciadas(fks, modelo.relaciones());
+
+        Map.groupBy(referencias, ref => ref.relacion.nombre.toLowerCase())
+            .forEach(refs => this._validarGrupoFK(relación, refs));
+    }
+
+    private _encontrarRelacionesReferenciadas(
+        fks: AtributoMR[],
+        relaciones: RelacionMaterializada[]
+    ): ReferenciaFK[] {
+        return fks.flatMap(fk =>
+            this._resolverReferenciaFK(fk, this.nombreRelacion, relaciones) ?? []
+        );
+    }
+
+    private _resolverReferenciaFK(
+        fk: AtributoMR,
+        nombreRelacionPropia: string,
+        relaciones: RelacionMaterializada[]
+    ): ReferenciaFK | null {
+        const propia = nombreRelacionPropia.toLowerCase();
+
+        return relaciones
+            .filter(rel => rel.nombre.toLowerCase() !== propia)
+            .map(rel => {
+                const pk = rel.esquema.clavesPrimarias()
+                    .find(pkAttr => this._fkMatcheaPK(fk.nombre, pkAttr.nombre, rel.nombre));
+                return pk ? {fk, relacion: rel, nombrePK: pk.nombre} : null;
+            })
+            .find(ref => ref !== null) ?? null;
+    }
+
+    private _validarGrupoFK(rel: RelacionMaterializada, refs: ReferenciaFK[]): void {
+        const destino = refs[0].relacion;
+        const fks = refs.map(ref => ({fk: ref.fk, nombrePK: ref.nombrePK}));
+        const indices = fks.map(fk => rel.esquema.atributos.indexOf(fk.fk));
+        const pks = fks.map(fk => fk.nombrePK);
+
+        const filaQueFalla = this.filas.find(fila => {
+            const valoresFK = indices.map(idx => fila.valores[idx]);
+            return !destino.tuplas.some(tupla => tupla.coincideEn(pks, valoresFK));
+        });
+
+        if (filaQueFalla) {
+            throw new ErrorFKInvalida(
+                this.nombreRelacion,
+                fks.map(fk => fk.fk.nombre),
+                indices.map(idx => String(filaQueFalla.valores[idx])),
+                destino.nombre
+            );
+        }
     }
 
     validarseCon(relacionesDefinidas: Map<string, RelacionMR>, errores: string[]): void {
