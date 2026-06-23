@@ -4,6 +4,7 @@
   --color-exito: #16a34a;
   --color-advertencia: #f59e0b;
   --color-neutro: #6b7280;
+  --color-blanco: white;
 
   --color-acento-hover: color-mix(in oklab, var(--color-acento), black 8%);
   --color-acento-activo: color-mix(in oklab, var(--color-acento), black 14%);
@@ -23,6 +24,7 @@
   --color-neutro-borde: color-mix(in oklab, var(--color-neutro) 30%, white);
   --color-texto-apagado: var(--color-neutro);
   --color-texto: color-mix(in oklab, var(--color-neutro), black 18%);
+  --color-texto-claro: color-mix(in oklab, var(--color-blanco), black 5%);
 
   --color-advertencia-fondo: color-mix(in oklab, var(--color-advertencia) 8%, white);
   --color-advertencia-borde: color-mix(in oklab, var(--color-advertencia) 30%, white);
@@ -331,14 +333,14 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 4px 14px;
-  background: var(--color-neutro-fondo);
+  background: var(--color-acento);
   border-top: 1px solid var(--color-neutro-borde);
 }
 
 .mr-consola-header-titulo {
   font-weight: 600;
   font-size: 14px;
-  color: var(--color-texto-apagado);
+  color: var(--color-texto-claro);
 }
 
 .mr-consola-btn-cerrar {
@@ -346,13 +348,12 @@ body {
   background: transparent;
   border: none;
   border-radius: 3px;
-  color: var(--color-texto-apagado);
+  color: var(--color-texto-claro);
   font: 14px sans-serif;
   cursor: pointer;
 
   &:hover {
-    background: var(--color-neutro-borde);
-    color: var(--color-texto);
+    background: var(--color-acento-hover);
   }
 }
 
