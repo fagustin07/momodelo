@@ -103,7 +103,7 @@ body {
 
   .tab-boton.activa {
     background: var(--color-acento);
-    color: white;
+    color: var(--color-texto-claro);
   }
 }
 
@@ -304,7 +304,7 @@ body {
 .mr-btn-ejecutar {
   padding: 5px 14px;
   background: var(--color-acento);
-  color: white;
+  color: var(--color-texto-claro);
   border: none;
   border-radius: 5px;
   font: 600 1rem sans-serif;
@@ -560,7 +560,7 @@ line:not(.linea-feedback) {
     translate: 0 -50%;
     border-radius: 50%;
     background: var(--color-acento);
-    color: white;
+    color: var(--color-texto-claro);
     width: 22px;
     height: 22px;
     border: none;
@@ -654,7 +654,7 @@ line:not(.linea-feedback) {
   padding: 6px 12px;
   border: none;
   background-color: var(--color-acento);
-  color: white;
+  color: var(--color-texto-claro);
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.1s, transform 0.1s, box-shadow 0.1s;
@@ -665,7 +665,7 @@ line:not(.linea-feedback) {
 
   &.boton-activo {
     background-color: var(--color-acento-activo);
-    color: white;
+    color: var(--color-texto-claro);
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
   }
 }
@@ -704,7 +704,7 @@ line:not(.linea-feedback) {
   border-radius: 10px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, .18);
   background: var(--color-peligro);
-  color: white;
+  color: var(--color-texto-claro);
   opacity: 0;
   text-align: center;
   transition: opacity .2s ease;
@@ -771,7 +771,7 @@ line:not(.linea-feedback) {
 .tecla-activa,
 .inspector-grupo-teclas label.tecla:has(.tecla-radio-oculto:checked) {
   background-color: var(--color-acento);
-  color: white;
+  color: var(--color-texto-claro);
   border-color: var(--color-acento-hover);
 
   &:hover {
@@ -893,7 +893,7 @@ line:not(.linea-feedback) {
   border-radius: 6px;
   border: 1.5px solid var(--color-acento-hover);
   background: var(--color-acento);
-  color: white;
+  color: var(--color-texto-claro);
   font-size: 0.85rem;
   font-family: sans-serif;
   cursor: pointer;
@@ -1100,7 +1100,7 @@ line:not(.linea-feedback) {
 .modal-mis-trabajos-boton-guardar {
   padding: 0.5rem 1rem;
   background: var(--color-acento);
-  color: white;
+  color: var(--color-texto-claro);
   border: none;
   border-radius: 0.4rem;
   cursor: pointer;
