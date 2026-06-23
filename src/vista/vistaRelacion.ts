@@ -171,12 +171,19 @@ export class VistaRelacion extends VistaElementoMER<Relacion> {
     }
 
     private _getPuntosDelRomboInterior() {
-        const margen = 5;
+        const margen = 4;
+        const semiAncho = this._ancho / 2;
+        const semiAlto = this._alto / 2;
+        const longitudDelLado = Math.hypot(semiAncho, semiAlto);
+
+        const margenHorizontal = margen * longitudDelLado / semiAlto;
+        const margenVertical = margen * longitudDelLado / semiAncho;
+
         return [
-            `${this._ancho / 2},${margen}`,
-            `${this._ancho - margen},${this._alto / 2}`,
-            `${this._ancho / 2},${this._alto - margen}`,
-            `${margen},${this._alto / 2}`,
+            `${this._ancho / 2},${margenVertical}`,
+            `${this._ancho - margenHorizontal},${this._alto / 2}`,
+            `${this._ancho / 2},${this._alto - margenVertical}`,
+            `${margenHorizontal},${this._alto / 2}`,
         ].join(" ");
     }
 
