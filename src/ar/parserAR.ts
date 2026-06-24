@@ -15,6 +15,7 @@ import {
 import {JoinCondicional, JoinNatural, ProductoCartesiano} from "./modeloSintactico/operadorDeCombinación.ts";
 import {elección, encadenar, encadenarCon, muchos, ReglaSintáctica, soloDerecha, soloIzquierda, token, mapear, seguidoDe} from "./combinadores.ts";
 import {ErrorSintácticoAR} from "../servicios/errores.ts";
+import {TokenAR} from "../tipos/tipos.ts";
 import {Intersección, Resta, Unión} from "./modeloSintactico/operadorDeConjuntos.ts";
 import {División} from "./modeloSintactico/operadorDeDivisión.ts";
 
@@ -174,31 +175,39 @@ export function analizarSintácticamente(texto: string): ExpresiónAR {
     const resultadoExpr = expresión(tokens, 0);
     if (resultadoExpr === null) {
         const primero = tokens[0];
+        const [comienzoToken, finToken] = _posiciones(primero);
         if (primero.tipo === "EOF") {
-            throw new ErrorSintácticoAR("La consulta está vacía.");
+            throw new ErrorSintácticoAR("La consulta está vacía.", comienzoToken, finToken);
         }
         if (primero.tipo === "SIGMA") {
-            throw new ErrorSintácticoAR("σ: se esperaba '<condición>expresión'.");
+            throw new ErrorSintácticoAR("σ: se esperaba '<condición>expresión'.", comienzoToken, finToken);
         }
         if (primero.tipo === "PI") {
-            throw new ErrorSintácticoAR("π: se esperaba '<listaDeAtributos>expresión'.");
+            throw new ErrorSintácticoAR("π: se esperaba '<listaDeAtributos>expresión'.", comienzoToken, finToken);
         }
         if (primero.tipo === "PRODUCT") {
-            throw new ErrorSintácticoAR("×: se esperaba 'expresión × expresión'.");
+            throw new ErrorSintácticoAR("×: se esperaba 'expresión × expresión'.", comienzoToken, finToken);
         }
         if (primero.tipo === "BOWTIE") {
-            throw new ErrorSintácticoAR("⋈: se esperaba 'expresión ⋈<condición> expresión'.");
+            throw new ErrorSintácticoAR("⋈: se esperaba 'expresión ⋈<condición> expresión'.", comienzoToken, finToken);
         }
         if (primero.tipo === "STAR") {
-            throw new ErrorSintácticoAR("*: se esperaba 'expresión * expresión'.");
+            throw new ErrorSintácticoAR("*: se esperaba 'expresión * expresión'.", comienzoToken, finToken);
         }
-        throw new ErrorSintácticoAR(`Se esperaba una expresión pero se encontró '${primero.valor}'.`);
+        throw new ErrorSintácticoAR(`Se esperaba una expresión pero se encontró '${primero.valor}'.`, comienzoToken, finToken);
     }
 
     const siguiente = tokens[resultadoExpr.posición];
     if (siguiente.tipo !== "EOF") {
-        throw new ErrorSintácticoAR(`Se esperaba fin de consulta pero se encontró '${siguiente.valor}'.`);
+        const [comienzoToken, finToken] = _posiciones(siguiente);
+        throw new ErrorSintácticoAR(`Se esperaba fin de consulta pero se encontró '${siguiente.valor}'.`, comienzoToken, finToken);
     }
 
     return resultadoExpr.valor;
+}
+
+function _posiciones(error: TokenAR): [number, number] {
+    const desde = error.posicion;
+    const hasta = error.valor.length > 0 ? error.posicion + error.valor.length : error.posicion + 1;
+    return [desde, hasta];
 }

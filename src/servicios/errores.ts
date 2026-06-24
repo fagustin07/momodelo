@@ -75,7 +75,11 @@ export class ErroresValidación extends MomodeloError {
 }
 
 export class ErrorSintácticoAR extends MomodeloError {
-    constructor(mensaje: string) {
+    constructor(
+        mensaje: string,
+        public readonly desdePosicion: number,
+        public readonly hastaPosicion: number
+    ) {
         super(mensaje);
     }
 }
