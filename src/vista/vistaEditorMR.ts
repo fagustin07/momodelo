@@ -1,7 +1,5 @@
-import {basicSetup} from "codemirror";
-import {EditorView, keymap} from "@codemirror/view";
-import {Prec} from "@codemirror/state";
-import {autocompletion, CompletionContext, CompletionResult} from "@codemirror/autocomplete";
+import {EditorView} from "@codemirror/view";
+import {CompletionContext, CompletionResult} from "@codemirror/autocomplete";
 import {ModeloER} from "../servicios/modeloER.ts";
 import {AnalizadorSintácticoMR} from "../mr/analizadorSintacticoMR.ts";
 import {ValidadorSemánticoMR} from "../mr/validadorSemanticoMR.ts";
@@ -12,7 +10,7 @@ import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado
 import {ResultadoConsulta} from "../ar/resultadoConsulta.ts";
 import {VistaEditorAR} from "./vistaEditorAR.ts";
 import {MenuHamburguesa, ProveedorDeTrabajo} from "../componentes/menuHamburguesa.ts";
-import {extensionLenguajeMR} from "./codeMirror/lenguajeMR.ts";
+import {crearExtensionesMR} from "./codeMirror/extensionesEditorMR.ts";
 import {renderizarToast} from "../componentes/toast.ts";
 
 export class VistaEditorMR {
@@ -93,28 +91,11 @@ export class VistaEditorMR {
 
         this._elementoRaíz.append(editorWrapper);
 
-        const ejecutarKeymap = Prec.highest(keymap.of([{
-            key: "Ctrl-Enter",
-            run: () => { this._ejecutar(); return true; }
-        }]));
-
-        const tabConEspacios = Prec.highest(keymap.of([{
-            key: "Tab",
-            run: (view) => {
-                view.dispatch(view.state.replaceSelection("   "));
-                return true;
-            }
-        }]));
-
         this._editorMR = new EditorView({
-            extensions: [
-                tabConEspacios,
-                basicSetup,
-                autocompletion({override: [ctx => this._completar(ctx)]}),
-                ejecutarKeymap,
-                EditorView.lineWrapping,
-                ...extensionLenguajeMR,
-            ],
+            extensions: crearExtensionesMR(
+                    (ctx) => this._completar(ctx),
+                    () => this._ejecutar()
+                ),
             parent: mrWrapper
         });
     }
