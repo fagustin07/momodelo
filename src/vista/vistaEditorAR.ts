@@ -1,7 +1,5 @@
-import {basicSetup} from "codemirror";
-import {EditorView, keymap} from "@codemirror/view";
-import {Prec} from "@codemirror/state";
-import {autocompletion, CompletionContext, CompletionResult} from "@codemirror/autocomplete";
+import {EditorView} from "@codemirror/view";
+import {CompletionContext, CompletionResult} from "@codemirror/autocomplete";
 import {analizarSintácticamente} from "../ar/parserAR.ts";
 import {IntérpreteAR} from "../ar/intérpreteAR.ts";
 import {ModeloER} from "../servicios/modeloER.ts";
@@ -9,7 +7,7 @@ import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado
 import {ResultadoConsulta} from "../ar/resultadoConsulta.ts";
 import {createElement} from "./dom/createElement.ts";
 import {NombreCompletable} from "../tipos/tipos.ts";
-import {extensionLenguajeAR} from "./codeMirror/lenguajeAR.ts";
+import {generarExtensionesAR} from "./codeMirror/extensiones.ts";
 
 type Operador = { nombre: string, símbolo: string, atajo?: number }
 
@@ -60,11 +58,6 @@ export class VistaEditorAR {
             wrapper
         ]);
 
-        const ejecutarKeymap = Prec.highest(keymap.of([{
-            key: "Ctrl-Enter",
-            run: () => { alEjecutar(); return true; }
-        }]));
-
         const atajosParaSímbolos = EditorView.domEventHandlers({
             keydown: (event, _view) => {
                 if (!event.ctrlKey || !event.shiftKey) return false;
@@ -78,24 +71,12 @@ export class VistaEditorAR {
             }
         });
 
-        const tabConEspacios = Prec.highest(keymap.of([{
-            key: "Tab",
-            run: (view) => {
-                view.dispatch(view.state.replaceSelection("   "));
-                return true;
-            }
-        }]));
-
         this._editor = new EditorView({
-            extensions: [
+            extensions: generarExtensionesAR(
+                (ctx) => this._completar(ctx),
+                () => alEjecutar(),
                 atajosParaSímbolos,
-                tabConEspacios,
-                basicSetup,
-                ejecutarKeymap,
-                autocompletion({override: [ctx => this._completar(ctx)]}),
-                EditorView.lineWrapping,
-                ...extensionLenguajeAR,
-            ],
+            ),
             parent: wrapper
         });
     }

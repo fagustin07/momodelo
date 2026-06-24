@@ -10,7 +10,7 @@ import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado
 import {ResultadoConsulta} from "../ar/resultadoConsulta.ts";
 import {VistaEditorAR} from "./vistaEditorAR.ts";
 import {MenuHamburguesa, ProveedorDeTrabajo} from "../componentes/menuHamburguesa.ts";
-import {crearExtensionesMR} from "./codeMirror/extensionesEditorMR.ts";
+import {generarExtensionesMR} from "./codeMirror/extensiones.ts";
 import {renderizarToast} from "../componentes/toast.ts";
 
 export class VistaEditorMR {
@@ -92,7 +92,7 @@ export class VistaEditorMR {
         this._elementoRaíz.append(editorWrapper);
 
         this._editorMR = new EditorView({
-            extensions: crearExtensionesMR(
+            extensions: generarExtensionesMR(
                     (ctx) => this._completar(ctx),
                     () => this._ejecutar()
                 ),
