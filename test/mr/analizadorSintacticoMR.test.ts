@@ -25,23 +25,23 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
 
     it("el analizador informa el error esperado y la posición exacta", () => {
         expect(() => analizador.analizarSintaxisDe("VACIA <>"))
-            .toThrow("Se esperaba nombre de un atributo en la fila 1, posición 8");
+            .toThrow("Se esperaba nombre de un atributo pero se encontró '>'.");
     });
 
     it("el analizador informa la línea correcta en errores multilínea", () => {
         const input = "REL1 < a1 >\nREL2 a2 >";
         expect(() => analizador.analizarSintaxisDe(input))
-            .toThrow("Se esperaba '<' en la fila 2, posición 6");
+            .toThrow("Se esperaba '<' pero se encontró 'a2'.");
     });
 
     it("el analizador falla si falta la coma entre atributos", () => {
         expect(() => analizador.analizarSintaxisDe("REL < a1 a2 >"))
-            .toThrow("Se esperaba ',' en la fila 1, posición 10");
+            .toThrow("Se esperaba ',' pero se encontró 'a2'.");
     });
 
     it("el analizador falla si hay una coma pero falta el nombre del atributo posterior", () => {
         expect(() => analizador.analizarSintaxisDe("REL < a1, >"))
-            .toThrow("Se esperaba nombre de un atributo en la fila 1, posición 11");
+            .toThrow("Se esperaba nombre de un atributo pero se encontró '>'.");
     });
 
     it("el analizador reconoce atributos marcados como clave primaria", () => {
@@ -55,7 +55,7 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
 
     it("el analizador falla si la restricción no es ni PK ni FK", () => {
         expect(() => analizador.analizarSintaxisDe("REL < atr ( XYZ ) >"))
-            .toThrow("Se esperaba PK o FK en la fila 1, posición 13");
+            .toThrow("Se esperaba PK o FK pero se encontró 'XYZ'.");
     });
 
     it("el analizador reconoce atributos marcados como FK", () => {
@@ -94,7 +94,7 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
 
     it("el analizador falla si una relación no comienza con un nombre", () => {
         expect(() => analizador.analizarSintaxisDe("< a1 >"))
-            .toThrow("Se esperaba nombre de una relación en la fila 1, posición 1");
+            .toThrow("Se esperaba nombre de una relación pero se encontró '<'.");
     });
 
     it("una sentencia INSERTAR EN con literales de cadena genera una fila con esos valores", () => {
@@ -185,6 +185,11 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
             .toThrow(ErrorSintácticoMR);
     });
 
+    it("el analizador informa cuando la consulta se corta antes de cerrar", () => {
+        expect(() => analizador.analizarSintaxisDe("INSERTAR EN Persona{<'x'>"))
+            .toThrow("Se esperaba '}' pero finalizó el MR.");
+    });
+
     it("una fila sin ')' de cierre es un error sintáctico", () => {
         expect(() => analizador.analizarSintaxisDe("INSERTAR EN Persona{<'x'"))
             .toThrow(ErrorSintácticoMR);
@@ -243,22 +248,22 @@ describe("[Modelo Relacional] Analizador Sintáctico", () => {
 
     it("el analizador falla si falta la coma antes de un atributo multivaluado", () => {
         expect(() => analizador.analizarSintaxisDe("REL < a1 {emails} >"))
-            .toThrow("Se esperaba ',' en la fila 1, posición 10");
+            .toThrow("Se esperaba ',' pero se encontró '{'.");
     });
 
     it("el analizador falla si falta la coma entre dos atributos multivaluados", () => {
         expect(() => analizador.analizarSintaxisDe("REL < {a} {b} >"))
-            .toThrow("Se esperaba ',' en la fila 1, posición 11");
+            .toThrow("Se esperaba ',' pero se encontró '{'.");
     });
 
     it("el analizador falla si falta el cierre de llave en un multivaluado", () => {
         expect(() => analizador.analizarSintaxisDe("REL < {emails >"))
-            .toThrow("Se esperaba '}' en la fila 1, posición 15");
+            .toThrow("Se esperaba '}' pero se encontró '>'.");
     });
 
     it("el analizador falla si falta el nombre dentro de las llaves de un multivaluado", () => {
         expect(() => analizador.analizarSintaxisDe("REL < {} >"))
-            .toThrow("Se esperaba nombre de un atributo en la fila 1, posición 8");
+            .toThrow("Se esperaba nombre de un atributo pero se encontró '}'.");
     });
 
     it("el analizador reconoce restricciones sobre atributos multivaluados", () => {

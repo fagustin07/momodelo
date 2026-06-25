@@ -58,29 +58,40 @@ export class EliminarRelacionIdentificadoraError extends MomodeloLogicaError {
     }
 }
 
-export class ErrorSintácticoMR extends MomodeloError {
-    constructor(
-        public readonly fila: number,
-        public readonly columna: number,
-        public readonly esperado: string
-    ) {
-        super(`Se esperaba ${esperado} en la fila ${fila}, posición ${columna}`);
-    }
-}
-
 export class ErroresValidación extends MomodeloError {
     constructor(public readonly errores: string[]) {
         super(errores.join('\n'));
     }
 }
 
-export class ErrorSintácticoAR extends MomodeloError {
-    constructor(
+export abstract class ErrorDiagnosticable extends MomodeloError {
+    protected constructor(
         mensaje: string,
         public readonly desdePosicion: number,
-        public readonly hastaPosicion: number
+        public readonly hastaPosicion: number,
     ) {
         super(mensaje);
+    }
+}
+
+export class ErrorSintácticoMR extends ErrorDiagnosticable {
+    constructor(
+        desdePosicion: number,
+        hastaPosicion: number,
+        public readonly esperado: string,
+        textoEncontrado: string
+    ) {
+        super(`Se esperaba ${esperado} pero ${textoEncontrado}.`, desdePosicion, hastaPosicion);
+    }
+}
+
+export class ErrorSintácticoAR extends ErrorDiagnosticable {
+    constructor(
+        mensaje: string,
+        desdePosicion: number,
+        hastaPosicion: number
+    ) {
+        super(mensaje, desdePosicion, hastaPosicion);
     }
 }
 

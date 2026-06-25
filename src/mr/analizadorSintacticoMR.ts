@@ -62,9 +62,8 @@ export class AnalizadorSintácticoMR {
         if (this._es("NUMERO"))  return parseFloat(this._avanzar().valor);
         if (this._es("VERDADERO")) { this._avanzar(); return true; }
         if (this._es("FALSO"))   { this._avanzar(); return false; }
-        const pos = this._esFin() ? this._inputOriginal.length : this._ver().posicion;
-        const [fila, columna] = this._obtenerFilaYColumna(pos);
-        throw new ErrorSintácticoMR(fila, columna, "un valor (cadena, número o booleano)");
+        const [desde, hasta, encontrado] = this._posicionesError();
+        throw new ErrorSintácticoMR(desde, hasta, "un valor (cadena, número o booleano)", encontrado);
     }
 
     private _relacion(): RelacionMR {
@@ -124,9 +123,8 @@ export class AnalizadorSintácticoMR {
     private _consumirRestricción(): string {
         if (this._es("PK")) return this._avanzar().valor;
         if (this._es("FK")) return this._avanzar().valor;
-        const pos = this._esFin() ? this._inputOriginal.length : this._ver().posicion;
-        const [fila, columna] = this._obtenerFilaYColumna(pos);
-        throw new ErrorSintácticoMR(fila, columna, "PK o FK");
+        const [desde, hasta, encontrado] = this._posicionesError();
+        throw new ErrorSintácticoMR(desde, hasta, "PK o FK", encontrado);
     }
 
     private _atributoConRestricciones(nombre: string, restricciones: string[]): AtributoMR {
@@ -143,9 +141,8 @@ export class AnalizadorSintácticoMR {
     private _consumir(tipo: TipoTokenMR, esperado: string): TokenMR {
         if (this._es(tipo))
             return this._avanzar();
-        const pos = this._esFin() ? this._inputOriginal.length : this._ver().posicion;
-        const [fila, columna] = this._obtenerFilaYColumna(pos);
-        throw new ErrorSintácticoMR(fila, columna, esperado);
+        const [desde, hasta, encontrado] = this._posicionesError();
+        throw new ErrorSintácticoMR(desde, hasta, esperado, encontrado);
     }
 
     private _es(tipo: TipoTokenMR): boolean {
@@ -169,11 +166,13 @@ export class AnalizadorSintácticoMR {
         return this._actual >= this._tokens.length;
     }
 
-    private _obtenerFilaYColumna(posicion: number): [number, number] {
-        const textoAntes = this._inputOriginal.substring(0, posicion);
-        const lineas = textoAntes.split("\n");
-        const fila = lineas.length;
-        const columna = lineas[fila - 1].length + 1;
-        return [fila, columna];
+    private _posicionesError(): [number, number, string] {
+        if (this._esFin()) {
+            const pos = this._inputOriginal.length;
+            return [pos, pos + 1, "finalizó el MR"];
+        }
+        const token = this._ver();
+        const encontrado = `se encontró '${token.valor}'`;
+        return [token.posicion, token.posicion + (token.valor.length || 1), encontrado];
     }
 }

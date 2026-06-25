@@ -2,8 +2,7 @@ import {basicSetup} from "codemirror";
 import {EditorView, keymap} from "@codemirror/view";
 import {Extension, Prec} from "@codemirror/state";
 import {autocompletion, CompletionContext, CompletionResult} from "@codemirror/autocomplete";
-import {linterMR} from "./linterMR.ts";
-import {linterAR} from "./linterAR.ts";
+import {linterAR, linterMR} from "./linter.ts";
 import {extensionLenguajeMR} from "./lenguajeMR.ts";
 import {extensionLenguajeAR} from "./lenguajeAR.ts";
 
