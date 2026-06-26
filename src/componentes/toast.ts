@@ -6,13 +6,22 @@ export function renderizarToast(
     tipo: 'error' | 'warning' = 'error',
 ) {
     const contenedorDeToasts = contenedorToastEn(elementoRaiz);
-    const fondos = { error: '#dc3545', warning: '#ffc107' };
+    const fondos = {error: '#dc3545', warning: '#ffc107'};
+    const textoColor = tipo === 'error' ? 'color-texto-claro' : 'color-texto';
+
+    const botonCerrar = createElement("button", {
+        textContent: "x",
+        className: "toast-cerrar",
+        onclick: () => {
+            clearTimeout(temporizador);
+            toast.remove();
+        }
+    });
 
     const toast = createElement("div", {
-        textContent: mensaje,
         className: "toast",
-        style: { background: fondos[tipo] },
-    });
+        style: {background: fondos[tipo], color: `var(--${textoColor})`}
+    }, [botonCerrar, mensaje]);
 
     contenedorDeToasts.appendChild(toast);
 
@@ -23,7 +32,7 @@ export function renderizarToast(
     const temporizador = setTimeout(() => {
         clearTimeout(temporizador);
         toast.remove();
-    }, 3500);
+    }, 60000);
 }
 
 const idContenedorHTML = 'contenedor-toast';

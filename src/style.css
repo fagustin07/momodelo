@@ -699,8 +699,9 @@ line:not(.linea-feedback) {
 }
 
 .toast {
+  position: relative;
   width: 20vw;
-  padding: 10px 14px;
+  padding: 10px 36px 10px 14px;
   border-radius: 10px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, .18);
   background: var(--color-peligro);
@@ -711,6 +712,22 @@ line:not(.linea-feedback) {
   pointer-events: auto;
   word-break: break-word;
   font-family: Roboto, sans-serif;
+}
+
+.toast-cerrar {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 1.2em;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.toast-cerrar:hover {
+  opacity: 1;
 }
 
 .inspector-boton-cerrar {
