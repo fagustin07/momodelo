@@ -70,7 +70,7 @@ export type TipoTokenAR =
     | "SIGMA"
     | "PI"
     | "RHO"
-    | "FLECHA"
+    | "ASIGNACION"
     | "LPAREN"
     | "RPAREN"
     | "LANGLE"
