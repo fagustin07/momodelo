@@ -13,6 +13,8 @@ export class TokenizadorAR {
 
             if (texto[pos] === "σ") { tokens.push({tipo: "SIGMA",        valor: "σ", posicion: pos}); pos++; continue; }
             if (texto[pos] === "π") { tokens.push({tipo: "PI",           valor: "π", posicion: pos}); pos++; continue; }
+            if (texto[pos] === "ρ") { tokens.push({tipo: "RHO",          valor: "ρ", posicion: pos}); pos++; continue; }
+            if (texto[pos] === "←") { tokens.push({tipo: "FLECHA",       valor: "←", posicion: pos}); pos++; continue; }
             if (texto[pos] === "∧") { tokens.push({tipo: "AND",          valor: "∧", posicion: pos}); pos++; continue; }
             if (texto[pos] === "∨") { tokens.push({tipo: "OR",           valor: "∨", posicion: pos}); pos++; continue; }
             if (texto[pos] === "∪") { tokens.push({tipo: "UNION",        valor: "∪", posicion: pos}); pos++; continue; }

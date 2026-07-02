@@ -69,6 +69,8 @@ export type TipoTokenAR =
     | "DESCONOCIDO"
     | "SIGMA"
     | "PI"
+    | "RHO"
+    | "FLECHA"
     | "LPAREN"
     | "RPAREN"
     | "LANGLE"

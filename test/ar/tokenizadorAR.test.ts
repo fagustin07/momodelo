@@ -177,4 +177,40 @@ describe("[Álgebra Relacional] Tokenizador AR", () => {
             ["NOMBRE", "DIVISION", "NOMBRE", "EOF"]
         );
     });
+
+    it("el símbolo de renombre produce el tipo de token correspondiente", () => {
+        const tokens = tokenizar("ρ");
+        expect(tokens[0].tipo).toBe<TipoTokenAR>("RHO");
+        expect(tokens[0].valor).toBe("ρ");
+    });
+
+    it("la flecha de mapeo produce el tipo de token correspondiente", () => {
+        const tokens = tokenizar("←");
+        expect(tokens[0].tipo).toBe<TipoTokenAR>("FLECHA");
+        expect(tokens[0].valor).toBe("←");
+    });
+
+    it("un renombre por nombre produce la secuencia de tokens que incluye la flecha", () => {
+        expect(tiposEn("ρ<bodega ← marca>Vino")).toEqual<TipoTokenAR[]>(
+            ["RHO", "LANGLE", "NOMBRE", "FLECHA", "NOMBRE", "RANGLE", "NOMBRE", "EOF"]
+        );
+    });
+
+    it("un renombre con varios pares alterna flecha y coma correctamente", () => {
+        expect(tiposEn("ρ<a ← x, b ← y>R")).toEqual<TipoTokenAR[]>(
+            ["RHO", "LANGLE", "NOMBRE", "FLECHA", "NOMBRE", "COMA", "NOMBRE", "FLECHA", "NOMBRE", "RANGLE", "NOMBRE", "EOF"]
+        );
+    });
+
+    it("un renombre posicional no incluye flechas en su secuencia, solo comas", () => {
+        expect(tiposEn("ρ<a, b, c>R")).toEqual<TipoTokenAR[]>(
+            ["RHO", "LANGLE", "NOMBRE", "COMA", "NOMBRE", "COMA", "NOMBRE", "RANGLE", "NOMBRE", "EOF"]
+        );
+    });
+
+    it("los saltos de línea no producen tokens, son espacio en blanco ignorable", () => {
+        expect(tiposEn("Vino2 ← ρ<x←y>Vino\nCerveza")).toEqual<TipoTokenAR[]>([
+            "NOMBRE", "FLECHA", "RHO", "LANGLE", "NOMBRE", "FLECHA", "NOMBRE", "RANGLE", "NOMBRE", "NOMBRE", "EOF"
+        ]);
+    });
 });
