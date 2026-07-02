@@ -12,21 +12,21 @@ import {analizarSintácticamente} from "../../src/ar/parserAR.ts";
 import {AnalizadorSintácticoMR} from "../../src/mr/analizadorSintacticoMR.ts";
 import {esperarResultadoConsulta} from "./helpers.ts";
 
+function modeloDesdeMR(textoMR: string): ModeloRelacionalMaterializado {
+    return new IntérpreteMR().ejecutar(
+        new ValidadorSemánticoMR().ejecutarsePara(new AnalizadorSintácticoMR().analizarSintaxisDe(textoMR), null)
+    );
+}
+
+function modeloConRelaciones(...sentencias: SentenciaMR[]): ModeloRelacionalMaterializado {
+    return new IntérpreteMR().ejecutar(
+        new ValidadorSemánticoMR().ejecutarsePara(programa(...sentencias), null)
+    );
+}
+
+const intérprete = new IntérpreteAR();
+
 describe("[Álgebra Relacional] Intérprete AR", () => {
-    function modeloDesdeMR(textoMR: string): ModeloRelacionalMaterializado {
-        const prog = new AnalizadorSintácticoMR().analizarSintaxisDe(textoMR);
-        return new IntérpreteMR().ejecutar(
-            new ValidadorSemánticoMR().ejecutarsePara(prog, null)
-        );
-    }
-
-    function modeloConRelaciones(...sentencias: SentenciaMR[]): ModeloRelacionalMaterializado {
-        return new IntérpreteMR().ejecutar(
-            new ValidadorSemánticoMR().ejecutarsePara(programa(...sentencias), null)
-        );
-    }
-
-    const intérprete = new IntérpreteAR();
 
     it("un NombreDeRelación retorna un resultado con las tuplas de la relación", () => {
         const modelo = modeloConRelaciones(
@@ -738,5 +738,111 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
         esperarResultadoConsulta(resultado, [
             {proveedor: "P1", parte: "tornillo"},
         ]);
+    });
+
+    it("se puede renombrar de a un atributo o varios indicando el nuevo nombre y el anterior", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("VINO", pk("id"), simple("marca"), simple("variedad"))),
+            inserción("VINO", fila(1, "Las Moras", "Malbec")),
+        );
+        const resultado = intérprete.ejecutar(
+            analizarSintácticamente("ρ<bodega ← marca>VINO"),
+            modelo,
+        );
+        expect(resultado.atributos).toEqual(["id", "bodega", "variedad"]);
+        esperarResultadoConsulta(resultado, [{id: 1, bodega: "Las Moras", variedad: "Malbec"}]);
+    });
+
+    it("el renombre posicional reemplaza todos los nombres según el orden original de los atributos", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("R", pk("id"), simple("a"), simple("b"))),
+            inserción("R", fila(1, "x", "y")),
+        );
+        const resultado = intérprete.ejecutar(
+            analizarSintácticamente("ρ<id, x, y>R"),
+            modelo,
+        );
+        expect(resultado.atributos).toEqual(["id", "x", "y"]);
+        esperarResultadoConsulta(resultado, [{id: 1, x: "x", y: "y"}]);
+    });
+
+    it("el renombre no altera el orden ni los valores de los datos, solo los nombres", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("R", pk("id"), simple("primero"), simple("segundo"), simple("tercero"))),
+            inserción("R", fila(1, "A", "B", "C")),
+        );
+        const resultado = intérprete.ejecutar(
+            analizarSintácticamente("ρ<id, segundo, tercero, primero>R"),
+            modelo,
+        );
+        expect(resultado.atributos).toEqual(["id", "segundo", "tercero", "primero"]);
+        esperarResultadoConsulta(resultado, [{id: 1, segundo: "A", tercero: "B", primero: "C"}]);
+    });
+
+    it("renombrar un atributo que no existe en la relación lanza error", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("R", pk("id"), simple("a"))),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("ρ<b ← x>R"), modelo)
+        ).toThrow(ErrorSemánticoAR);
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("ρ<b ← x>R"), modelo)
+        ).toThrow("El atributo 'x' no existe en la relación.");
+    });
+
+    it("el renombre posicional exige tantos nombres como atributos tiene la relación", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("R", pk("id"), simple("a"), simple("b"))),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("ρ<x>R"), modelo)
+        ).toThrow(ErrorSemánticoAR);
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("ρ<x>R"), modelo)
+        ).toThrow("El renombre posicional requiere 3 atributos pero se proporcionó 1.");
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("ρ<x, y, z>R"), modelo)
+        ).not.toThrow();
+    });
+
+    it("renombrar un atributo con un nombre que ya ocupa otro atributo lanza error por colisión", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("R", pk("id"), simple("a"), simple("b"))),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("ρ<b ← a>R"), modelo)
+        ).toThrow(ErrorSemánticoAR);
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("ρ<b ← a>R"), modelo)
+        ).toThrow("El nombre 'b' ya existe en la relación y no se renombra.");
+    });
+
+    it("el renombre compuesto con otros operadores funciona correctamente en una misma consulta", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("VINO", pk("id"), simple("marca"), simple("variedad"))),
+            inserción("VINO", fila(1, "Las Moras", "Malbec")),
+        );
+        const resultado = intérprete.ejecutar(
+            analizarSintácticamente("π<bodega>(ρ<bodega ← marca>VINO)"),
+            modelo,
+        );
+        expect(resultado.atributos).toEqual(["bodega"]);
+        esperarResultadoConsulta(resultado, [{bodega: "Las Moras"}]);
+    });
+
+    it("el renombre permite evitar ambigüedad al cruzar una relación consigo misma", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("CERVEZA", pk("id"), simple("marca"), simple("grad"))),
+            inserción("CERVEZA", fila(1, "Quilmes", 4.6)),
+            inserción("CERVEZA", fila(2, "Stella", 5.2)),
+        );
+        const resultado = intérprete.ejecutar(
+            analizarSintácticamente("CERVEZA × ρ<id2, marca2, grad2>CERVEZA"),
+            modelo,
+        );
+        expect(resultado.atributos).toContain("marca");
+        expect(resultado.atributos).toContain("marca2");
+        expect(resultado.tuplas.length).toBe(4);
     });
 });

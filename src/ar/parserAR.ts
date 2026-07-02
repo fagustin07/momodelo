@@ -7,6 +7,7 @@ import {
     Disyunción,
     ExpresiónAR,
     ExpresiónProyección,
+    ExpresiónRenombre,
     ExpresiónSelección,
     Literal,
     NombreAtributo,
@@ -115,7 +116,55 @@ const selección = soloDerecha(token("SIGMA"),
     )
 );
 
+const parDeMapeo = encadenarCon(token("NOMBRE"), nuevoNombre =>
+    encadenarCon(token("ASIGNACION"), () =>
+        mapear(token("NOMBRE"), viejoNombre =>
+            ({nuevo: nuevoNombre, viejo: viejoNombre})
+        )
+    )
+);
+
+const paresDeMapeo = encadenarCon(parDeMapeo, primerPar =>
+    mapear(
+        muchos(soloDerecha(token("COMA"), parDeMapeo)),
+        resto => [primerPar, ...resto]
+    )
+);
+
+const nombresPosicionales = encadenarCon(token("NOMBRE"), primerNombre =>
+    mapear(
+        muchos(soloDerecha(token("COMA"), token("NOMBRE"))),
+        resto => [primerNombre, ...resto]
+    )
+);
+
+const renombrarPorNombre = soloDerecha(token("RHO"),
+    soloDerecha(token("LANGLE"),
+        encadenarCon(paresDeMapeo, pares =>
+            soloDerecha(token("RANGLE"),
+                mapear(términoExpresión, subexpresión =>
+                    new ExpresiónRenombre(pares, null, subexpresión)
+                )
+            )
+        )
+    )
+);
+
+const renombrarPorPosición = soloDerecha(token("RHO"),
+    soloDerecha(token("LANGLE"),
+        encadenarCon(nombresPosicionales, nombres =>
+            soloDerecha(token("RANGLE"),
+                mapear(términoExpresión, subexpresión =>
+                    new ExpresiónRenombre(null, nombres, subexpresión)
+                )
+            )
+        )
+    )
+);
+
 const términoExpresión: ReglaSintáctica<ExpresiónAR> = elección<ExpresiónAR>([
+    renombrarPorNombre,
+    renombrarPorPosición,
     selección,
     proyección,
     expresiónAtómica,
@@ -184,6 +233,9 @@ export function analizarSintácticamente(texto: string): ExpresiónAR {
         }
         if (primero.tipo === "PI") {
             throw new ErrorSintácticoAR("π: se esperaba '<listaDeAtributos>expresión'.", comienzoToken, finToken);
+        }
+        if (primero.tipo === "RHO") {
+            throw new ErrorSintácticoAR("ρ: se esperaba '<mapeo>expresión'.", comienzoToken, finToken);
         }
         if (primero.tipo === "PRODUCT") {
             throw new ErrorSintácticoAR("×: se esperaba 'expresión × expresión'.", comienzoToken, finToken);

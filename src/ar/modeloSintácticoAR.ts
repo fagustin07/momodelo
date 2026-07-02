@@ -138,3 +138,61 @@ export class ExpresiónProyección extends ExpresiónAR {
         return new ResultadoConsulta("", [...this.atributos], tuplasProyectadas);
     }
 }
+
+export class ExpresiónRenombre extends ExpresiónAR {
+    readonly pares: ReadonlyArray<{ nuevo: string; viejo: string }> | null;
+    readonly nombres: ReadonlyArray<string> | null;
+
+    constructor(
+        pares: ReadonlyArray<{ nuevo: string; viejo: string }> | null,
+        nombres: ReadonlyArray<string> | null,
+        readonly subexpr: ExpresiónAR
+    ) {
+        super();
+        this.pares = pares;
+        this.nombres = nombres;
+    }
+
+    interpretarseCon(modelo: ModeloRelacionalMaterializado): ResultadoConsulta {
+        const resultado = this.subexpr.interpretarseCon(modelo);
+        const mapeo = this._construirMapeo(resultado);
+        return resultado
+            .asertarAtributosExistentes(mapeo.keys())
+            .renombrarAtributos(mapeo);
+    }
+
+    private _construirMapeo(resultado: ResultadoConsulta): Map<string, string> {
+        if (this.nombres !== null) {
+            return this._mapeoPosicional(resultado);
+        }
+        return this._mapeoPorNombre(resultado);
+    }
+
+    private _mapeoPosicional(resultado: ResultadoConsulta): Map<string, string> {
+        const nombres = this.nombres!;
+        if (nombres.length !== resultado.atributos.length) {
+            throw new ErrorSemánticoAR(
+                `El renombre posicional requiere ${resultado.atributos.length} ` +
+                `${resultado.atributos.length === 1 ? "atributo" : "atributos"} ` +
+                `pero se ${nombres.length === 1 ? "proporcionó" : "proporcionaron"} ${nombres.length}.`
+            );
+        }
+        return new Map(nombres.map((nombre, i) => [resultado.atributos[i], nombre]));
+    }
+
+    private _mapeoPorNombre(resultado: ResultadoConsulta): Map<string, string> {
+        const mapeo = new Map(this.pares!.map(({ nuevo, viejo }) => [viejo, nuevo]));
+
+        const colisión = this.pares!.find(({ nuevo }) =>
+            resultado.atributos.includes(nuevo) && !mapeo.has(nuevo)
+        );
+
+        if (colisión !== undefined) {
+            throw new ErrorSemánticoAR(
+                `El nombre '${colisión.nuevo}' ya existe en la relación y no se renombra.`
+            );
+        }
+
+        return mapeo;
+    }
+}

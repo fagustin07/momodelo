@@ -1,4 +1,5 @@
 import {valoresDeTuplaDesdeEsquema, TuplaAR} from "./tuplaAR.ts";
+import {ErrorSemánticoAR} from "../servicios/errores.ts";
 
 export class ResultadoConsulta {
     readonly nombre: string;
@@ -24,5 +25,28 @@ export class ResultadoConsulta {
 
     filtrar(predicado: (t: TuplaAR) => boolean): ResultadoConsulta {
         return new ResultadoConsulta("", [...this.atributos], this._tuplas.filter(predicado));
+    }
+
+    asertarAtributosExistentes(nombres: Iterable<string>): this {
+        for (const nombre of nombres) {
+            if (!this.atributos.includes(nombre)) {
+                throw new ErrorSemánticoAR(
+                    `El atributo '${nombre}' no existe en la relación.`
+                );
+            }
+        }
+        return this;
+    }
+
+    renombrarAtributos(mapeo: Map<string, string>): ResultadoConsulta {
+        const nuevosAtributos = this.atributos.map(attr => mapeo.get(attr) ?? attr);
+
+        const tuplasRenombradas = this._tuplas.map(tupla =>
+            Object.fromEntries(
+                this.atributos.map((attr, i) => [nuevosAtributos[i], tupla[attr]])
+            ) as TuplaAR
+        );
+
+        return new ResultadoConsulta(this.nombre, [...nuevosAtributos], [...tuplasRenombradas]);
     }
 }

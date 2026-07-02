@@ -1,9 +1,10 @@
-import {describe, it} from "vitest";
+import {describe, expect, it} from "vitest";
 import {esperarAnálisisSintácticoAR, esperarErrorSintácticoAR} from "./helpers.ts";
-import {ExpresiónProyección, ExpresiónSelección, NombreDeRelación} from "../../src/ar/modeloSintácticoAR.ts";
+import {ExpresiónProyección,ExpresiónRenombre, ExpresiónSelección, NombreDeRelación} from "../../src/ar/modeloSintácticoAR.ts";
 import {Intersección, Resta, Unión} from "../../src/ar/modeloSintactico/operadorDeConjuntos.ts";
 import {División} from "../../src/ar/modeloSintactico/operadorDeDivisión.ts";
 import {JoinCondicional, JoinNatural, ProductoCartesiano} from "../../src/ar/modeloSintactico/operadorDeCombinación.ts";
+import {analizarSintácticamente} from "../../src/ar/parserAR.ts";
 
 describe("[Álgebra Relacional] Parser AR", () => {
     it("un nombre de relación solo se parsea como NombreDeRelación con ese nombre", () => {
@@ -637,5 +638,45 @@ describe("[Álgebra Relacional] Parser AR", () => {
             },
             der: {nombre: "PROYECTOS"},
         });
+    });
+
+    it("el renombre por nombre y el posicional producen el árbol sintáctico correspondiente", () => {
+        esperarAnálisisSintácticoAR("ρ<bodega ← marca>Vino", ExpresiónRenombre, {
+            pares: [{nuevo: "bodega", viejo: "marca"}],
+            subexpr: {nombre: "Vino"},
+        });
+        esperarAnálisisSintácticoAR("ρ<a, b, c>R", ExpresiónRenombre, {
+            nombres: ["a", "b", "c"],
+            subexpr: {nombre: "R"},
+        });
+    });
+
+    it("el renombre compuesto con otros operadores respeta la precedencia y el anidamiento", () => {
+        esperarAnálisisSintácticoAR("R × ρ<a ← x>S", ProductoCartesiano, {
+            izq: {nombre: "R"},
+            der: {
+                pares: [{nuevo: "a", viejo: "x"}],
+                subexpr: {nombre: "S"},
+            },
+        });
+        esperarAnálisisSintácticoAR("π<bodega>(ρ<bodega ← marca>Vino)", ExpresiónProyección, {
+            atributos: ["bodega"],
+            subexpr: {
+                pares: [{nuevo: "bodega", viejo: "marca"}],
+                subexpr: {nombre: "Vino"},
+            },
+        });
+    });
+
+    it("la validación de aridad del renombre posicional es semántica, no sintáctica", () => {
+        expect(() => analizarSintácticamente("ρ<a, b>R")).not.toThrow();
+    });
+
+    it("un renombre sin argumentos lanza error de sintaxis", () => {
+        esperarErrorSintácticoAR("ρ", "ρ: se esperaba '<mapeo>expresión'.");
+    });
+
+    it("un renombre con la flecha pero sin nombre a su izquierda lanza error de sintaxis", () => {
+        esperarErrorSintácticoAR("ρ<← x>R", "ρ: se esperaba '<mapeo>expresión'.");
     });
 });
