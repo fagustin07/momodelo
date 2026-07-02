@@ -9,7 +9,7 @@ import {createElement} from "./dom/createElement.ts";
 import {NombreCompletable} from "../tipos/tipos.ts";
 import {generarExtensionesAR} from "./codeMirror/extensiones.ts";
 
-type Operador = { nombre: string, símbolo: string, atajo?: number }
+type Operador = { nombre: string, símbolo: string, atajo: string }
 
 export class VistaEditorAR {
     private readonly _editor: EditorView;
@@ -25,17 +25,19 @@ export class VistaEditorAR {
         this._palabrasModelo = [];
 
         const operadores: Operador[] = [
-            {nombre: "Selección", símbolo: "σ", atajo: 1},
-            {nombre: "Proyección", símbolo: "π", atajo: 2},
-            {nombre: "Conjunción", símbolo: "∧", atajo: 3},
-            {nombre: "Disyunción", símbolo: "∨", atajo: 4},
-            {nombre: "Intersección", símbolo: "∩", atajo: 5},
-            {nombre: "Unión", símbolo: "∪", atajo: 6},
-            {nombre: "Resta", símbolo: "-"},
-            {nombre: "Producto Cartesiano", símbolo: "×", atajo: 7},
-            {nombre: "Join Condicional", símbolo: "⋈", atajo: 8},
-            {nombre: "Join Natural", símbolo: "*"},
-            {nombre: "División", símbolo: "÷", atajo: 9},
+            {nombre: "Selección", símbolo: "σ", atajo: "Digit1"},
+            {nombre: "Proyección", símbolo: "π", atajo: "Digit2"},
+            {nombre: "Conjunción", símbolo: "∧", atajo: "Digit3"},
+            {nombre: "Disyunción", símbolo: "∨", atajo: "Digit4"},
+            {nombre: "Intersección", símbolo: "∩", atajo: "Digit5"},
+            {nombre: "Unión", símbolo: "∪", atajo: "Digit6"},
+            {nombre: "Resta", símbolo: "-", atajo: "Digit7"},
+            {nombre: "Join Natural", símbolo: "*", atajo: "Digit8"},
+            {nombre: "Join Condicional", símbolo: "⋈", atajo: "Digit9"},
+            {nombre: "División", símbolo: "÷", atajo: "Digit0"},
+            {nombre: "Asignación", símbolo: "←", atajo: "KeyA"},
+            {nombre: "Renombre", símbolo: "ρ", atajo: "KeyR"},
+            {nombre: "Producto Cartesiano", símbolo: "×", atajo: "KeyC"}
         ]
 
         this._elementoSwitcher = createElement("label", {className: "mr-toggle-ar"}, [
@@ -61,9 +63,7 @@ export class VistaEditorAR {
         const atajosParaSímbolos = EditorView.domEventHandlers({
             keydown: (event, _view) => {
                 if (!event.ctrlKey || !event.shiftKey) return false;
-                const operador = operadores
-                    .filter(operador => operador.atajo !== undefined)
-                    .find(operador => `Digit${operador.atajo}` === event.code)
+                const operador = operadores.find(op => op.atajo === event.code);
                 if (!operador) return false;
                 event.preventDefault();
                 this._insertarSímbolo(operador.símbolo);
@@ -82,17 +82,15 @@ export class VistaEditorAR {
     }
 
     private _botonParaOperador(operador: Operador) {
-        const tooltipAtajo = operador.atajo !== undefined ? ` (Ctrl+Shift+${operador.atajo})` : '';
-        const elementosAyudaAtajo = operador.atajo !== undefined ? [createElement("span", {
-            className: "mr-ar-toolbar-num",
-            textContent: String(operador.atajo)
-        })] : [];
-
+        const teclaDeAtajo = operador.atajo.replace(/^(Digit|Key)/, "");
         return createElement("button", {
             className: "mr-ar-toolbar-btn",
-            title: `${operador.nombre}${tooltipAtajo})`,
+            title: `${operador.nombre} (Ctrl+Shift+${teclaDeAtajo})`,
             onclick: () => this._insertarSímbolo(operador.símbolo)
-        }, [operador.símbolo, ...elementosAyudaAtajo]);
+        }, [operador.símbolo, createElement("span", {
+            className: "mr-ar-toolbar-num",
+            textContent: teclaDeAtajo
+        })]);
     }
 
     activo(): boolean {

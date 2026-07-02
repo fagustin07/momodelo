@@ -9,7 +9,7 @@ const NO_IDENTIFICADOR = /(?![A-Za-záéíóúÁÉÍÓÚñÑüÜ0-9_])/;
 const reglas: Regla[] = [
     {match: /<=|>=|!=|[=<>]/, tag: "comparador"},
     {match: /[∧∨]/, tag: "lógico"},
-    {match: /[σπ∪∩÷×⋈*\-]/, tag: "palabraClave"},
+    {match: /[σπρ∪∩÷×⋈*←\-]/, tag: "palabraClave"},
     {match: /'[^']*'/, tag: "cadena"},
     {match: /\d+(?:\.\d+)?/, tag: "número"},
     {match: new RegExp(`(?:VERDADERO|FALSO|TRUE|FALSE)${NO_IDENTIFICADOR.source}`, "i"), tag: "booleano"},
