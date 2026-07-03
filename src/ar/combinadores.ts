@@ -52,6 +52,15 @@ export function seguidoDe(regla: ReglaSintáctica<any>): ReglaSintáctica<null> 
     };
 }
 
+export function anteceden(primerTokenEsperado: TipoTokenAR, segundoTokenEsperado: TipoTokenAR): ReglaSintáctica<null> {
+    return (tokens, desde) => {
+        if (tokens[desde]?.tipo === primerTokenEsperado && tokens[desde + 1]?.tipo === segundoTokenEsperado) {
+            return {valor: null, posición: desde};
+        }
+        return null;
+    };
+}
+
 export function muchos<Valor>(parser: ReglaSintáctica<Valor>): ReglaSintáctica<Valor[]> {
     return (tokens, desde) => {
         const valores: Valor[] = [];

@@ -6,6 +6,8 @@ import {
     Conjunción,
     Disyunción,
     ExpresiónAR,
+    ExpresiónAsignación,
+    ExpresiónPrograma,
     ExpresiónProyección,
     ExpresiónRenombre,
     ExpresiónSelección,
@@ -14,7 +16,7 @@ import {
     NombreDeRelación,
 } from "./modeloSintácticoAR.ts";
 import {JoinCondicional, JoinNatural, ProductoCartesiano} from "./modeloSintactico/operadorDeCombinación.ts";
-import {elección, encadenar, encadenarCon, muchos, ReglaSintáctica, soloDerecha, soloIzquierda, token, mapear, seguidoDe} from "./combinadores.ts";
+import {elección, encadenar, encadenarCon, muchos, ReglaSintáctica, soloDerecha, soloIzquierda, token, mapear, seguidoDe, anteceden} from "./combinadores.ts";
 import {ErrorSintácticoAR} from "../servicios/errores.ts";
 import {TokenAR} from "../tipos/tipos.ts";
 import {Intersección, Resta, Unión} from "./modeloSintactico/operadorDeConjuntos.ts";
@@ -218,15 +220,32 @@ expresión = encadenar<ExpresiónAR, string>(
     },
 );
 
+const asignación: ReglaSintáctica<ExpresiónAsignación> = encadenarCon(token("NOMBRE"), nombre =>
+    encadenarCon(token("ASIGNACION"), () =>
+        mapear(expresión, subexpresión => new ExpresiónAsignación(nombre, subexpresión))
+    )
+);
+
+const esAsignación = anteceden("NOMBRE", "ASIGNACION");
+
+const muchasAsignaciones = muchos(encadenarCon(esAsignación, () => asignación));
+
 export function analizarSintácticamente(texto: string): ExpresiónAR {
     const tokens = new TokenizadorAR().ejecutarseCon(texto);
 
-    const resultadoExpr = expresión(tokens, 0);
+    if (tokens[0]?.tipo === "EOF") {
+        const [comienzoToken, finToken] = _posiciones(tokens[0]);
+        throw new ErrorSintácticoAR("La consulta está vacía.", comienzoToken, finToken);
+    }
+
+    const resultadoAsignaciones = muchasAsignaciones(tokens, 0)!;
+    const resultadoExpr = expresión(tokens, resultadoAsignaciones.posición);
+
     if (resultadoExpr === null) {
-        const primero = tokens[0];
+        const primero = tokens[resultadoAsignaciones.posición];
         const [comienzoToken, finToken] = _posiciones(primero);
         if (primero.tipo === "EOF") {
-            throw new ErrorSintácticoAR("La consulta está vacía.", comienzoToken, finToken);
+            throw new ErrorSintácticoAR("Se esperaba una expresión final.", comienzoToken, finToken);
         }
         if (primero.tipo === "SIGMA") {
             throw new ErrorSintácticoAR("σ: se esperaba '<condición>expresión'.", comienzoToken, finToken);
@@ -236,6 +255,12 @@ export function analizarSintácticamente(texto: string): ExpresiónAR {
         }
         if (primero.tipo === "RHO") {
             throw new ErrorSintácticoAR("ρ: se esperaba '<mapeo>expresión'.", comienzoToken, finToken);
+        }
+        if (primero.tipo === "ASIGNACION") {
+            throw new ErrorSintácticoAR(
+                "←: ¿quisiste definir una subconsulta (nombre ← expresión) o renombrar un atributo (ρ<nuevo ← viejo>(...))?",
+                comienzoToken, finToken
+            );
         }
         if (primero.tipo === "PRODUCT") {
             throw new ErrorSintácticoAR("×: se esperaba 'expresión × expresión'.", comienzoToken, finToken);
@@ -255,7 +280,10 @@ export function analizarSintácticamente(texto: string): ExpresiónAR {
         throw new ErrorSintácticoAR(`Se esperaba fin de consulta pero se encontró '${siguiente.valor}'.`, comienzoToken, finToken);
     }
 
-    return resultadoExpr.valor;
+    if (resultadoAsignaciones.valor.length === 0) {
+        return resultadoExpr.valor;
+    }
+    return new ExpresiónPrograma(resultadoAsignaciones.valor, resultadoExpr.valor);
 }
 
 function _posiciones(error: TokenAR): [number, number] {

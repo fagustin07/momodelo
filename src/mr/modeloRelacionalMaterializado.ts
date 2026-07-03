@@ -1,5 +1,6 @@
-import {Fila, RelacionMR, Valor} from "./modeloSintacticoMR.ts";
-import {ErrorPKDuplicada, ErrorSemánticoAR} from "../servicios/errores.ts";
+import {AtributoSimple, Fila, RelacionMR, Valor} from "./modeloSintacticoMR.ts";
+import {ErroresValidación, ErrorPKDuplicada, ErrorSemánticoAR} from "../servicios/errores.ts";
+import {ResultadoConsulta} from "../ar/resultadoConsulta.ts";
 
 export class Tupla {
     private readonly _valores: Record<string, Valor>;
@@ -40,10 +41,11 @@ export class Tupla {
 
 export class RelacionMaterializada {
     private readonly _relacion: RelacionMR;
-    private readonly _tuplas: Tupla[] = [];
+    private readonly _tuplas: Tupla[];
 
-    constructor(relacion: RelacionMR) {
+    constructor(relacion: RelacionMR, tuplas?: Tupla[]) {
         this._relacion = relacion;
+        this._tuplas = tuplas ?? [];
     }
 
     get nombre(): string {
@@ -69,12 +71,23 @@ export class RelacionMaterializada {
 
         this._tuplas.push(nueva);
     }
+
+    static desdeResultadoConsulta(resultado: ResultadoConsulta, nombre?: string): RelacionMaterializada {
+        const atributos = resultado.atributos.map(n => new AtributoSimple(n));
+        const relacion = new RelacionMR(nombre ?? resultado.nombre, atributos);
+        const tuplas = resultado.tuplas.map(tuplaAR => {
+            const fila = new Fila(resultado.atributos.map(a => tuplaAR[a]));
+            return new Tupla(fila, relacion);
+        });
+        return new RelacionMaterializada(relacion, tuplas);
+    }
 }
 
 export class ModeloRelacionalMaterializado {
     private readonly _relaciones = new Map<string, RelacionMaterializada>();
 
     registrarRelacion(relacion: RelacionMaterializada): void {
+        this._asertarQueNoExisteOtraRelaciónLlamada(relacion.nombre);
         this._relaciones.set(relacion.nombre.toLowerCase(), relacion);
     }
 
@@ -87,5 +100,13 @@ export class ModeloRelacionalMaterializado {
 
     relaciones(): RelacionMaterializada[] {
         return [...this._relaciones.values()];
+    }
+
+    private _asertarQueNoExisteOtraRelaciónLlamada(nombreDeNuevaRelación: string) {
+        if (this._relaciones.has(nombreDeNuevaRelación.toLowerCase())) {
+            throw new ErroresValidación(
+                [`Ya existe una relación llamada '${nombreDeNuevaRelación}'.`]
+            );
+        }
     }
 }

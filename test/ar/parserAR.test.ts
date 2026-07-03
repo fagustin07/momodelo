@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {esperarAnálisisSintácticoAR, esperarErrorSintácticoAR} from "./helpers.ts";
-import {ExpresiónProyección,ExpresiónRenombre, ExpresiónSelección, NombreDeRelación} from "../../src/ar/modeloSintácticoAR.ts";
+import {ExpresiónPrograma, ExpresiónProyección,ExpresiónRenombre, ExpresiónSelección, NombreDeRelación} from "../../src/ar/modeloSintácticoAR.ts";
 import {Intersección, Resta, Unión} from "../../src/ar/modeloSintactico/operadorDeConjuntos.ts";
 import {División} from "../../src/ar/modeloSintactico/operadorDeDivisión.ts";
 import {JoinCondicional, JoinNatural, ProductoCartesiano} from "../../src/ar/modeloSintactico/operadorDeCombinación.ts";
@@ -678,5 +678,27 @@ describe("[Álgebra Relacional] Parser AR", () => {
 
     it("un renombre con la flecha pero sin nombre a su izquierda lanza error de sintaxis", () => {
         esperarErrorSintácticoAR("ρ<← x>R", "ρ: se esperaba '<mapeo>expresión'.");
+    });
+
+    it("asignaciones seguidas de una expresión final producen el programa con las subconsultas y la expresión", () => {
+        const expr = analizarSintácticamente("PIRATA ← SHANKS MARINO ← AKAINU σ<recompensa = rango>(PIRATA × MARINO)");
+        expect(expr).toBeInstanceOf(ExpresiónPrograma);
+        const prog = expr as ExpresiónPrograma;
+        expect(prog.asignaciones).toHaveLength(2);
+        expect(prog.asignaciones[0].nombre).toBe("PIRATA");
+        expect(prog.expresiónFinal).toBeInstanceOf(ExpresiónSelección);
+    });
+
+    it("sin asignaciones previas la expresión no se envuelve en un programa", () => {
+        const expr = analizarSintácticamente("SHANKS");
+        expect(expr).toBeInstanceOf(NombreDeRelación);
+    });
+
+    it("una flecha sin nombre a la izquierda al inicio del programa lanza error de sintaxis", () => {
+        esperarErrorSintácticoAR("← SHANKS \n SHANKS", "←: ¿quisiste definir una subconsulta (nombre ← expresión) o renombrar un atributo (ρ<nuevo ← viejo>(...))?");
+    });
+
+    it("una flecha sola sin expresión ni nombre lanza error de sintaxis", () => {
+        esperarErrorSintácticoAR("←", "←: ¿quisiste definir una subconsulta (nombre ← expresión) o renombrar un atributo (ρ<nuevo ← viejo>(...))?");
     });
 });

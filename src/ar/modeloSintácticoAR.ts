@@ -1,4 +1,4 @@
-import {ModeloRelacionalMaterializado} from "../mr/modeloRelacionalMaterializado.ts";
+import {ModeloRelacionalMaterializado, RelacionMaterializada} from "../mr/modeloRelacionalMaterializado.ts";
 import {ResultadoConsulta} from "./resultadoConsulta.ts";
 import {Valor} from "../mr/modeloSintacticoMR.ts";
 import {proyectarTupla, TuplaAR} from "./tuplaAR.ts";
@@ -194,5 +194,32 @@ export class ExpresiónRenombre extends ExpresiónAR {
         }
 
         return mapeo;
+    }
+}
+
+export class ExpresiónAsignación extends ExpresiónAR {
+    constructor(
+        readonly nombre: string,
+        readonly subexpr: ExpresiónAR
+    ) { super(); }
+
+    interpretarseCon(modelo: ModeloRelacionalMaterializado): ResultadoConsulta {
+        const resultado = this.subexpr.interpretarseCon(modelo);
+        modelo.registrarRelacion(
+            RelacionMaterializada.desdeResultadoConsulta(resultado, this.nombre)
+        );
+        return resultado;
+    }
+}
+
+export class ExpresiónPrograma extends ExpresiónAR {
+    constructor(
+        readonly asignaciones: ReadonlyArray<ExpresiónAsignación>,
+        readonly expresiónFinal: ExpresiónAR
+    ) { super(); }
+
+    interpretarseCon(modelo: ModeloRelacionalMaterializado): ResultadoConsulta {
+        this.asignaciones.forEach(a => a.interpretarseCon(modelo));
+        return this.expresiónFinal.interpretarseCon(modelo);
     }
 }

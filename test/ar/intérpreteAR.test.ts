@@ -3,7 +3,7 @@ import {IntérpreteAR} from "../../src/ar/intérpreteAR.ts";
 import {NombreDeRelación} from "../../src/ar/modeloSintácticoAR.ts";
 import {ModeloRelacionalMaterializado} from "../../src/mr/modeloRelacionalMaterializado.ts";
 import {ResultadoConsulta} from "../../src/ar/resultadoConsulta.ts";
-import {ErrorSemánticoAR} from "../../src/servicios/errores.ts";
+import {ErroresValidación, ErrorSemánticoAR} from "../../src/servicios/errores.ts";
 import {definición, fila, fk, inserción, pk, pkfk, programa, relación, simple} from "../mr/helpers.ts";
 import {IntérpreteMR} from "../../src/mr/interpretadorMR.ts";
 import {ValidadorSemánticoMR} from "../../src/mr/validadorSemanticoMR.ts";
@@ -844,5 +844,78 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
         expect(resultado.atributos).toContain("marca");
         expect(resultado.atributos).toContain("marca2");
         expect(resultado.tuplas.length).toBe(4);
+    });
+
+    it("se puede asignar una expresión a un nombre y reusarlo en la expresión final dentro del mismo programa", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("VINO", pk("id"), simple("marca"))),
+            inserción("VINO", fila(1, "Las Moras")),
+        );
+        const resultado = intérprete.ejecutar(
+            analizarSintácticamente("VINO2 ← ρ<marca2 ← marca>VINO\nVINO2"),
+            modelo,
+        );
+        expect(resultado.atributos).toEqual(["id", "marca2"]);
+        esperarResultadoConsulta(resultado, [{id: 1, marca2: "Las Moras"}]);
+    });
+
+    it("se pueden encadenar varias asignaciones en secuencia", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("R", pk("id"), simple("x"))),
+            inserción("R", fila(1, "valor")),
+        );
+        const resultado = intérprete.ejecutar(
+            analizarSintácticamente("A ← R\nB ← A\nB"),
+            modelo,
+        );
+        esperarResultadoConsulta(resultado, [{id: 1, x: "valor"}]);
+    });
+
+    it("al reusar una asignación, el esquema visible es el que dejó la subexpresión", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("R", pk("id"), simple("a"), simple("b"))),
+            inserción("R", fila(1, "x", "y")),
+        );
+        const resultado = intérprete.ejecutar(
+            analizarSintácticamente("Q ← ρ<a2 ← a, b2 ← b>R\nQ"),
+            modelo,
+        );
+        expect(resultado.atributos).toEqual(["id", "a2", "b2"]);
+        esperarResultadoConsulta(resultado, [{id: 1, a2: "x", b2: "y"}]);
+    });
+
+    it("luego de ejecutar, el nombre asignado es accesible como cualquier otra relación del modelo", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("R", pk("id"), simple("x"))),
+            inserción("R", fila(1, "valor")),
+        );
+        intérprete.ejecutar(analizarSintácticamente("Sub ← R\nSub"), modelo);
+
+        expect(modelo.obtenerRelacion("Sub").nombre).toBe("Sub");
+    });
+
+    it("asignar un nombre que ya existe como relación en el modelo levanta una excepción", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("CERVEZA", pk("id"), simple("marca"))),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("CERVEZA ← ρ<marca ← marca>CERVEZA\nCERVEZA"), modelo)
+        ).toThrow(ErroresValidación);
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("CERVEZA ← ρ<marca ← marca>CERVEZA\nCERVEZA"), modelo)
+        ).toThrow("Ya existe una relación llamada 'CERVEZA'.");
+    });
+
+    it("asignar el mismo nombre dos veces en un programa lanza una excepción", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("CERVEZA", pk("id"), simple("marca"))),
+            definición(relación("VINO", pk("id"), simple("variedad"))),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("COPIA ← CERVEZA\nCOPIA ← VINO\nCOPIA"), modelo)
+        ).toThrow(ErroresValidación);
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("COPIA ← CERVEZA\nCOPIA ← VINO\nCOPIA"), modelo)
+        ).toThrow("Ya existe una relación llamada 'COPIA'.");
     });
 });
