@@ -445,7 +445,10 @@ body {
   }
 }
 
-.diagrama-mer[data-interaccion-en-curso='Crear Relacion'] {
+.diagrama-mer:is(
+  [data-interaccion-en-curso='Crear Relacion'],
+  [data-interaccion-en-curso='Crear Atributo']
+) {
   .entidad:not(:has(.atributo:hover)) {
     &:hover {
       --color-resaltado: var(--color-acento-translucido);

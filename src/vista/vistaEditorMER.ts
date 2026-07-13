@@ -22,6 +22,7 @@ import {MenuHamburguesa, ProveedorDeTrabajo} from "../componentes/menuHamburgues
 import {Cardinalidad, TipoAtributo, TipoRelacion} from "../tipos/tipos.ts";
 import {EliminarRelacionIdentificadoraError, MomodeloLogicaError} from "../servicios/errores.ts";
 import {VistaLineaCreandoRelacion} from "./vistaLineaCreandoRelacion.ts";
+import {SeleccionandoEntidadParaAtributo} from "./interacciones/seleccionandoEntidadParaAtributo.ts";
 
 export class VistaEditorMER {
     modeloER: ModeloER;
@@ -371,6 +372,10 @@ export class VistaEditorMER {
 
     solicitudCrearEntidad(): void {
         this._interacción = new CreandoEntidad(this);
+    }
+
+    solicitudCrearAtributo(): void {
+        this._interacción = new SeleccionandoEntidadParaAtributo(this);
     }
 
     solicitudCrearRelacion(): void {

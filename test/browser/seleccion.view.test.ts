@@ -54,6 +54,58 @@ describe("[MER] Interacciones y selección", () => {
         expect(elementoInputAtributoBuscado.closest('.atributo')).toHaveClass("seleccionado");
     });
 
+    it("cuando se crea un atributo, queda seleccionado y enfocado", () => {
+        const [elementoEntidad] = getEntidadesDOM();
+        const boton = screen.getByRole("button", {name: /\+atributo/i});
+
+        fireEvent.click(boton);
+        fireEvent.click(elementoEntidad);
+
+        const [inputAtributo] = within(elementoEntidad).getAllByTitle<HTMLInputElement>("Nombre de atributo");
+        expect(personaje.atributos()).toHaveLength(1);
+        expect(inputAtributo.value).toBe("Atributo");
+        expect(inputAtributo.closest(".atributo")).toHaveClass("seleccionado");
+        expect(document.activeElement).toBe(inputAtributo);
+        expect(boton).not.toHaveClass("boton-activo");
+        expect(vistaEditorMER.hayUnaInteraccionEnProceso()).toBe(false);
+    });
+
+    it("Al querer crear un atributo, se ignoran clicks fuera de una entidad", () => {
+        const [elementoEntidad, otraEntidad] = getEntidadesDOM();
+        fireEvent.click(screen.getByRole("button", {name: /\+relacion/i}));
+        fireEvent.click(elementoEntidad);
+        fireEvent.click(otraEntidad);
+        const [relación] = getRelacionesDOM();
+
+        const botonAgregarInterno = within(elementoEntidad).getByTitle("Agregar atributo");
+        fireEvent.click(botonAgregarInterno);
+        const [atributoExistente] = within(elementoEntidad).getAllByTitle("Nombre de atributo");
+        const boton = screen.getByRole("button", {name: /\+atributo/i});
+        const diagrama = elementoRaiz.querySelector("#vista-mer") as HTMLElement;
+
+        fireEvent.click(boton);
+        fireEvent.click(diagrama);
+        fireEvent.click(atributoExistente);
+        fireEvent.click(relación);
+
+        expect(personaje.atributos()).toHaveLength(1);
+        expect(vistaEditorMER.hayUnaInteraccionEnProceso()).toBe(true);
+        expect(boton).toHaveClass("boton-activo");
+    });
+
+    it("se puede cancelar la interacción de crear un atributo", () => {
+        const [elementoEntidad] = getEntidadesDOM();
+        const boton = screen.getByRole("button", {name: /\+atributo/i});
+
+        fireEvent.click(boton);
+        fireEvent.keyDown(document, {key: "Escape"});
+        fireEvent.click(elementoEntidad);
+
+        expect(personaje.atributos()).toHaveLength(0);
+        expect(vistaEditorMER.hayUnaInteraccionEnProceso()).toBe(false);
+        expect(boton).not.toHaveClass("boton-activo");
+    });
+
     it("cuando se crea una relación, entonces queda seleccionada", () => {
         const [elementoHumorista, elementoPersonaje] = getEntidadesDOM();
         const boton = screen.getByRole("button", { name: /\+relacion/i });

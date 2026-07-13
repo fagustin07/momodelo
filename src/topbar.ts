@@ -30,6 +30,9 @@ export function generarBarraDeInteracciones(vistaEditorMER: VistaEditorMER, elem
     elementoRaiz.addEventListener("momodelo-crear-entidad",
         () => setSugerencia("Clickeá sobre el diagrama para crear una Entidad (ESC para cancelar)"));
 
+    elementoRaiz.addEventListener("momodelo-crear-atributo",
+        () => setSugerencia("Seleccioná una Entidad para agregarle un atributo (ESC para cancelar)"));
+
     elementoRaiz.addEventListener("momodelo-borrar-elemento",
         () => setSugerencia("Seleccioná el elemento (ESC para cancelar)"));
 
@@ -41,6 +44,7 @@ export function generarBarraDeInteracciones(vistaEditorMER: VistaEditorMER, elem
 
         const topbar = createElement("div", {id: "topbar"}, [
             createElement("button", botonCrearEntidad(vistaEditorMER)),
+            createElement("button", botonCrearAtributo(vistaEditorMER)),
             createElement("button", botonCrearRelacion(elementoRaiz, vistaEditorMER)),
             createElement("button", botonBorrar(vistaEditorMER)),
     ]);
@@ -71,6 +75,16 @@ function botonCrearEntidad(vistaEditorMER: VistaEditorMER) {
         onclick: (evento: PointerEvent) =>
             handlearBotonPresionado(evento.currentTarget as HTMLButtonElement, vistaEditorMER,
                 () => vistaEditorMER.solicitudCrearEntidad(),
+            ),
+    };
+}
+
+function botonCrearAtributo(vistaEditorMER: VistaEditorMER) {
+    return {
+        textContent: "+Atributo",
+        onclick: (evento: PointerEvent) =>
+            handlearBotonPresionado(evento.currentTarget as HTMLButtonElement, vistaEditorMER,
+                () => vistaEditorMER.solicitudCrearAtributo(),
             ),
     };
 }
