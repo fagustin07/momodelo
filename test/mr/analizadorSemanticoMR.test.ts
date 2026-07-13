@@ -172,6 +172,27 @@ describe("[Modelo Relacional] Analizador Semántico", () => {
         expect(() => analizador.validar(modelo)).not.toThrow();
     });
 
+    it("un FK que coincide con PKs de múltiples relaciones es ambigüo", () => {
+        const modelo = programa(
+            definición(relación("PIRATA", pk("id"))),
+            definición(relación("BARCO", pk("id"))),
+            definición(relación("HERENCIA", pkfk("id"))),
+        );
+
+        expect(() => analizador.validar(modelo)).toThrow(ErroresValidación);
+        expect(() => analizador.validar(modelo)).toThrow("El atributo FK 'id' en 'HERENCIA' es ambigüo: puede referenciar claves primarias de 'PIRATA', 'BARCO'.");
+    });
+
+    it("un FK con sufijo de relación desambigua PKs con el mismo nombre", () => {
+        const modelo = programa(
+            definición(relación("PIRATA", pk("id"))),
+            definición(relación("BARCO", pk("id"))),
+            definición(relación("HERENCIA", pk("id"), fk("id_pirata"))),
+        );
+
+        expect(() => analizador.validar(modelo)).not.toThrow();
+    });
+
     it("múltiples FKs inválidas en distintas relaciones acumulan errores", () => {
         const modelo = programa(
             definición(relación("CLIENTE", pk("id"))),

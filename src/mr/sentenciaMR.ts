@@ -18,6 +18,7 @@ export abstract class SentenciaMR {
     }
 
     abstract validarseCon(relacionesDefinidas: Map<string, RelacionMR>, errores: string[]): void;
+
     abstract interpretarseCon(modelo: ModeloRelacionalMaterializado): void;
 
     protected _fkMatcheaPK(nombreFK: string, nombrePK: string, nombreRelacion: string): boolean {
@@ -60,18 +61,30 @@ export class DefiniciónRelación extends SentenciaMR {
     }
 
     private _validarClavesForáneas(relacionesDefinidas: Map<string, RelacionMR>, errores: string[]): void {
-        this.relacion.clavesForáneas()
-            .filter(fk => !this._existePKReferenciada(fk.nombre, relacionesDefinidas))
-            .forEach(fk => errores.push(
-                `El atributo FK '${fk.nombre}' en '${this.relacion.nombre}' no referencia ninguna clave primaria existente al momento de definir la relación.`
-            ));
+        this.relacion
+            .clavesForáneas()
+            .forEach(fk => {
+                const relacionesReferenciadas = this._relacionesReferenciadasPor(fk.nombre, relacionesDefinidas);
+
+                if (relacionesReferenciadas.length === 0) {
+                    errores.push(
+                        `El atributo FK '${fk.nombre}' en '${this.relacion.nombre}' no referencia ninguna clave primaria existente al momento de definir la relación.`
+                    );
+                } else if (relacionesReferenciadas.length > 1) {
+                    errores.push(
+                        `El atributo FK '${fk.nombre}' en '${this.relacion.nombre}' es ambigüo: puede referenciar claves primarias de ${relacionesReferenciadas.map(nombre => `'${nombre}'`).join(', ')}.`
+                    );
+                }
+            });
     }
 
-    private _existePKReferenciada(nombreFK: string, relacionesDefinidas: Map<string, RelacionMR>): boolean {
-        return [...relacionesDefinidas].some(([nombreRelacion, relacion]) =>
-            nombreRelacion !== this.relacion.nombre.toLowerCase() &&
-            relacion.clavesPrimarias().some(pk => this._fkMatcheaPK(nombreFK, pk.nombre, nombreRelacion))
-        );
+    private _relacionesReferenciadasPor(nombreFK: string, relacionesDefinidas: Map<string, RelacionMR>): string[] {
+        return [...relacionesDefinidas]
+            .filter(([nombreRelacion, relacion]) =>
+                nombreRelacion !== this.relacion.nombre.toLowerCase() &&
+                relacion.clavesPrimarias().some(pk => this._fkMatcheaPK(nombreFK, pk.nombre, nombreRelacion))
+            )
+            .map(([, relacion]) => relacion.nombre);
     }
 }
 
