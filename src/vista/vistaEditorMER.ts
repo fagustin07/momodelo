@@ -23,6 +23,7 @@ import {Cardinalidad, TipoAtributo, TipoRelacion} from "../tipos/tipos.ts";
 import {EliminarRelacionIdentificadoraError, MomodeloLogicaError} from "../servicios/errores.ts";
 import {VistaLineaCreandoRelacion} from "./vistaLineaCreandoRelacion.ts";
 import {SeleccionandoEntidadParaAtributo} from "./interacciones/seleccionandoEntidadParaAtributo.ts";
+import {mostrarConfirmaciónParaEliminarEntidad} from "../componentes/modalConfirmacionEliminarEntidad.ts";
 
 export class VistaEditorMER {
     modeloER: ModeloER;
@@ -141,13 +142,25 @@ export class VistaEditorMER {
         this._atributosVisuales.delete(atributo);
     }
 
-    borrarEntidad(entidad: Entidad) {
-        const relacionesAfectadas = this.modeloER.eliminarEntidad(entidad);
-        const habíaDébilesDependientes = relacionesAfectadas.some(r => r.esDebil() && r.entidadDestino() === entidad);
-        this.entidadEliminada(entidad, relacionesAfectadas);
-        if (habíaDébilesDependientes) {
-            renderizarToast(this._elementoRaíz, "Las entidades débiles asociadas se transformaron en fuertes al perder su dependencia.", 'warning');
+    solicitarConfirmaciónParaBorrarEntidad(entidad: Entidad): void {
+        const tieneAtributos = entidad.atributos().length > 0;
+        const tieneRelaciones = this.modeloER.relaciones.some(relacion => relacion.contieneA(entidad));
+
+        if (!tieneAtributos && !tieneRelaciones) {
+            this._borrarEntidad(entidad);
+            this.finalizarInteracción();
+            return;
         }
+
+        mostrarConfirmaciónParaEliminarEntidad({
+            entidad,
+            relaciones: this.modeloER.relaciones,
+            alConfirmar: () => {
+                this._borrarEntidad(entidad);
+                this.finalizarInteracción();
+            },
+            alCancelar: () => this.finalizarInteracción(),
+        });
     }
 
     borrarAtributo(atributo: Atributo, entidad: Entidad) {
@@ -428,6 +441,15 @@ export class VistaEditorMER {
 
     alCambiarModelo(callback: () => void): void {
         this._alCambiarModelo.push(callback);
+    }
+
+    private _borrarEntidad(entidad: Entidad) {
+        const relacionesAfectadas = this.modeloER.eliminarEntidad(entidad);
+        this.entidadEliminada(entidad, relacionesAfectadas);
+        const habíaDébilesDependientes = relacionesAfectadas.some(r => r.esDebil() && r.entidadDestino() === entidad);
+        if (habíaDébilesDependientes) {
+            renderizarToast(this._elementoRaíz, "Las entidades débiles asociadas se transformaron en fuertes al perder su dependencia.", 'warning');
+        }
     }
 
     private _iniciarLineaFeedback(entidadOrigen: Entidad) {

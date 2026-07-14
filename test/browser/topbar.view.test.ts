@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { screen, fireEvent } from "@testing-library/dom";
+import {beforeEach, describe, expect, it} from "vitest";
+import {fireEvent, screen} from "@testing-library/dom";
 import "../../src/style.css";
-import { Entidad } from "../../src/modelo/entidad.ts";
-import { coordenada } from "../../src/posicion.ts";
-import { VistaEditorMER } from "../../src/vista/vistaEditorMER.ts";
-import { init } from "../../src/vista.ts";
+import {Entidad} from "../../src/modelo/entidad.ts";
+import {coordenada} from "../../src/posicion.ts";
+import {VistaEditorMER} from "../../src/vista/vistaEditorMER.ts";
+import {init} from "../../src/vista.ts";
 
 function getElementoEntidades(): HTMLElement[] {
     return [...document.querySelectorAll<HTMLElement>(".entidad")];
@@ -95,4 +95,53 @@ describe("[MER] Barra de Interacciones", () => {
         expect(botónRelacion).not.toHaveClass("boton-activo");
     });
 
+    it("Al querer borrar una entidad con elementos asociados, se levanta una modal de confirmación de acción", () => {
+        vistaEditorMER.emitirCreacionDeAtributoEn(personaje, "ID");
+        const botónBorrar = screen.getByRole("button", {name: /borrar/i});
+        fireEvent.click(botónBorrar);
+        fireEvent.click(getElementoEntidades()[0]);
+
+        expect(screen.getByRole("dialog", {name: /confirmar eliminación de personaje/i})).toBeVisible();
+        expect(screen.getByRole("dialog")).toHaveTextContent(/PERSONAJE.*¿Confirmás esta acción\?/i);
+        expect(vistaEditorMER.modeloER.entidades).toContain(personaje);
+        expect(screen.getByRole("button", {name: /cancelar/i})).toHaveFocus();
+
+        fireEvent.click(screen.getByRole("button", {name: /cancelar/i}));
+    });
+
+    it("Se cancela la acción de borrar una la entidad si se cancela la acción", () => {
+        vistaEditorMER.emitirCreacionDeAtributoEn(personaje, "ID");
+        const botónBorrar = screen.getByRole("button", {name: /borrar/i});
+        fireEvent.click(botónBorrar);
+        fireEvent.click(getElementoEntidades()[0]);
+
+        fireEvent.keyDown(document, {key: "Escape"});
+
+        expect(vistaEditorMER.modeloER.entidades).toContain(personaje);
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(botónBorrar).not.toHaveClass("boton-activo");
+    });
+
+    it("Se borra efectivamente una entidad con elementos asociados si se confirma la acción", () => {
+        vistaEditorMER.emitirCreacionDeAtributoEn(personaje, "ID");
+        const botónBorrar = screen.getByRole("button", {name: /borrar/i});
+        fireEvent.click(botónBorrar);
+        fireEvent.click(getElementoEntidades()[0]);
+        fireEvent.click(screen.getByRole("button", {name: /confirmar/i}));
+
+        expect(vistaEditorMER.modeloER.entidades).not.toContain(personaje);
+        expect(getElementoEntidades()).toHaveLength(1);
+        expect(botónBorrar).not.toHaveClass("boton-activo");
+    });
+
+    it("Al querer borrar una entidad sin elementos asociados se borra directamente sin confirmación", () => {
+        const botónBorrar = screen.getByRole("button", {name: /borrar/i});
+        fireEvent.click(botónBorrar);
+        fireEvent.click(getElementoEntidades()[0]);
+
+        expect(vistaEditorMER.modeloER.entidades).not.toContain(personaje);
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(getElementoEntidades()).toHaveLength(1);
+        expect(botónBorrar).not.toHaveClass("boton-activo");
+    });
 });

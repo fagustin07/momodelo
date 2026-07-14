@@ -48,6 +48,9 @@ function realizarGestoEliminarSobre(elemento: HTMLElement) {
     const botonBorrar = screen.getByRole('button', {name: /borrar/i});
     fireEvent.click(botonBorrar);
     fireEvent.click(elemento);
+
+    const botonConfirmar = screen.queryByRole('button', {name: /confirmar/i});
+    if (botonConfirmar !== null) fireEvent.click(botonConfirmar);
 }
 
 describe("[MER] Vista Relaciones", () => {

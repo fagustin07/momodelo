@@ -17,8 +17,7 @@ export class BorrandoElemento extends InteracciónMER {
     clickEnDiagrama(_vistaEditorMER: VistaEditorMER, _posiciónModelo: Posicion, _posiciónVistaUsuario: Posicion) { }
 
     clickEnEntidad(entidad: Entidad, vistaEditorMER: VistaEditorMER) {
-        vistaEditorMER.borrarEntidad(entidad);
-        vistaEditorMER.finalizarInteracción();
+        vistaEditorMER.solicitarConfirmaciónParaBorrarEntidad(entidad);
     }
 
     clickEnRelación(relación: Relacion, vistaEditorMER: VistaEditorMER) {
