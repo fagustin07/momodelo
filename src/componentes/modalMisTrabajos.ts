@@ -4,6 +4,7 @@ import {importar} from "../servicios/importador.ts";
 import {exportar} from "../servicios/exportador.ts";
 import {ProveedorDeTrabajo} from "./menuHamburguesa.ts";
 import {ModeloER} from "../servicios/modeloER.ts";
+import {mostrarModalConfirmacion} from "./modalConfirmacion.ts";
 
 export class ModalMisTrabajos {
     private readonly _proveedor: ProveedorDeTrabajo;
@@ -212,9 +213,19 @@ export class ModalMisTrabajos {
             className: "modal-mis-trabajos-boton modal-mis-trabajos-boton--eliminar",
             textContent: "Eliminar",
             onclick: () => {
-                if (!confirm(`¿Eliminar "${trabajo.nombre}"?`)) return;
-                this._almacenamiento.eliminarTrabajo(trabajo.id);
-                this._reconstruirContenido();
+                const mensaje = createElement("p", {className: "modal-confirmacion-mensaje"}, [
+                    "Estás por eliminar el trabajo ",
+                    createElement("strong", {textContent: trabajo.nombre}),
+                    ".",
+                ]);
+                mostrarModalConfirmacion({
+                    mensajeInformativo: mensaje,
+                    alConfirmar: () => {
+                        this._almacenamiento.eliminarTrabajo(trabajo.id);
+                        this._reconstruirContenido();
+                    },
+                    alCancelar: () => {},
+                });
             }
         });
 

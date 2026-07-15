@@ -152,15 +152,15 @@ export class VistaEditorMER {
             return;
         }
 
-        mostrarConfirmaciónParaEliminarEntidad({
+        mostrarConfirmaciónParaEliminarEntidad(
             entidad,
-            relaciones: this.modeloER.relaciones,
-            alConfirmar: () => {
+            this.modeloER.relaciones,
+            () => {
                 this._borrarEntidad(entidad);
                 this.finalizarInteracción();
             },
-            alCancelar: () => this.finalizarInteracción(),
-        });
+            () => this.finalizarInteracción(),
+        );
     }
 
     borrarAtributo(atributo: Atributo, entidad: Entidad) {

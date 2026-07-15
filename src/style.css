@@ -1234,10 +1234,10 @@ line:not(.linea-feedback) {
   color: #e429f1;
 }
 
-.modal-eliminar-entidad-overlay {
+.modal-confirmacion-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 2100;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1246,14 +1246,14 @@ line:not(.linea-feedback) {
   font-family: sans-serif;
 }
 
-.modal-eliminar-entidad-panel {
-  width: min(100%, 28rem);
+.modal-confirmacion-panel {
+  width: 28rem;
   background: var(--color-blanco);
   border: 1px solid var(--color-neutro-borde);
   border-radius: 0.6rem;
 }
 
-.modal-eliminar-entidad-mensaje {
+.modal-confirmacion-mensaje {
   margin: 0;
   padding: 1.5rem 1.5rem 1.1rem;
   color: var(--color-texto);
@@ -1264,14 +1264,14 @@ line:not(.linea-feedback) {
   }
 }
 
-.modal-eliminar-entidad-acciones {
+.modal-confirmacion-acciones {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
   padding: 0 1.5rem 1.25rem;
 }
 
-.modal-eliminar-entidad-boton {
+.modal-confirmacion-boton {
   padding: 0.55rem 1rem;
   border: 1px solid;
   border-radius: 0.4rem;
@@ -1279,7 +1279,7 @@ line:not(.linea-feedback) {
   font-weight: 600;
 }
 
-.modal-eliminar-entidad-boton--cancelar {
+.modal-confirmacion-boton--cancelar {
   border-color: var(--color-neutro);
   background: var(--color-blanco);
   color: var(--color-texto);
@@ -1289,7 +1289,7 @@ line:not(.linea-feedback) {
   }
 }
 
-.modal-eliminar-entidad-boton--eliminar {
+.modal-confirmacion-boton--confirmar {
   border-color: var(--color-peligro-borde);
   background: var(--color-peligro-fondo);
   color: var(--color-peligro-activo);

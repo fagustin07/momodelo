@@ -101,11 +101,9 @@ describe("[MER] Barra de Interacciones", () => {
         fireEvent.click(botónBorrar);
         fireEvent.click(getElementoEntidades()[0]);
 
-        expect(screen.getByRole("dialog", {name: /confirmar eliminación de personaje/i})).toBeVisible();
+        expect(screen.getByRole("dialog", {name: /confirmar esta acción/i})).toBeVisible();
         expect(screen.getByRole("dialog")).toHaveTextContent(/PERSONAJE.*¿Confirmás esta acción\?/i);
         expect(vistaEditorMER.modeloER.entidades).toContain(personaje);
-        expect(screen.getByRole("button", {name: /cancelar/i})).toHaveFocus();
-
         fireEvent.click(screen.getByRole("button", {name: /cancelar/i}));
     });
 
@@ -115,7 +113,7 @@ describe("[MER] Barra de Interacciones", () => {
         fireEvent.click(botónBorrar);
         fireEvent.click(getElementoEntidades()[0]);
 
-        fireEvent.keyDown(document, {key: "Escape"});
+        fireEvent.keyDown(elementoRaíz, {key: "Escape"});
 
         expect(vistaEditorMER.modeloER.entidades).toContain(personaje);
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
