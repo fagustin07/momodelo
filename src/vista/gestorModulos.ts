@@ -25,7 +25,7 @@ export class GestorModulos {
 
         this._vistaMR.registrarCambioAR((activo) => {
             if (this._modoActivo === "MER/MR") {
-                this._modulos.get("MER")!.classList.toggle("vista-oculta", activo);
+                this._cambiarVistasDeModoMERMR(activo);
                 if (!activo) this._vistaMER.redibujar();
             }
         });
@@ -85,13 +85,16 @@ export class GestorModulos {
     private _activarModoMERMR() {
         this._elementoRaíz.classList.add("layout-mer-mr");
         this._modulos.forEach(el => el.classList.remove("vista-oculta"));
-        if (this._vistaMR.arActivo()) {
-            this._modulos.get("MER")!.classList.add("vista-oculta");
-        }
+        this._cambiarVistasDeModoMERMR(this._vistaMR.arActivo());
+    }
+
+    private _cambiarVistasDeModoMERMR(consultasActivas: boolean) {
+        this._elementoRaíz.classList.toggle("layout-mer-mr--mr-ar", consultasActivas);
+        this._modulos.get("MER")!.classList.toggle("vista-oculta", consultasActivas);
     }
 
     private _activarModoÚnico(id: MóduloMomodelo) {
-        this._elementoRaíz.classList.remove("layout-mer-mr");
+        this._elementoRaíz.classList.remove("layout-mer-mr", "layout-mer-mr--mr-ar");
         this._modulos.forEach((elementoContenedorMódulo, key) => {
             if (key === id) {
                 elementoContenedorMódulo.classList.remove("vista-oculta");

@@ -73,7 +73,7 @@ export class VistaEditorMR {
         ]);
 
         const panelMR = createElement("div", {className: "mr-editor-panel"}, [
-            createElement("div", {className: "mr-editor-panel-label", textContent: "Modelo Relacional"}),
+            createElement("div", {className: "editor-panel-label", textContent: "Modelo Relacional"}),
             mrWrapper
         ]);
 

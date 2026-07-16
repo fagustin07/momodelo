@@ -55,7 +55,7 @@ export class VistaEditorAR {
         );
 
         this._panel = createElement("div", {className: "mr-editor-panel", style: {display: "none"}}, [
-            createElement("div", {className: "mr-editor-panel-label", textContent: "Álgebra Relacional"}),
+            createElement("div", {className: "editor-panel-label", textContent: "Álgebra Relacional"}),
             barraHerramientas,
             wrapper
         ]);

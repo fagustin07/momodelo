@@ -24,6 +24,7 @@ import {EliminarRelacionIdentificadoraError, MomodeloLogicaError} from "../servi
 import {VistaLineaCreandoRelacion} from "./vistaLineaCreandoRelacion.ts";
 import {SeleccionandoEntidadParaAtributo} from "./interacciones/seleccionandoEntidadParaAtributo.ts";
 import {mostrarConfirmaciónParaEliminarEntidad} from "../componentes/modalConfirmacionEliminarEntidad.ts";
+import {createElement} from "./dom/createElement.ts";
 
 export class VistaEditorMER {
     modeloER: ModeloER;
@@ -35,6 +36,7 @@ export class VistaEditorMER {
     private readonly _elementoRaíz: HTMLElement;
     private readonly _elementoSvg: SVGElement;
     private readonly _topbar: HTMLElement;
+    private readonly _etiqueta: HTMLElement;
     private readonly _menuHamburguesa: MenuHamburguesa;
 
     private _entidadesVisuales: Map<Entidad, VistaEntidad> = new Map();
@@ -84,6 +86,13 @@ export class VistaEditorMER {
         this._topbar = generarBarraDeInteracciones(this, this._elementoRaíz);
         elementoRaiz.prepend(this._topbar);
 
+        this._etiqueta = createElement("div", {
+            className: "editor-panel-label mer-editor-label",
+            textContent: "Modelo Entidad Relación",
+            style: {display: "none"}
+        });
+        elementoRaiz.prepend(this._etiqueta);
+
         this._menuHamburguesa = new MenuHamburguesa(proveedorMenu);
         this._menuHamburguesa.representarseEn(elementoRaiz);
 
@@ -102,12 +111,14 @@ export class VistaEditorMER {
         this.finalizarInteracción();
         this.deseleccionar();
         this._topbar.style.display = "none";
+        this._etiqueta.style.display = "";
         this._menuHamburguesa.setVisible(false);
         this._elementoRaíz.classList.add("mer-solo-lectura");
     }
 
     desactivarModoLectura(): void {
         this._topbar.style.display = "";
+        this._etiqueta.style.display = "none";
         this._menuHamburguesa.setVisible(true);
         this._elementoRaíz.classList.remove("mer-solo-lectura");
     }

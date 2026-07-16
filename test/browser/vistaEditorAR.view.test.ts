@@ -18,9 +18,10 @@ function divisorAR() {
 }
 
 describe("[AR] VistaEditorAR", () => {
+    let elementoRaíz: HTMLElement;
     beforeEach(() => {
         document.body.innerHTML = "";
-        const elementoRaíz = document.createElement("div");
+        elementoRaíz = document.createElement("div");
         document.body.appendChild(elementoRaíz);
         init(elementoRaíz, [new Entidad("CLIENTE", [], coordenada(10, 10))], []);
         fireEvent.click(screen.getByRole("button", {name: "MR"}));
@@ -78,6 +79,7 @@ describe("[AR] VistaEditorAR", () => {
         fireEvent.click(toggle());
 
         expect(contenedorMER).toHaveClass("vista-oculta");
+        expect(elementoRaíz).toHaveClass("layout-mer-mr--mr-ar");
     });
 
     it("En modo MER/MR, desactivar las consultas relacionales vuelve a mostrar el MER", () => {
@@ -88,6 +90,7 @@ describe("[AR] VistaEditorAR", () => {
         fireEvent.click(toggle());
 
         expect(contenedorMER).not.toHaveClass("vista-oculta");
+        expect(elementoRaíz).not.toHaveClass("layout-mer-mr--mr-ar");
     });
 
     it("Al volver al modo MER/MR con AR activo, el MER permanece oculto", () => {
