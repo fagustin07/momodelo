@@ -1,3 +1,5 @@
+import type {Relacion} from "../modelo/relacion";
+
 export type CardinalidadMinima = '0' | '1';
 export type CardinalidadMáxima = '1' | 'N';
 
@@ -8,6 +10,12 @@ export type TipoRelacion = 'fuerte' | 'débil';
 export type TipoAtributo = 'simple' | 'pk' | 'multivaluado';
 
 export type MóduloMomodelo = 'MER' | 'MR' | 'MER/MR';
+
+export type CambioDeRelacionIdentificadora = {
+    relacionIdentificadoraAnterior: Relacion | null;
+    nuevaRelacionIdentificadoraSeleccionada: Relacion | null;
+    relacionIdentificadoraActual: Relacion | null;
+};
 
 export type TipoTokenMR =
     | "NOMBRE"

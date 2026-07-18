@@ -3,7 +3,6 @@ import {Relacion} from "../../modelo/relacion";
 import {VistaEditorMER} from "../vistaEditorMER.ts";
 import {createElement} from "../dom/createElement.ts";
 import {Cardinalidad, CardinalidadMinima, CardinalidadMáxima, TipoRelacion} from "../../tipos/tipos";
-import {handlearError} from "../../servicios/handlearError.ts";
 import {TemplateInspector} from "./templateInspector.ts";
 
 export class TemplateRelacion extends TemplateInspector {
@@ -30,8 +29,7 @@ export class TemplateRelacion extends TemplateInspector {
             this._separador(),
             ...this._seccionTipo(),
             this._separador(),
-            this._contenedorCardinalidades(),
-            this._contenedorInversiónDependenciaDébil()
+            this._contenedorCardinalidades()
         );
 
         return this;
@@ -50,18 +48,19 @@ export class TemplateRelacion extends TemplateInspector {
 
         return [
             this._subtitulo("TIPO"),
-            createElement("div", {
-                    className: "inspector-grupo-teclas tecla-grupo-segmentado",
-                    style: {display: "flex", justifyContent: "center"}
-                },
+            this._elementoGrupoDividido(
                 opciones.map(op =>
-                    this._crearRadioSegmentado(
+                    this._crearElementoRadioDividido(
                         op,
                         "tipo-relacion",
                         valorActual === op.valor,
-                        (nuevoTipo) => this.vistaEditor.cambiarTipoDeRelacion(this.relacion, nuevoTipo as TipoRelacion)
+                        nuevoTipo => this.vistaEditor.cambiarTipoDeRelacion(
+                            this.relacion,
+                            nuevoTipo as TipoRelacion
+                        )
                     )
-                )
+                ),
+                "inspector-grupo-teclas-tipo"
             )
         ];
     }
@@ -82,40 +81,6 @@ export class TemplateRelacion extends TemplateInspector {
         this.relacion.alCambiarCardinalidad(actualizar);
 
         return contenedor;
-    }
-
-    private _contenedorInversiónDependenciaDébil(): HTMLElement {
-        const contenedor = createElement("div", {
-            style: {display: this.relacion.esDebil() ? "block" : "none"}
-        }, [
-            this._separador(),
-            createElement("div", {
-                className: "inspector-acciones-debil",
-                style: {textAlign: "center"}
-            }, [
-                this._botonInvertirDependencia()
-            ])
-        ]);
-
-        this.relacion.alCambiarCardinalidad(() => {
-            contenedor.style.display = this.relacion.esDebil() ? "block" : "none";
-        });
-        return contenedor;
-    }
-
-    private _botonInvertirDependencia(): HTMLButtonElement {
-        return createElement("button", {
-            className: "boton-invertir-debil",
-            title: "Invertir dependencia",
-            innerHTML: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Invertir dependencia`,
-            onclick: () => {
-                try {
-                    this.vistaEditor.invertirRelacionDebil(this.relacion);
-                } catch (error) {
-                    handlearError(error, this.vistaEditor);
-                }
-            },
-        });
     }
 
     private _formularioCardinalidad(
@@ -189,38 +154,18 @@ export class TemplateRelacion extends TemplateInspector {
         alCambiar: (valor: string) => void
     ): HTMLElement {
         return createElement("div", {className: "inspector-teclas-fila"}, [
-            createElement("span", {textContent: "–", style: {color:"#9ca3af"}
-            }),
+            createElement("span", {textContent: "–", className: "inspector-teclas-guion"}),
             createElement("span", {
                 textContent: titulo,
-                className: "inspector-teclas-label",
-                style: {margin: "0.25rem"}
+                className: "inspector-teclas-label"
             }),
             createElement("div", {className: "inspector-grupo-teclas tecla-grupo-segmentado"},
                 opciones.map(opción =>
-                    this._crearRadioSegmentado(opción, nombre, valorActual === opción.valor, alCambiar))
+                    this._crearElementoRadioDividido(opción, nombre, valorActual === opción.valor, alCambiar))
             )
         ]);
     }
 
-    private _crearRadioSegmentado(
-        {etiqueta, valor}: { etiqueta: string, valor: string },
-        nombre: string,
-        estaActivo: boolean,
-        alCambiar: (valorSeleccionado: string) => void
-    ): HTMLElement {
-        return createElement("label", {
-            textContent: etiqueta,
-            className: "tecla tecla-inactiva"
-        }, [createElement("input", {
-            type: "radio",
-            name: nombre,
-            value: valor,
-            checked: estaActivo,
-            className: "tecla-radio-oculto",
-            onchange: (evento) => alCambiar((evento.currentTarget as HTMLInputElement).value)
-        })]);
-    }
 }
 
 TemplateInspector.registrar(TemplateRelacion);

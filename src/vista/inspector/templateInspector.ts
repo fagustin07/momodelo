@@ -3,6 +3,7 @@ import {VistaEditorMER} from "../vistaEditorMER.ts";
 import {createElement} from "../dom/createElement.ts";
 
 type TemplateRegistrable = { new(vistaEditor: VistaEditorMER, elemento: ElementoMER): TemplateInspector } & typeof TemplateInspector;
+type OpcionDividida = { etiqueta: string; valor: string };
 
 export abstract class TemplateInspector {
 
@@ -47,7 +48,7 @@ export abstract class TemplateInspector {
         return createElement("h3", {
             textContent: "Inspector de " + texto,
             title: "Tipo Elemento Inspeccionado",
-            style: {fontSize: "1rem", marginBottom: "1rem", color: "#443939"},
+            className: "inspector-titulo",
         });
     }
 
@@ -64,17 +65,43 @@ export abstract class TemplateInspector {
             title: "Nombre Elemento Inspeccionado",
             type: "text",
             className: "inspector-input-nombre",
-            style: {
-                width: "100%",
-                padding: "0.3rem 0.5rem",
-                marginTop: "0.3rem",
-                borderRadius: "6px",
-                border: "1px solid #d1d5db",
-                outline: "none",
-                fontSize: "0.875rem",
-                boxSizing: "border-box",
-                background: "#fff",
-            },
         });
+    }
+
+    protected _elementoGrupoDividido(
+        opciones: HTMLElement[],
+        claseAdicional: string = ""
+    ): HTMLElement {
+        const clases = [
+            "inspector-grupo-teclas",
+            "tecla-grupo-segmentado",
+            claseAdicional,
+        ].filter(Boolean).join(" ");
+
+        return createElement("div", {className: clases}, opciones);
+    }
+
+    protected _crearElementoRadioDividido(
+        {etiqueta, valor}: OpcionDividida,
+        nombre: string,
+        estaActivo: boolean,
+        alCambiar: (valorSeleccionado: string) => void,
+        deshabilitado: boolean = false
+    ): HTMLElement {
+        return createElement("label", {
+            textContent: etiqueta,
+            className: "tecla tecla-inactiva",
+        }, [
+            createElement("input", {
+                type: "radio",
+                name: nombre,
+                value: valor,
+                checked: estaActivo,
+                disabled: deshabilitado,
+                className: "tecla-radio-oculto",
+                onchange: evento =>
+                    alCambiar((evento.currentTarget as HTMLInputElement).value),
+            })
+        ]);
     }
 }

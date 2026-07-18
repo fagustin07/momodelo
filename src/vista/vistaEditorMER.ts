@@ -3,6 +3,7 @@ import {Atributo} from "../modelo/atributo";
 import {Relacion} from "../modelo/relacion";
 import {coordenada, coordenadaInicial, Posicion} from "../posicion";
 import {ModeloER} from "../servicios/modeloER.ts";
+import {type CambioDeRelacionIdentificadora} from "../tipos/tipos.ts";
 import {VistaEntidad} from "./vistaEntidad";
 import {VistaRelacion} from "./vistaRelacion";
 import {VistaAtributo} from "./vistaAtributo";
@@ -421,6 +422,7 @@ export class VistaEditorMER {
                 this._relacionesVisuales.get(relacion)?.borrarse();
                 this._relacionesVisuales.delete(relacion);
                 this.crearVistaRelación(relacionFinal);
+                this._actualizarRelacionSeleccionada(relacion, relacionFinal);
             } else {
                 this._relacionesVisuales.get(relacion)?.reposicionarRelacion();
             }
@@ -435,19 +437,67 @@ export class VistaEditorMER {
         }
     }
 
-    invertirRelacionDebil(relacion: Relacion): Relacion {
-        const nuevaRelacion = this.modeloER.invertirRelacionDebil(relacion);
-        this._relacionesVisuales.get(relacion)?.borrarse();
-        this._relacionesVisuales.delete(relacion);
-        this.crearVistaRelación(nuevaRelacion);
+    configurarEntidadComoDebil(entidad: Entidad, relacion: Relacion | null): Relacion | null {
+        if (!relacion) {
+            handlearError(
+                new MomodeloLogicaError(
+                    "La entidad necesita tener al menos una relación para poder marcarse como débil."
+                ),
+                this
+            );
+            return null;
+        }
+        return this.configurarDependenciaDeEntidad(entidad, relacion);
+    }
 
-        const entidadOrigen = nuevaRelacion.entidadOrigen();
-        const entidadDestino = nuevaRelacion.entidadDestino();
-        this._entidadesVisuales.get(entidadOrigen)?.actualizarEstilo();
-        this._entidadesVisuales.get(entidadDestino)?.actualizarEstilo();
+    configurarDependenciaDeEntidad(entidad: Entidad, relacion: Relacion | null): Relacion | null {
+        try {
+            const resultado = this.modeloER.configurarDependenciaDe(entidad, relacion);
+            this._sincronizarRelacionReemplazada(resultado);
+            this._refrescarRelacionesDeDependencia(resultado);
+            this._refrescarEstilosDeEntidades();
+            return resultado.relacionIdentificadoraActual;
+        } catch (error) {
+            handlearError(error, this);
+            return null;
+        }
+    }
 
-        this.seleccionarA(nuevaRelacion);
-        return nuevaRelacion;
+    private _actualizarRelacionSeleccionada(
+        relacionAnterior: Relacion,
+        relacionFinal: Relacion
+    ): void {
+        if (this._elementoSeleccionado === relacionAnterior) {
+            this.seleccionarA(relacionFinal);
+        }
+    }
+
+    private _sincronizarRelacionReemplazada(
+        resultado: CambioDeRelacionIdentificadora
+    ): void {
+        const anterior = resultado.nuevaRelacionIdentificadoraSeleccionada;
+        const final = resultado.relacionIdentificadoraActual;
+        if (!anterior || !final || anterior === final) return;
+
+        this._relacionesVisuales.get(anterior)?.borrarse();
+        this._relacionesVisuales.delete(anterior);
+        this.crearVistaRelación(final);
+    }
+
+    private _refrescarRelacionesDeDependencia(
+        resultado: CambioDeRelacionIdentificadora
+    ): void {
+        const relaciones = [
+            resultado.relacionIdentificadoraAnterior,
+            resultado.relacionIdentificadoraActual,
+        ];
+        relaciones.forEach(relacion => {
+            if (relacion) this._relacionesVisuales.get(relacion)?.reposicionarRelacion();
+        });
+    }
+
+    private _refrescarEstilosDeEntidades(): void {
+        this._entidadesVisuales.forEach(vista => vista.actualizarEstilo());
     }
 
     alCambiarModelo(callback: () => void): void {

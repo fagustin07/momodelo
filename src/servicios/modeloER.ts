@@ -11,7 +11,13 @@ import {
     RelaciónExistenteError,
     RelaciónRecursivaError
 } from "./errores";
-import {Cardinalidad, TipoAtributo, TipoRelacion, NombreCompletable} from "../tipos/tipos.ts";
+import {
+    CambioDeRelacionIdentificadora,
+    Cardinalidad,
+    NombreCompletable,
+    TipoAtributo,
+    TipoRelacion
+} from "../tipos/tipos.ts";
 
 export class ModeloER {
     entidades: Entidad[] = [];
@@ -45,8 +51,58 @@ export class ModeloER {
         return relacionesAfectadas;
     }
 
-// ========= ATRIBUTOS =========
+    relacionesAsociadasA(entidad: Entidad): Relacion[] {
+        return this.relaciones.filter(relacion => relacion.contieneA(entidad));
+    }
 
+    relacionDebilDe(entidad: Entidad): Relacion | null {
+        return this.relaciones.find(relacion =>
+            relacion.esDebil() && relacion.entidadOrigen() === entidad
+        ) ?? null;
+    }
+
+    configurarDependenciaDe(
+        entidad: Entidad,
+        relacionDebil: Relacion | null
+    ): CambioDeRelacionIdentificadora {
+        const relacionAnterior = this.relacionDebilDe(entidad);
+
+        if (relacionDebil === null) {
+            this._convertirEnFuerte(entidad, relacionAnterior);
+            return this._resultadoDependencia(relacionAnterior, null, null);
+        }
+
+        this._validarRelacionDebil(entidad, relacionDebil);
+        if (relacionAnterior === relacionDebil) {
+            return this._resultadoDependencia(
+                relacionAnterior,
+                relacionDebil,
+                relacionDebil
+            );
+        }
+
+        const entidadFuerte = this._otraEntidadDe(relacionDebil, entidad);
+        this._validarNuevaDependencia(entidad, entidadFuerte, relacionAnterior, relacionDebil);
+
+        relacionAnterior?.cambiarTipoRelacionA('fuerte');
+        const antiguaEntidadDebil = this._entidadDebilDe(relacionDebil);
+        const relacionFinal = this._convertirEnRelacionDebilPara(
+            relacionDebil,
+            entidad,
+            entidadFuerte
+        );
+
+        this._actualizarAntiguaEntidadDebil(antiguaEntidadDebil, entidad, relacionDebil);
+        entidad.marcarComoDebil();
+
+        return this._resultadoDependencia(
+            relacionAnterior,
+            relacionDebil,
+            relacionFinal
+        );
+    }
+
+// ========= ATRIBUTOS =========
     renombrarAtributo(nuevoNombre: string, atributo: Atributo, entidad: Entidad) {
         entidad.renombrarAtributo(atributo, nuevoNombre);
     }
@@ -120,7 +176,7 @@ export class ModeloER {
             const entidadOrigen = relacion.entidadOrigen();
             const entidadDestino = relacion.entidadDestino();
 
-            const origenPuedeSerDebil = !this._tieneRelacionIdentificatoria(entidadOrigen, relacion);
+            const origenPuedeSerDebil = !this._tieneRelacionDebil(entidadOrigen, relacion);
 
             if (!origenPuedeSerDebil) {
                 return this._intentarInversiónDeRelación(relacion, entidadDestino, entidadOrigen);
@@ -143,7 +199,7 @@ export class ModeloER {
         const antiguaDebil = relacion.entidadOrigen();
         const antiguaFuerte = relacion.entidadDestino();
 
-        if (this._tieneRelacionIdentificatoria(antiguaFuerte, relacion)) {
+        if (this._tieneRelacionDebil(antiguaFuerte, relacion)) {
             throw new EntidadDébilConMúltiplesRelacionesIdentificadorasError();
         }
 
@@ -158,7 +214,7 @@ export class ModeloER {
             'débil'
         );
 
-        if (!this._tieneRelacionIdentificatoria(antiguaDebil, relacion)) {
+        if (!this._tieneRelacionDebil(antiguaDebil, relacion)) {
             antiguaDebil.marcarComoFuerte();
         }
 
@@ -177,10 +233,6 @@ export class ModeloER {
 
     private _registrarEntidad(entidad: Entidad) {
         this.entidades.push(entidad);
-    }
-
-    private _relacionesAsociadasA(entidad: Entidad): Relacion[] {
-        return this.relaciones.filter(r => r.contieneA(entidad));
     }
 
     private _eliminarRelaciones(relacionesAEliminar: Relacion[]): void {
@@ -207,7 +259,7 @@ export class ModeloER {
         }
     }
 
-    private _tieneRelacionIdentificatoria(entidad: Entidad, relacionActual: Relacion): boolean {
+    private _tieneRelacionDebil(entidad: Entidad, relacionActual: Relacion): boolean {
         return this.relaciones.some(
             rel => rel.esDebil() && rel.entidadOrigen() === entidad && rel !== relacionActual
         );
@@ -218,7 +270,7 @@ export class ModeloER {
         nuevaEntidadDebil: Entidad,
         nuevaEntidadFuerte: Entidad
     ): Relacion {
-        if (this._tieneRelacionIdentificatoria(nuevaEntidadDebil, relacion)) {
+        if (this._tieneRelacionDebil(nuevaEntidadDebil, relacion)) {
             throw new EntidadDébilConMúltiplesRelacionesIdentificadorasError();
         }
 
@@ -235,7 +287,8 @@ export class ModeloER {
     private _seFormaCicloDeRelacionesDebiles(
         entidadHija: Entidad,
         entidadPadreActual: Entidad,
-        visitados: Set<Entidad> = new Set()
+        visitados: Set<Entidad> = new Set(),
+        relacionesQueSeránReemplazadas: Set<Relacion> = new Set()
     ): boolean {
         if (entidadPadreActual === entidadHija) {
             return true;
@@ -247,13 +300,18 @@ export class ModeloER {
 
         visitados.add(entidadPadreActual);
 
-        const relacionesDondePadreEsDebil = this.relaciones.filter(r =>
-            r.esDebil() && r.entidadOrigen() === entidadPadreActual
-        );
-
-        return relacionesDondePadreEsDebil.some(rel =>
-            this._seFormaCicloDeRelacionesDebiles(entidadHija, rel.entidadDestino(), visitados)
-        );
+        return this.relaciones
+            .filter(r =>
+                r.esDebil() && r.entidadOrigen() === entidadPadreActual && !relacionesQueSeránReemplazadas.has(r)
+            )
+            .some(rel =>
+                this._seFormaCicloDeRelacionesDebiles(
+                    entidadHija,
+                    rel.entidadDestino(),
+                    visitados,
+                    relacionesQueSeránReemplazadas
+                )
+            );
     }
 
     private _crearRelacionDébilInvertida(
@@ -283,7 +341,7 @@ export class ModeloER {
 
     private _actualizarEstadoEntidadAlCambiarAFuerte(relacion: Relacion): void {
         const entidadOrigen = relacion.entidadOrigen();
-        if (!this._tieneRelacionIdentificatoria(entidadOrigen, relacion)) {
+        if (!this._tieneRelacionDebil(entidadOrigen, relacion)) {
             entidadOrigen.marcarComoFuerte();
         }
     }
@@ -294,11 +352,95 @@ export class ModeloER {
     }
 
     private _quitarDependenciaDeEntidadesAsociadasA(entidad: Entidad) {
-        const relacionesAfectadas = this._relacionesAsociadasA(entidad);
+        const relacionesAfectadas = this.relacionesAsociadasA(entidad);
 
         relacionesAfectadas
             .filter(r => r.esDebil())
             .forEach(r => this._actualizarEstadoEntidadAlCambiarAFuerte(r));
         return relacionesAfectadas;
+    }
+
+    private _convertirEnFuerte(entidad: Entidad, relacionAnterior: Relacion | null): void {
+        relacionAnterior?.cambiarTipoRelacionA('fuerte');
+        entidad.marcarComoFuerte();
+    }
+
+    private _validarRelacionDebil(entidad: Entidad, relacion: Relacion): void {
+        if (!this.relaciones.includes(relacion) || !relacion.contieneA(entidad)) {
+            throw new MomodeloLogicaError(
+                "La relación identificadora debe estar asociada a la entidad."
+            );
+        }
+    }
+
+    private _otraEntidadDe(relacion: Relacion, entidad: Entidad): Entidad {
+        return relacion.entidadOrigen() === entidad
+            ? relacion.entidadDestino()
+            : relacion.entidadOrigen();
+    }
+
+    private _validarNuevaDependencia(
+        entidadDebil: Entidad,
+        entidadFuerte: Entidad,
+        relacionAnterior: Relacion | null,
+        relacionSeleccionada: Relacion
+    ): void {
+        const relacionesQueSeránReemplazadas = new Set([relacionSeleccionada]);
+        if (relacionAnterior) relacionesQueSeránReemplazadas.add(relacionAnterior);
+
+        if (this._seFormaCicloDeRelacionesDebiles(
+            entidadDebil,
+            entidadFuerte,
+            new Set(),
+            relacionesQueSeránReemplazadas
+        )) {
+            throw new CicloDeRelacionesDébilesError();
+        }
+    }
+
+    private _entidadDebilDe(relacion: Relacion): Entidad | null {
+        return relacion.esDebil() ? relacion.entidadOrigen() : null;
+    }
+
+    private _convertirEnRelacionDebilPara(
+        relacion: Relacion,
+        entidadDebil: Entidad,
+        entidadFuerte: Entidad
+    ): Relacion {
+        if (relacion.entidadOrigen() === entidadDebil) {
+            relacion.cambiarTipoRelacionA('débil');
+            return relacion;
+        }
+
+        const relacionInvertida = this._crearRelacionDébilInvertida(
+            relacion,
+            entidadDebil,
+            entidadFuerte
+        );
+        this._reemplazarRelacion(relacion, relacionInvertida);
+        return relacionInvertida;
+    }
+
+    private _actualizarAntiguaEntidadDebil(
+        antiguaEntidadDebil: Entidad | null,
+        nuevaEntidadDebil: Entidad,
+        relacionReemplazada: Relacion
+    ): void {
+        if (antiguaEntidadDebil && antiguaEntidadDebil !== nuevaEntidadDebil &&
+            !this._tieneRelacionDebil(antiguaEntidadDebil, relacionReemplazada)) {
+            antiguaEntidadDebil.marcarComoFuerte();
+        }
+    }
+
+    private _resultadoDependencia(
+        relacionAnterior: Relacion | null,
+        relacionSeleccionada: Relacion | null,
+        relacionFinal: Relacion | null
+    ): CambioDeRelacionIdentificadora {
+        return {
+            relacionIdentificadoraAnterior: relacionAnterior,
+            nuevaRelacionIdentificadoraSeleccionada: relacionSeleccionada,
+            relacionIdentificadoraActual: relacionFinal,
+        };
     }
 }

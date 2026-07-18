@@ -7,6 +7,7 @@ import {coordenada, Posicion} from "../../src/posicion";
 import "../../src/style.css";
 import {VistaEditorMER} from "../../src/vista/vistaEditorMER.ts";
 import {ModeloER} from "../../src/servicios/modeloER.ts";
+import {Relacion} from "../../src/modelo/relacion.ts";
 
 export function getElementoEntidades() {
     return [...document.getElementById("vista-mer")!.querySelectorAll<HTMLElement>(".entidad")];
@@ -281,5 +282,64 @@ describe("[MER] Vista Modelo tests", () => {
         vistaEditorMER.reemplazarModelo([nuevaEntidad], []);
 
         expect(modeloDeseado!.entidades[0]).toBe(nuevaEntidad);
+    });
+
+    it("Se puede ver la relación de la cual depende una entidad al marcarla como débil desde el inspector", () => {
+        const entidadFuerte = new Entidad("Barco", [], coordenada(300, 10));
+        const relacion = new Relacion(entidad, entidadFuerte, "NAVEGA");
+        vistaEditorMER.reemplazarModelo([entidad, entidadFuerte], [relacion]);
+
+        const elementoEntidad = getElementoEntidades()[0];
+        fireEvent.click(elementoEntidad);
+        const inspector = document.getElementById("panel-inspector")!;
+        fireEvent.click(within(inspector).getByRole("radio", {name: /débil/i}));
+
+        const inspectorActualizado = document.getElementById("panel-inspector")!;
+        expect(elementoEntidad).toHaveClass("entidad-debil");
+        expect(document.querySelectorAll(".relacion polygon")).toHaveLength(2);
+        expect(within(inspectorActualizado).getByText(
+            "Esta entidad se identifica a través de la relación..."
+        )).toBeInTheDocument();
+        expect(within(inspectorActualizado)
+            .getByTitle<HTMLSelectElement>("Relación identificadora")
+        ).toHaveDisplayValue("NAVEGA, con Barco");
+    });
+
+    it("Una entidad no tiene relación débil configurable si se vuelve fuerte", () => {
+        const entidadFuerte = new Entidad("Barco", [], coordenada(300, 10));
+        const relacion = new Relacion(entidad, entidadFuerte, "NAVEGA");
+        vistaEditorMER.reemplazarModelo([entidad, entidadFuerte], [relacion]);
+
+        const elementoEntidad = getElementoEntidades()[0];
+        fireEvent.click(elementoEntidad);
+        let inspector = document.getElementById("panel-inspector")!;
+        fireEvent.click(within(inspector).getByRole("radio", {name: /débil/i}));
+
+        inspector = document.getElementById("panel-inspector")!;
+        fireEvent.click(within(inspector).getByRole("radio", {name: /fuerte/i}));
+
+        inspector = document.getElementById("panel-inspector")!;
+        expect(elementoEntidad).not.toHaveClass("entidad-debil");
+        expect(document.querySelectorAll(".relacion polygon")).toHaveLength(1);
+        expect(within(inspector).queryByTitle("Relación identificadora")).not.toBeInTheDocument();
+        expect(within(inspector).getByRole("radio", {name: /fuerte/i})).toBeChecked();
+    });
+
+    it("Se da un feedback de error al querer marcar como débil una entidad sin relaciones", () => {
+        const elementoEntidad = getElementoEntidades()[0];
+        fireEvent.click(elementoEntidad);
+        const inspector = document.getElementById("panel-inspector")!;
+
+        fireEvent.click(within(inspector).getByRole("radio", {name: /débil/i}));
+
+        const inspectorActualizado = document.getElementById("panel-inspector")!;
+        const toast = document.querySelector(".toast");
+        expect(toast?.textContent).toContain(
+            "La entidad necesita tener al menos una relación para poder marcarse como débil."
+        );
+        expect(elementoEntidad).not.toHaveClass("entidad-debil");
+        expect(within(inspectorActualizado).getByRole("radio", {name: /fuerte/i})).toBeChecked();
+        expect(within(inspectorActualizado).queryByTitle("Relación identificadora"))
+            .not.toBeInTheDocument();
     });
 });

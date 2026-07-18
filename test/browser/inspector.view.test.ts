@@ -413,4 +413,32 @@ describe("[MER] Inspector de Elementos", () => {
         expect(toast).toBeInTheDocument();
         expect(toast?.textContent).toContain("Ciclo de relaciones débiles no permitido");
     });
+
+    it("Permite seguir cambiando el tipo de una relación después de convertir en débil y fuerte varias veces una relación", () => {
+        const cliente = new Entidad("Cliente", [], coordenada(100, 100));
+        const pedido = new Entidad("Pedido", [], coordenada(300, 100));
+        const producto = new Entidad("Producto", [], coordenada(500, 100));
+        const realiza = new Relacion(pedido, cliente, "REALIZA", ['1', '1'], ['0', 'N'], undefined, 'débil');
+        const contiene = new Relacion(pedido, producto, "CONTIENE");
+        pedido.marcarComoDebil();
+
+        document.body.innerHTML = "";
+        elementoRaíz = document.createElement("div");
+        document.body.append(elementoRaíz);
+        init(elementoRaíz, [cliente, pedido, producto], [realiza, contiene]);
+
+        const inputContiene = getInputRelaciones().find(input => input.value === "CONTIENE")!;
+        fireEvent.click(inputContiene);
+        fireEvent.click(within(document.getElementById("panel-inspector")!)
+            .getByRole("radio", {name: /débil/i}));
+
+        let inspector = document.getElementById("panel-inspector")!;
+        fireEvent.click(within(inspector).getByRole("radio", {name: /fuerte/i}));
+        fireEvent.click(within(inspector).getByRole("radio", {name: /débil/i}));
+
+        inspector = document.getElementById("panel-inspector")!;
+        expect(within(inspector).getByRole("radio", {name: /débil/i})).toBeChecked();
+        expect(within(inspector).getByText(/para su identificación/i)).toBeInTheDocument();
+        expect(document.querySelector(".toast")).not.toBeInTheDocument();
+    });
 });
