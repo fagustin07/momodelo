@@ -25,6 +25,9 @@ function extensionesCompartidas(
             run: () => { ejecutar(); return true; }
         }])),
         EditorView.lineWrapping,
+        EditorView.theme({
+            ".cm-content": { fontFamily: "'Noto Sans Math', sans-serif" }
+        })
     ];
 }
 
