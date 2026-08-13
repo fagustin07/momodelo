@@ -192,6 +192,7 @@ body {
 
 .mr-ar-toolbar {
   display: flex;
+  flex-wrap: wrap;
   gap: .5%;
   padding: 1%;
   background: var(--color-neutro-fondo);
@@ -1343,5 +1344,48 @@ line:not(.linea-feedback) {
 
   &:hover {
     background: var(--color-peligro-fondo-hover);
+  }
+}
+
+@media (max-width: 768px) {
+  .mr-topbar {
+    padding: 6px 8px;
+  }
+
+  .mr-topbar-titulo {
+    font-size: 18px;
+  }
+
+  .mr-toggle-ar-label {
+    font-size: 12px;
+  }
+
+  .mr-btn-ejecutar {
+    font-size: 0.875rem;
+    padding: 4px 10px;
+  }
+
+  .mr-ar-toolbar {
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .mr-ar-toolbar-btn {
+    font: 600 0.875rem sans-serif;
+    padding: 6px 10px;
+  }
+
+  .mr-ar-toolbar-num {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .mr-toggle-ar-label {
+    display: none;
+  }
+
+  .mr-topbar-titulo {
+    font-size: 16px;
   }
 }
