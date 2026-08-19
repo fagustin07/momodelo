@@ -17,7 +17,7 @@ function crearElementoSvgParaRelaciones() {
     return svg;
 }
 
-export function init(elementoRaíz: HTMLElement, entidadesEnModelo: Entidad[], relaciones: Relacion[]) {
+export function init(elementoRaíz: HTMLElement, entidadesEnModelo: Entidad[], relaciones: Relacion[], textoMRInicial: string = "", textoARInicial: string = "") {
     const elementoContenedorMER = createElement("section", {id: "vista-mer"});
     const elementoContenedorMR = createElement("section", {id: "vista-mr"});
 
@@ -50,6 +50,9 @@ export function init(elementoRaíz: HTMLElement, entidadesEnModelo: Entidad[], r
 
     vistaMER = new VistaEditorMER(new ModeloER(entidadesEnModelo, relaciones), elementoContenedorMER, crearElementoSvgParaRelaciones(), proveedorParaMER);
     vistaEditorMR = new VistaEditorMR(elementoContenedorMR, proveedorParaMR);
+
+    if (textoMRInicial) vistaEditorMR.setTextoMR(textoMRInicial);
+    if (textoARInicial) vistaEditorMR.setTextoAR(textoARInicial);
 
     new GestorModulos(elementoRaíz, vistaMER, vistaEditorMR);
 

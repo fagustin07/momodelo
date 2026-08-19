@@ -27,6 +27,8 @@ describe("[MER] Barra de Interacciones", () => {
         entidades = [personaje, humorista];
 
         vistaEditorMER = init(elementoRaíz, entidades, []);
+
+        fireEvent.click(screen.getByRole("button", {name: "MER"}));
     });
 
     it("Un botón de interacción se visualiza activo al seleccionarlo, dando comienzo a la interacción", () => {

@@ -77,6 +77,8 @@ describe("[MER] Vista Modelo tests", () => {
         entidad = new Entidad("Pirata", [], coordenada(10, 10));
         entidadesEnModelo = [entidad];
         vistaEditorMER = init(elementoRaiz, entidadesEnModelo, []);
+
+        fireEvent.click(screen.getByRole("button", {name: "MER"}));
     });
 
     it("Dada una inicializacion con una entidad, entonces la misma se encuentra en el DOM", () => {

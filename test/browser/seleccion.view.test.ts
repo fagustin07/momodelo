@@ -29,6 +29,8 @@ describe("[MER] Interacciones y selección", () => {
         humorista = new Entidad("HUMORISTA", [], coordenada(300, 300));
 
         vistaEditorMER = init(elementoRaiz, [personaje, humorista], []);
+
+        fireEvent.click(screen.getByRole("button", {name: "MER"}));
     });
 
     it("cuando se crea una entidad, entonces queda seleccionada", () => {

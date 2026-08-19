@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it} from "vitest";
-import {fireEvent, within} from "@testing-library/dom";
+import {fireEvent, screen, within} from "@testing-library/dom";
 import {init} from "../../src/vista";
 import {Entidad} from "../../src/modelo/entidad";
 import {coordenada} from "../../src/posicion";
@@ -76,6 +76,8 @@ describe("[MER] Inspector de Elementos", () => {
         atributoNombre = entidadPirata.agregarAtributo("Nombre", coordenada(20, 20));
 
         init(elementoRaíz, [entidadPirata, entidadBarco], [relacionNavega]);
+
+        fireEvent.click(screen.getByRole("button", {name: "MER"}));
     });
 
     it("Al seleccionar una Entidad el Inspector muestra las propiedades del elemento", () => {
@@ -426,6 +428,8 @@ describe("[MER] Inspector de Elementos", () => {
         elementoRaíz = document.createElement("div");
         document.body.append(elementoRaíz);
         init(elementoRaíz, [cliente, pedido, producto], [realiza, contiene]);
+
+        fireEvent.click(screen.getByRole("button", {name: "MER"}));
 
         const inputContiene = getInputRelaciones().find(input => input.value === "CONTIENE")!;
         fireEvent.click(inputContiene);

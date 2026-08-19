@@ -70,6 +70,8 @@ describe("[MER] Vista Relaciones", () => {
         entidades = [personaje, humorista];
 
         vistaEditorMER = init(elementoRaíz, entidades, []);
+
+        fireEvent.click(screen.getByRole("button", {name: "MER"}));
     });
 
     it("Dado dos entidades, cuando se seleccionan ambas, entonces se crea una relación entre ellas", async () => {

@@ -19,14 +19,14 @@ describe("[Módulos] Gestor de Navegación", () => {
         init(elementoRaíz, [entidad], []);
     });
 
-    it("El gestor de módulos comienza con el MER activo", () => {
-        const elementoEntidad = document.querySelector(".entidad");
+    it("El gestor de módulos comienza con el MR activo", () => {
+        const contenedorMER = document.getElementById("vista-mer");
         const contenedorMR = document.getElementById("vista-mr");
-        const botonMER = screen.getByRole("button", {name: "MER"});
+        const botonMR = screen.getByRole("button", {name: "MR"});
 
-        expect(elementoEntidad).not.toHaveClass("vista-oculta");
-        expect(contenedorMR).toHaveClass("vista-oculta");
-        expect(botonMER).toHaveClass("activa");
+        expect(contenedorMER).toHaveClass("vista-oculta");
+        expect(contenedorMR).not.toHaveClass("vista-oculta");
+        expect(botonMR).toHaveClass("activa");
     });
 
     it("El gestor sabe navegar al módulo de MR", () => {
