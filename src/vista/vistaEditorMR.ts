@@ -62,11 +62,11 @@ export class VistaEditorMR {
             createElement("button", {
                 className: "mr-consola-btn-cerrar",
                 textContent: "X",
-                onclick: () => { this._consolaWrapper.style.display = "none"; }
+                onclick: () => { this._cerrarConsola(); }
             })
         ]);
 
-        this._consolaWrapper = createElement("div", {className: "mr-consola-wrapper", style: {display: "none"}}, [
+        this._consolaWrapper = createElement("div", {className: "mr-consola-wrapper mr-consola-wrapper--colapsada"}, [
             consolaHeader,
             this._consola,
             this._overlay
@@ -117,7 +117,7 @@ export class VistaEditorMR {
         this._modeloMaterializado = null;
         this._editorAR.setModeloER(modeloER);
         this._limpiarConsola();
-        this._consolaWrapper.style.display = "none";
+        this._cerrarConsola();
     }
 
     getModeloER(): ModeloER | null {
@@ -143,12 +143,12 @@ export class VistaEditorMR {
     }
 
     private _ejecutar(): void {
+        this._abrirConsola();
         this._overlay.style.display = "flex";
 
         requestAnimationFrame(() => setTimeout(() => {
             this._overlay.style.display = "none";
             this._limpiarConsola();
-            this._consolaWrapper.style.display = "";
 
             const inputMR = this._editorMR.state.doc.toString();
 
@@ -227,6 +227,14 @@ export class VistaEditorMR {
             from: palabraBuscada.from,
             options: opciones
         };
+    }
+
+    private _abrirConsola(): void {
+        this._consolaWrapper.classList.remove("mr-consola-wrapper--colapsada");
+    }
+
+    private _cerrarConsola(): void {
+        this._consolaWrapper.classList.add("mr-consola-wrapper--colapsada");
     }
 
     private _limpiarConsola(): void {
