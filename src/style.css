@@ -84,6 +84,7 @@ body {
 
   .mr-editores {
     grid-area: area-trabajo;
+    background: var(--color-neutro-fondo);
   }
 
   .mr-consola-wrapper {
@@ -163,6 +164,7 @@ body {
   width: 1px;
   background: var(--color-neutro-borde);
   flex-shrink: 0;
+  margin-bottom: 2rem;
 }
 
 .mr-editor-panel {
@@ -369,6 +371,9 @@ body {
 .mr-codemirror-wrapper {
   flex: 1;
   overflow: auto;
+  box-sizing: border-box;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--color-neutro-borde);
 
   .cm-editor {
     height: 100%;
@@ -1363,6 +1368,15 @@ line:not(.linea-feedback) {
   .mr-btn-ejecutar {
     font-size: 0.875rem;
     padding: 4px 10px;
+  }
+
+  .contenedor-barra {
+    padding-top: 3.25rem;
+  }
+
+  #topbar {
+    gap: 6px;
+    padding: 6px 10px;
   }
 
   .mr-ar-toolbar {
