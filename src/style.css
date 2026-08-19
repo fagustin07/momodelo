@@ -1378,12 +1378,19 @@ line:not(.linea-feedback) {
   }
 
   .contenedor-barra {
-    padding-top: 3.25rem;
+    align-items: flex-start;
+    padding-top: 0.5rem;
+    padding-left: 3.5rem;
   }
 
   #topbar {
-    gap: 6px;
-    padding: 6px 10px;
+    gap: 4px;
+    padding: 4px 8px;
+  }
+
+  #topbar button {
+    padding: 4px 8px;
+    font-size: 0.8rem;
   }
 
   .mr-ar-toolbar {
