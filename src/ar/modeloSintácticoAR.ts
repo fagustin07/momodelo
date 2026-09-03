@@ -1,7 +1,7 @@
 import {ModeloRelacionalMaterializado, RelacionMaterializada} from "../mr/modeloRelacionalMaterializado.ts";
 import {ResultadoConsulta} from "./resultadoConsulta.ts";
 import {Valor} from "../mr/modeloSintacticoMR.ts";
-import {proyectarTupla, TuplaAR} from "./tuplaAR.ts";
+import {mismoAtributo, proyectarTupla, valorDe, TuplaAR} from "./tuplaAR.ts";
 import {ErrorSemánticoAR} from "../servicios/errores.ts";
 
 export abstract class ExpresiónAR {
@@ -29,7 +29,7 @@ export abstract class Operando {
 
 export class NombreAtributo extends Operando {
     constructor(readonly nombre: string) { super(); }
-    resolverCon(tupla: TuplaAR): Valor { return tupla[this.nombre]; }
+    resolverCon(tupla: TuplaAR): Valor { return valorDe(tupla, this.nombre); }
     nombresDeAtributos(): string[] { return [this.nombre]; }
 }
 
@@ -110,7 +110,7 @@ export class ExpresiónSelección extends ExpresiónAR {
         const resultado = this.subexpr.interpretarseCon(modelo);
 
         this.condición.atributos().forEach(attr => {
-            if (!resultado.atributos.includes(attr)) {
+            if (!resultado.atributos.some(a => mismoAtributo(a, attr))) {
                 throw new ErrorSemánticoAR(
                     `El atributo '${attr}' no existe en la relación.`,
                 );
@@ -125,17 +125,30 @@ export class ExpresiónProyección extends ExpresiónAR {
     interpretarseCon(modelo: ModeloRelacionalMaterializado): ResultadoConsulta {
         const resultado = this.subexpr.interpretarseCon(modelo);
 
-        this.atributos.forEach(attr => {
-            if (!resultado.atributos.includes(attr)) {
+        const atributosReales = this.atributos.map(attr => {
+            const canónico = resultado.atributos.find(a => mismoAtributo(a, attr));
+            if (canónico === undefined) {
                 throw new ErrorSemánticoAR(
                     `El atributo '${attr}' no existe en la relación.`,
                 );
             }
+            if (resultado.atributos.filter(a => mismoAtributo(a, canónico)).length > 1) {
+                throw new ErrorSemánticoAR(
+                    `El atributo '${attr}' es ambiguo: aparece más de una vez en la relación.`,
+                );
+            }
+            return canónico;
         });
 
-        const tuplasProyectadas = resultado.tuplas.map(tupla => proyectarTupla(tupla, this.atributos));
+        if (new Set(atributosReales.map(c => c.toLowerCase())).size !== atributosReales.length) {
+            throw new ErrorSemánticoAR(
+                "La proyección no puede repetir el mismo atributo.",
+            );
+        }
 
-        return new ResultadoConsulta("", [...this.atributos], tuplasProyectadas);
+        const tuplasProyectadas = resultado.tuplas.map(tupla => proyectarTupla(tupla, atributosReales));
+
+        return new ResultadoConsulta("", [...atributosReales], tuplasProyectadas);
     }
 }
 
@@ -184,7 +197,8 @@ export class ExpresiónRenombre extends ExpresiónAR {
         const mapeo = new Map(this.pares!.map(({ nuevo, viejo }) => [viejo, nuevo]));
 
         const colisión = this.pares!.find(({ nuevo }) =>
-            resultado.atributos.includes(nuevo) && !mapeo.has(nuevo)
+            resultado.atributos.some(a => mismoAtributo(a, nuevo)) &&
+            !this.pares!.some(({ viejo }) => mismoAtributo(viejo, nuevo))
         );
 
         if (colisión !== undefined) {

@@ -1,4 +1,4 @@
-import {valoresDeTuplaDesdeEsquema, TuplaAR} from "./tuplaAR.ts";
+import {mismoAtributo, TuplaAR, valoresDeTuplaDesdeEsquema} from "./tuplaAR.ts";
 import {ErrorSemánticoAR} from "../servicios/errores.ts";
 
 export class ResultadoConsulta {
@@ -29,7 +29,7 @@ export class ResultadoConsulta {
 
     asertarAtributosExistentes(nombres: Iterable<string>): this {
         for (const nombre of nombres) {
-            if (!this.atributos.includes(nombre)) {
+            if (!this.atributos.some(a => mismoAtributo(a, nombre))) {
                 throw new ErrorSemánticoAR(
                     `El atributo '${nombre}' no existe en la relación.`
                 );
@@ -39,14 +39,19 @@ export class ResultadoConsulta {
     }
 
     renombrarAtributos(mapeo: Map<string, string>): ResultadoConsulta {
-        const nuevosAtributos = this.atributos.map(attr => mapeo.get(attr) ?? attr);
+        const columnas = this.atributos.map(attr => ({
+            nombre: [...mapeo.entries()].find(([viejo]) => mismoAtributo(viejo, attr))?.[1] ?? attr,
+            valores: this._tuplas.map(tupla => tupla[attr]),
+        }));
 
-        const tuplasRenombradas = this._tuplas.map(tupla =>
-            Object.fromEntries(
-                this.atributos.map((attr, i) => [nuevosAtributos[i], tupla[attr]])
-            ) as TuplaAR
+        return new ResultadoConsulta(
+            this.nombre,
+            columnas.map(columna => columna.nombre),
+            this._tuplas.map((_tupla, i) =>
+                Object.fromEntries(
+                    columnas.map(columna => [columna.nombre, columna.valores[i]]),
+                ) as TuplaAR
+            ),
         );
-
-        return new ResultadoConsulta(this.nombre, [...nuevosAtributos], [...tuplasRenombradas]);
     }
 }

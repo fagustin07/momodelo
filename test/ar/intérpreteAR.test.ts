@@ -266,6 +266,81 @@ describe("[Álgebra Relacional] Intérprete AR", () => {
         ]);
     });
 
+    it("una proyección encuentra los atributos sin importar mayúsculas", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("EMPLEADO", pk("legajo"), simple("nombre"))),
+            inserción("EMPLEADO", fila(1, "Ana")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("π<LEgAJO>EMPLEADO"), modelo);
+        expect(resultado.atributos).toEqual(["legajo"]);
+        esperarResultadoConsulta(resultado, [{legajo: 1}]);
+    });
+
+    it("no se puede proyectar dos veces el mismo atributo", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("EMPLEADO", pk("legajo"), simple("nombre"))),
+            inserción("EMPLEADO", fila(1, "Ana")),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("π<legajo,LEGAJO>EMPLEADO"), modelo)
+        ).toThrow("La proyección no puede repetir el mismo atributo.");
+    });
+
+    it("una selección encuentra los atributos de la condición sin importar mayúsculas", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("PERSONA", pk("id"), simple("apellido"), simple("edad"))),
+            inserción("PERSONA", fila(1, "Pérez", 30)),
+            inserción("PERSONA", fila(2, "Gómez", 20)),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("σ<APELLIDO='Pérez'>PERSONA"), modelo);
+        expect(resultado.tuplas).toHaveLength(1);
+        expect(resultado.tuplas[0]["apellido"]).toBe("Pérez");
+    });
+
+    it("un renombre encuentra el atributo a cambiar sin importar mayúsculas", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("PERSONA", pk("id"), simple("apellido"))),
+            inserción("PERSONA", fila(1, "Pérez")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("ρ<apellidoPk ← APELLIDO>PERSONA"), modelo);
+        expect(resultado.atributos).toEqual(["id", "apellidoPk"]);
+        esperarResultadoConsulta(resultado, [{id: 1, apellidoPk: "Pérez"}]);
+    });
+
+    it("un renombre encuentra la ambigüedad de atributos sin importar mayúsculas", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("PERSONA", pk("id"), simple("apellido"), simple("nombre"))),
+            inserción("PERSONA", fila(1, "Pérez", "Ana")),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("ρ<APELLIDO ← nombre>PERSONA"), modelo)
+        ).toThrow("El nombre 'APELLIDO' ya existe en la relación y no se renombra.");
+    });
+
+    it("el join natural combina atributos en común sin importar mayúsculas", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("DEPARTAMENTO", pk("codigo"), simple("ciudad"))),
+            inserción("DEPARTAMENTO", fila(10, "CABA")),
+            definición(relación("EMPLEADO", pk("legajo"), simple("CODIGO"), simple("nombre"))),
+            inserción("EMPLEADO", fila(1, 10, "Ana")),
+        );
+        const resultado = intérprete.ejecutar(analizarSintácticamente("DEPARTAMENTO * EMPLEADO"), modelo);
+        expect(resultado.atributos).toEqual(["codigo", "ciudad", "legajo", "nombre"]);
+        esperarResultadoConsulta(resultado, [{codigo: 10, ciudad: "CABA", legajo: 1, nombre: "Ana"}]);
+    });
+
+    it("el join condicional detecta ambigüedad sin importar mayúsculas", () => {
+        const modelo = modeloConRelaciones(
+            definición(relación("EMPLEADO", pk("id"), simple("nombre"))),
+            definición(relación("PROYECTO", pk("ID"), simple("presupuesto"))),
+            inserción("EMPLEADO", fila(1, "Ana")),
+            inserción("PROYECTO", fila(10, 100000)),
+        );
+        expect(() =>
+            intérprete.ejecutar(analizarSintácticamente("EMPLEADO ⋈<nombre='Ana'>PROYECTO"), modelo)
+        ).toThrow("Ambigüedad en join condicional: el atributo 'id' existe en ambas relaciones.");
+    });
+
     it("una selección sobre una proyección que no incluye el atributo referenciado lanza error", () => {
         const modelo = modeloConRelaciones(
             definición(relación("PERSONA", pk("id"), simple("nombre"), simple("edad"))),

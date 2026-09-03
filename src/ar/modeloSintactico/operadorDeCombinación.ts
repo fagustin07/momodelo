@@ -2,7 +2,7 @@ import {ResultadoConsulta} from "../resultadoConsulta.ts";
 import {ModeloRelacionalMaterializado} from "../../mr/modeloRelacionalMaterializado.ts";
 import {ErrorSemánticoAR} from "../../servicios/errores.ts";
 import {CondiciónAR, ExpresiónAR} from "../modeloSintácticoAR.ts";
-import {valoresDeTuplaDesdeEsquema, proyectarTupla, TuplaAR} from "../tuplaAR.ts";
+import {mismoAtributo, valoresDeTuplaDesdeEsquema, proyectarTupla, TuplaAR} from "../tuplaAR.ts";
 
 export abstract class OperadorDeCombinación extends ExpresiónAR {
     constructor(readonly izq: ExpresiónAR, readonly der: ExpresiónAR) {
@@ -20,7 +20,7 @@ export abstract class OperadorDeCombinación extends ExpresiónAR {
 
     protected _validarQueNoExistaAmbigüedad(izqRes: ResultadoConsulta, derRes: ResultadoConsulta): void {
         izqRes.atributos.forEach(attr => {
-            if (derRes.atributos.includes(attr)) {
+            if (derRes.atributos.some(a => mismoAtributo(a, attr))) {
                 throw new ErrorSemánticoAR(
                     `Ambigüedad en ${this._nombre()}: el atributo '${attr}' existe en ambas relaciones.`,
                 );
@@ -98,11 +98,11 @@ export class JoinNatural extends OperadorDeCombinación {
     }
 
     private _atributosComunes(izq: ReadonlyArray<string>, der: ReadonlyArray<string>): string[] {
-        return izq.filter(attr => der.includes(attr));
+        return izq.filter(attr => der.some(a => mismoAtributo(a, attr)));
     }
 
     private _atributosNoComunes(todos: ReadonlyArray<string>, comunes: string[]): string[] {
-        return todos.filter(attr => !comunes.includes(attr));
+        return todos.filter(attr => !comunes.some(c => mismoAtributo(c, attr)));
     }
 
     private _validarQueHayaAtributosEnComún(comunes: string[]): void {
