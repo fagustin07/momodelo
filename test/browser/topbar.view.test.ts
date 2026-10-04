@@ -104,7 +104,7 @@ describe("[MER] Barra de Interacciones", () => {
         fireEvent.click(getElementoEntidades()[0]);
 
         expect(screen.getByRole("dialog", {name: /confirmar esta acción/i})).toBeVisible();
-        expect(screen.getByRole("dialog")).toHaveTextContent(/PERSONAJE.*¿Confirmás esta acción\?/i);
+        expect(screen.getByRole("dialog")).toMatchTextContent(/PERSONAJE.*¿Confirmás esta acción\?/i);
         expect(vistaEditorMER.modeloER.entidades).toContain(personaje);
         fireEvent.click(screen.getByRole("button", {name: /cancelar/i}));
     });
