@@ -6,6 +6,7 @@ import {ModalMisTrabajos} from "./modalMisTrabajos.ts";
 import {ModeloER} from "../servicios/modeloER.ts";
 import {Entidad} from "../modelo/entidad.ts";
 import {Relacion} from "../modelo/relacion.ts";
+import {renderizarToast} from "./toast.ts";
 
 export interface ProveedorDeTrabajo {
     getModeloER(): ModeloER | null;
@@ -174,13 +175,18 @@ export class MenuHamburguesa {
         if (!input.files?.length) return;
 
         const file = input.files[0];
-        const text = await file.text();
-        const json = JSON.parse(text) as JsonModelo;
 
-        const {entidades, relaciones} = importar(json);
-        this._proveedor.reemplazarModelo(entidades, relaciones);
-        this._proveedor.setTextoMR(json.mr ?? "");
-        this._proveedor.setTextoAR(json.ar ?? "");
+        try {
+            const text = await file.text();
+            const json = JSON.parse(text) as JsonModelo;
+
+            const {entidades, relaciones} = importar(json);
+            this._proveedor.reemplazarModelo(entidades, relaciones);
+            this._proveedor.setTextoMR(json.mr ?? "");
+            this._proveedor.setTextoAR(json.ar ?? "");
+        } catch {
+            renderizarToast(document.body, "No se pudo importar el trabajo porque el archivo no es válido.");
+        }
 
         input.value = "";
     }

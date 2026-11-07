@@ -337,8 +337,9 @@ export class VistaEditorMER {
     }
 
     reemplazarModelo(nuevasEntidades: Entidad[], nuevasRelaciones: Relacion[]): void {
+        const nuevoModelo = new ModeloER(nuevasEntidades, nuevasRelaciones);
         this._limpiarVistaDelUsuario();
-        this.modeloER = new ModeloER(nuevasEntidades, nuevasRelaciones);
+        this.modeloER = nuevoModelo;
         this._dibujarModelo();
         this.desenfocarElementoInput();
         this._alCambiarModelo.forEach(callback => callback());
