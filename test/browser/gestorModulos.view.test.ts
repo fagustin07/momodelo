@@ -52,11 +52,11 @@ describe("[Módulos] Gestor de Navegación", () => {
         expect(contenedorMER).not.toHaveClass("vista-oculta");
         expect(contenedorMR).not.toHaveClass("vista-oculta");
         expect(elementoRaíz).toHaveClass("layout-mer-mr");
-        expect(screen.getByText("Modelo Entidad Relación")).toBeVisible();
+        expect(screen.getByText("Modelo Entidad-Relación")).toBeVisible();
     });
 
     it("La etiqueta del MER sólo se muestra como cabecera cuando funciona como referencia", () => {
-        const etiquetaMER = screen.getByText("Modelo Entidad Relación");
+        const etiquetaMER = screen.getByText("Modelo Entidad-Relación");
         expect(etiquetaMER).not.toBeVisible();
 
         fireEvent.click(screen.getByRole("button", {name: "MER/MR"}));

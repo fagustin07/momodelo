@@ -89,7 +89,7 @@ export class VistaEditorMER {
 
         this._etiqueta = createElement("div", {
             className: "editor-panel-label mer-editor-label",
-            textContent: "Modelo Entidad Relación",
+            textContent: "Modelo Entidad-Relación",
             style: {display: "none"}
         });
         elementoRaiz.prepend(this._etiqueta);
