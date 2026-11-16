@@ -38,7 +38,7 @@ export class GestorModulos {
         this._elementoNavegación = this._crearNavegación();
         this._elementoRaíz.append(this._elementoNavegación);
 
-        this.mostrarModulo("MR");
+        this.mostrarModulo("MER");
     }
 
     private mostrarModulo(módulo: MóduloMomodelo) {
