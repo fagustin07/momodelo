@@ -154,7 +154,6 @@ export class TemplateRelacion extends TemplateInspector {
         alCambiar: (valor: string) => void
     ): HTMLElement {
         return createElement("div", {className: "inspector-teclas-fila"}, [
-            createElement("span", {textContent: "–", className: "inspector-teclas-guion"}),
             createElement("span", {
                 textContent: titulo,
                 className: "inspector-teclas-label"

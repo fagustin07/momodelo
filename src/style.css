@@ -979,10 +979,10 @@ line:not(.linea-feedback) {
 
 .inspector-teclas-fila {
   display: flex;
-  flex-direction: row;
-  align-items: baseline;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
   margin-top: 0.4rem;
-  flex-wrap: wrap;
   margin-left: 1.5rem;
 }
 
